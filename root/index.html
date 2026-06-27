@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>Lilact Demo</title>
+	<script src='./lilact.development.js' type="module"></script>
+
+	<script src="prismjs/prism.min.js"></script>
+	<script src="prismjs/prism-jsx.min.js"></script>
+	<link rel="stylesheet" href="prismjs/prism.min.css">
+
+</head>
+
+<body></body>
+
+<script type='text/jsx'>
+	
+const { useRef, useEffect, useState, Suspense, Spinner, run, render } = Lilact;
+const { css,cx,injectGlobal } = Lilact.emotion;
+
+
+const cache = new Map();
+
+function createResource(url) {
+  let record = cache.get(url);
+  if (!record) {
+    record = {
+      status: "pending",
+      promise: null,
+      data: null,
+      error: null,
+    };
+
+    record.promise = fetch(url)
+      .then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.text();
+      })
+      .then(data => {
+        record.status = "success";
+        record.data = data;
+      })
+      .catch(err => {
+        record.status = "error";
+        record.error = err;
+      });
+
+    cache.set(url, record);
+  }
+  return {
+    read() {
+      if (record.status === "pending") throw record.promise;
+      if (record.status === "error") throw record.error;
+      return record.data;
+    }
+  };
+}
+
+
+
+injectGlobal({"*:not(code):not(code *)" : {fontFamily: "Ubuntu, 'Segoe UI', 'Noto Sans', helvetica, sans", fontSize: "14px"}});
+
+
+injectGlobal({ 	code: { 	whiteSpace: "pre !important",
+												padding: "10px 0",
+												fontSize: "14px !important",
+												display: "block",
+												overflowWrap: "anywhere" } 
+							});
+
+
+injectGlobal({ 	code: { 	whiteSpace: "pre !important",
+												padding: "10px 0",
+												fontSize: "14px !important",
+												display: "block",
+												overflowWrap: "anywhere" } 
+							});
+
+
+const outer = css({
+	display: "flex",
+	flexDirection: "row",
+	gap: 2,
+	alignItems: "stretch",
+	width: "100%",
+});
+
+const collapsible = css({
+	width: "100%",
+	display: "block",
+	fontSize: "16px"
+});
+
+const responsiveOuter = css({
+	"@media (max-width: 600px)": {
+		flexDirection: "column",
+	},
+});
+
+const pane = css({ flex: "1 1 0",
+										border: "1px solid",
+										height: "400px",
+										minHeight: "400px",
+										overflowY: "auto",
+										padding: "10px" 
+									});
+
+
+
+function DemoView({ file }) 
+{
+	const [isOpen, setOpen] = useState(false);
+
+	const viewRef = useRef();
+	const codeRef = useRef();
+
+  const resource = createResource("./demos/"+file);
+  const code = resource.read(); // Suspense will handle the promise
+
+  if(isOpen) {
+		useEffect(() => {
+			const Comp = run(code);
+			Lilact.render(<Comp/>, viewRef.current);
+		});
+
+		useEffect(() => {
+			Prism.highlightElement(codeRef.current);
+		});
+	}
+	
+	return 	<>
+						<button onClick={()=>setOpen(!isOpen)} className={collapsible}>
+							{(isOpen?'- ':'+ ')+file}
+						</button>
+						{isOpen &&
+						<div style={{width:"100%"}}>
+							<div className={cx(responsiveOuter,outer)}>
+								<div className={pane} style={{background:"#f5f2f0"}}>
+									<code className="language-jsx" ref={codeRef}>{code}</code>
+								</div>
+								<div className={pane} ref={viewRef}></div>
+							</div>
+						</div>
+						}
+					</>;
+}
+
+
+function DemoBlock({file}) 
+{
+	return 	<> 
+						<div>
+							<Suspense fallback={<Spinner/>}>
+					      <DemoView file={file} />
+							</Suspense>
+						</div>
+					</>
+	;
+}
+
+
+function App()
+{
+	const demos =[	
+		'stopwatch.jsx',
+		'modal.jsx',
+		'actionstate.jsx',
+		'context.jsx',
+		'proptypes.jsx',
+		'router.jsx',
+		'use-differed.jsx',
+		'boundary.jsx',
+		'css-transition.jsx',
+		'reducer.jsx',
+		'usetransition.jsx',
+		'redux.jsx',
+		'suspense.jsx',
+		'transition.jsx'
+	];
+
+	return 	<>
+						<h3>Lilact Demos</h3>
+						
+						<p>These scripts are transpiled and run directly in your browser. You have already loaded the complete Lilact toolchain!</p>
+
+						<p>These examples are not meant to be pretty.
+
+							These are bare minimum examples of the React API implemented in Lilact.</p>
+
+						<p>Note that we are using the development version here to have proptypes warnings.
+							If you switch to production mode proptypes won't check anything.</p>
+
+						<p>In many examples like boundary or proptypes you should have your browser console opened to see the logs.</p>
+						
+						<p>See the{" "}<a href="../">Lilact Documentation</a>{" "}for more info.</p>
+
+						{demos.map((x)=><DemoBlock file={x}/>)}
+
+						<hr/>
+						<p>
+Copyright (C) 2024-2026 Arash Kazemi {" <contact.arash.kazemi@gmail.com>"}. All rights reserved.
+<br/><br/>
+Lilact project is subject to the terms of BSD-2-Clause License. See the `LICENSE.TXT` file for more details.
+						</p>
+					</>
+}
+
+render(<App/>, document.body);
+
+</script>
+
+</html>
