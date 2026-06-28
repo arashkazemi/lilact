@@ -32,7 +32,7 @@ that can be paused and resumed at will. `Lilact`'s `Suspense` even has a few mor
 than the standard API.
 
 You can see all the methods available in the documentation. And there is a list of
-demos that can all be seen alongside their code at [Lilact Demo Examples](./static/index.html).
+demos that can all be seen alongside their code at [Lilact Demo Examples](/static/index.html).
 Just note that the modules are separated in the documentation to improve the doc
 structure, and in practice all the methods and members are accessible via the `Lilact` object 
 itself directly.
@@ -101,7 +101,7 @@ As a simple example Lilact can be used like this:
 
 To know more about using `Lilact`, see the included example and for the details
 see the class documentation. And of course don't forget to check the 
-[Lilact Demo Examples](./static/index.html).
+[Lilact Demo Examples](/static/index.html).
 
 `Lilact` is currently in its beta state. It is under heavy tests and improvements are 
 being made. Please report any possible issues or bugs, they will be fixed
