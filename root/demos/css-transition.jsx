@@ -1,4 +1,4 @@
-const { Transition, CSSTransition, render,  useState, useRef } = Lilact;
+const { CSSTransition, useState, useRef } = Lilact;
 
 
 Lilact.emotion.injectGlobal(`

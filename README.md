@@ -56,7 +56,7 @@ To use in other node projects, install `Lilact` from npm public repository:
 
 It is also available via unpkg CDN and can be included in HTML files using
 
-        <script src="https://unpkg.com/lilact/dist/lilact.development.js"></script>
+        <script src="https://unpkg.com/lilact/dist/lilact.development.min.js"></script>
 
 or
 
@@ -85,7 +85,7 @@ As a simple example Lilact can be used like this:
         <head>
                 <meta charset="utf-8"/>
                 <title>Lilact Demo</title>
-                <script src='./lilact.development.js' type="module"></script>
+                <script src='./lilact.development.min.js' type="module"></script>
         </head>
         <body></body>
         <script type='text/jsx'>

@@ -1,11 +1,4 @@
-const { createRoot,HashRouter,
-  NavLink,
-  Routes,
-  Route,
-  useNavigate,
-  useLocation,
-  useState
-} = Lilact;
+const { HashRouter, NavLink, Routes, Route, useNavigate, useLocation } = Lilact;
 
 /* Simple pages */
 function Home() {

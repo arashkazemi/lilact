@@ -1,4 +1,4 @@
-const { useTransition, useState, useCallback, useId, render } = Lilact;
+const { useTransition, useState, useCallback, useId } = Lilact;
 const { css, cx } = Lilact.emotion;
 
 const Demo = ()=>{

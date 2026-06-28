@@ -1,4 +1,4 @@
-const { createContext, useContext, useState, render } = Lilact;
+const { createContext, useContext, useState } = Lilact;
 const { css, cx } = Lilact.emotion;
 
 const ThemeContext = createContext(null);

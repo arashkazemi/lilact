@@ -1,4 +1,4 @@
-const { useState, useRef, render } = Lilact;
+const { useState, useRef } = Lilact;
 
 function Demo() 
 {

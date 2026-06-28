@@ -1,4 +1,4 @@
-const { Provider, useSelector, useDispatch, connect, render } = Lilact;
+const { Provider, useSelector, useDispatch, connect } = Lilact;
 const { createStore } = Lilact.redux;
 
 // Reducer + store

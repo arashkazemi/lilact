@@ -1,4 +1,4 @@
-const { useEffect, useRef, useState, render } = Lilact;
+const { useEffect, useRef, useState } = Lilact;
 
 function ModalDialog({ isOpen, children }) {
 	const ref = useRef();

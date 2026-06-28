@@ -1,4 +1,4 @@
-const {Suspense, Spinner} = Lilact;
+const { Suspense, Spinner } = Lilact;
 
 // resource factory that throws its internal promise until resolved
 function createResource(delay, value) {

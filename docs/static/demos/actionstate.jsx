@@ -1,4 +1,4 @@
-const { useActionState, useState, render } = Lilact;
+const { useActionState } = Lilact;
 
 async function addToCart(prevState, queryData) {
 

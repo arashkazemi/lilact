@@ -1,4 +1,4 @@
-const { useReducer, render } = Lilact;
+const { useReducer } = Lilact;
 
 function createInitialState(username) {
 	const initialTodos = [];

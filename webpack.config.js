@@ -45,7 +45,8 @@ export default (env, argv) => {
 	const __filename = fileURLToPath(import.meta.url);
 	const __dirname = dirname(__filename);
 
-	const filename = `lilact.${mode}${mode==="development"?"":".min"}.js`;
+	//const filename = `lilact.${mode}${mode==="development"?"":".min"}.js`;
+	const filename = `lilact.${mode}.min.js`;
 
 	return {
 		entry: './src/lilact.jsx',
@@ -54,19 +55,8 @@ export default (env, argv) => {
 
 		optimization: {
 		    concatenateModules: true,      // scope hoisting
-		    // runtimeChunk: 'single',       // centralize runtime helpers
-		    // splitChunks: {
-		    //   chunks: 'all',
-		    //   cacheGroups: {
-		    //     vendors: {
-		    //       test: /[\\/]node_modules[\\/]/,
-		    //       name: 'vendors',
-		    //       chunks: 'all',
-		    //     },
-		    //   },
-		    // },
 		    moduleIds: 'deterministic',   // smaller stable ids (or 'hashed')
-			minimize: mode === 'production',
+			minimize: true, //mode === 'production',
 		},
 		experiments: {    
 			outputModule: true           // enable module output  

@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8"/>
 	<title>Lilact Demo</title>
-	<script src='./lilact.development.js' type="module"></script>
+	<script src='./lilact.development.min.js' type="module"></script>
 
 	<script src="prismjs/prism.min.js"></script>
 	<script src="prismjs/prism-jsx.min.js"></script>
@@ -98,6 +98,9 @@ const pane = css({ flex: "1 1 0",
 										padding: "10px" 
 									});
 
+const left = css({ float: "left" });
+const right = css({ float: "right" });
+
 
 
 function DemoView({ file }) 
@@ -107,7 +110,7 @@ function DemoView({ file })
 	const viewRef = useRef();
 	const codeRef = useRef();
 
-  const resource = createResource("./demos/"+file);
+  const resource = createResource("./demos/"+file[0]);
   const code = resource.read(); // Suspense will handle the promise
 
   if(isOpen) {
@@ -123,7 +126,8 @@ function DemoView({ file })
 	
 	return 	<>
 						<button onClick={()=>setOpen(!isOpen)} className={collapsible}>
-							{(isOpen?'- ':'+ ')+file}
+							<span className={left}>{ (isOpen?'- ':'+ ') + file[0] + ' '}</span>
+							<b className={right}>{file[1]}</b>
 						</button>
 						{isOpen &&
 						<div style={{width:"100%"}}>
@@ -155,26 +159,26 @@ function DemoBlock({file})
 function App()
 {
 	const demos =[	
-		'stopwatch.jsx',
-		'modal.jsx',
-		'actionstate.jsx',
-		'context.jsx',
-		'proptypes.jsx',
-		'router.jsx',
-		'use-differed.jsx',
-		'boundary.jsx',
-		'css-transition.jsx',
-		'reducer.jsx',
-		'usetransition.jsx',
-		'redux.jsx',
-		'suspense.jsx',
-		'transition.jsx'
+		['stopwatch.jsx',				'( useState, useRef )'],
+		['modal.jsx',						'( useEffect, useRef, useState )'],
+		['actionstate.jsx',			'( useActionState, useState )'],
+		['context.jsx',					'( createContext, useContext, useState ), emotion:( css, cx )'],
+		['proptypes.jsx',				'( PropTypes )'],
+		['router.jsx',					'( HashRouter, NavLink, Routes, Route, useNavigate, useLocation )'],
+		['use-differed.jsx',		'( useState, useDeferredValue )'],
+		['boundary.jsx',				'( ErrorBoundary, useState )'],
+		['css-transition.jsx',	'( CSSTransition, useState, useRef )'],
+		['reducer.jsx',					'( useReducer )'],
+		['usetransition.jsx',		'( useTransition, useState, useCallback, useId ), emotion:( css, cx )'],
+		['redux.jsx',						'( Provider, useSelector, useDispatch, connect ), redux:( createStore )'],
+		['suspense.jsx',				'( Suspense, Spinner )'],
+		['transition.jsx',			'( useState, Transition )']
 	];
 
 	return 	<>
 						<h3>Lilact Demos</h3>
 						
-						<p>These scripts are transpiled and run directly in your browser. You have already loaded the complete Lilact toolchain!</p>
+						<p>These scripts are transpiled and run directly in your browser. You have already loaded Lilact completely!</p>
 
 						<p>These examples are not meant to be pretty.
 

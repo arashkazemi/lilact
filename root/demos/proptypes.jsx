@@ -1,4 +1,4 @@
-const { PropTypes, createRoot } = Lilact;
+const { PropTypes } = Lilact;
 
 function UserCard({ name, age, tags, onClick }) {
   return (

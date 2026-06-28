@@ -1,4 +1,4 @@
-const { useState, useDeferredValue, render } = Lilact;
+const { useState, useDeferredValue } = Lilact;
 
 function ExpensiveList({ query }) {
   const items = Array.from({ length: 5000 }, (_, i) => `${query} item ${i}`);
