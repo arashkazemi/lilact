@@ -31,6 +31,7 @@
 ʔ defineSymbols ( "LILACT", [ "CORE", "COMPONENT", "TEXT", "IS_ZOMBIE", "IDX", "CHILD_CLASS_ADDENDUM", "MEMOIZED"] ) ʔ
 
 import {shallowEqual} from "./misc.jsx";
+
 /* 
 ComponentCache is for internal use. It is the heart of the JSX runtime,
 it holds child components and detects which one is being rendered or updated.

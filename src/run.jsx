@@ -240,11 +240,6 @@ function scanScriptTagsWithType() {
   }));
 }
 
-// usage (in browser):
-// const result = scanScriptTagsWithType();
-// console.log(result);
-
-
 /**
  * Scans the whole documents and runs all the script elements with type `text/jsx`.
  * It is automatically attached to document.onload when Lilact is loaded.

@@ -68,15 +68,6 @@ injectGlobal({ 	code: { 	whiteSpace: "pre !important",
 												overflowWrap: "anywhere" } 
 							});
 
-
-injectGlobal({ 	code: { 	whiteSpace: "pre !important",
-												padding: "10px 0",
-												fontSize: "14px !important",
-												display: "block",
-												overflowWrap: "anywhere" } 
-							});
-
-
 const outer = css({
 	display: "flex",
 	flexDirection: "row",
@@ -88,7 +79,9 @@ const outer = css({
 const collapsible = css({
 	width: "100%",
 	display: "block",
-	fontSize: "16px"
+	fontSize: "16px",
+	border: "1px solid #888",
+	padding: "5px"
 });
 
 const responsiveOuter = css({
@@ -136,7 +129,7 @@ function DemoView({ file })
 						<div style={{width:"100%"}}>
 							<div className={cx(responsiveOuter,outer)}>
 								<div className={pane} style={{background:"#f5f2f0"}}>
-									<code className="language-jsx" ref={codeRef}>{code}</code>
+									<code className="language-jsx code_style" ref={codeRef}>{code}</code>
 								</div>
 								<div className={pane} ref={viewRef}></div>
 							</div>
