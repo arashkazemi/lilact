@@ -5125,7 +5125,7 @@ class ComponentCore
 					}
 					else {
 						if(!core.element) {
-							core.element = document.createTextNode( item[components_TEXT]);
+							core.element = document.createTextNode(item[components_TEXT]);
 							core[components_TEXT] = item[components_TEXT];
 						}
 						else if(core[components_TEXT]!==item[components_TEXT]) {
@@ -8800,10 +8800,8 @@ const [CORE,COMPONENT]=[Symbol.for('LILACT:CORE'),Symbol.for('LILACT:COMPONENT')
  * Runs a jsx script. All scripts can access Lilact namespace as a global object. 
  * 
  * Notice that `run` uses eval internally. There is no standard way of getting the error location when
- * running it with eval. Lilact has its own experimental workarounds for this, but generally speaking it
- * works better when an script is loaded from a file (using <script type='text/jsx' src=''.../> and is not 
- * inline, because that way the generated sourcemap will be used by the browser and the exceptions will be
- * located automatically. When an inline script raises exception, the original exception does not report
+ * running it with eval. Lilact has its own experimental workarounds for this.
+ * When an inline script raises an exception, the original exception does not report
  * which eval has caused the error, so Lilact should guess it from some labels, and for the sake of 
  * efficiency, it is block based and not exact.
  *
@@ -8885,16 +8883,12 @@ function run(jsx, path=`<string input ${++_lilact_jsx__WEBPACK_IMPORTED_MODULE_0
  * Loads a jsx script from a path. All scripts can access Lilact namespace as a global object. 
  * 
  * Lilact require loads synchronously, as it is expected to be loaded on the next instruction.
- * It is better to load existing scripts using <script type="text/jsx" src+"..."/> if possible.
  * 
- * Notice that run uses eval internally. There is no standard way of getting the error location when
- * running it with eval. Lilact has its own experimental workarounds for this, but generally speaking it
- * works better when an script is loaded from a file (using <script type='text/jsx' src=''.../> and is not 
- * inline, because that way the generated sourcemap will be used by the browser and the exceptions will be
- * located automatically. When an inline script raises exception, the original exception does not report
- * which eval has caused the error, so Lilact should guess it from some labels, and for the sake of 
- * efficiency, it is block based and not exact.
- *
+ * As running the transpiled scripts rely on `eval`, it is not possible to use module imports 
+ * and exports. So to import you should use `const {useState} = Lilact` convention. And to 
+ * export, you should use `module.exports = ...`. `Lilact.require` returns `module.exports` value
+ * so you can import different modules using the convention above.
+ * 
  * @param path - The path to the required file.
  * @param force_update - To treat the code as inline. The main difference at the moment is that inline code doesn't include sourcemap.
  * 

@@ -275,7 +275,7 @@ class ComponentCore
 					}
 					else {
 						if(!core.element) {
-							core.element = document.createTextNode( item[TEXT]);
+							core.element = document.createTextNode(item[TEXT]);
 							core[TEXT] = item[TEXT];
 						}
 						else if(core[TEXT]!==item[TEXT]) {
