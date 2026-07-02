@@ -32,17 +32,6 @@ import {isThenable} from "./misc.jsx"
 import {setTimeout, clearTimeout} from "./timers.jsx"
 import {Component} from "./components.jsx"
 
-/*
-type SpinnerProps = {
-	size?: number; // px
-	className?: string;
-	style?: React.CSSProperties;
-	color?: string; // stroke/fill color
-	strokeWidth?: number; // px
-	"aria-label"?: string;
-};
-*/
-
 /**
  * A CSS-only loading spinner component.
  * 
@@ -156,15 +145,21 @@ export class Suspense extends Component
 	constructor(props) {
 
 		super(props);
+/** @ignore */
 		this.state = { showingFallback: false };
 
+/** @ignore */
 		this._pending = new Set();
 
+/** @ignore */
 		this._delayTimer = null;
+/** @ignore */
 		this._minShowTimer = null;
+/** @ignore */
 		this._fallbackShownAt = 0;
 	}
 
+/** @ignore */
 	static getDerivedStateFromError(error) {
 		if (Lilact.isThenable(error)) {
 			// signal to call componentDidCatch where we handle the thenable
@@ -174,6 +169,7 @@ export class Suspense extends Component
 		throw error;
 	}
 
+/** @ignore */
 	componentDidCatch(error) {
 		if (!Lilact.isThenable(error)) return;
 
@@ -200,11 +196,13 @@ export class Suspense extends Component
 		}
 	}
 
+/** @ignore */
 	componentWillUnmount() {
 		this._clearTimers();
 		this._pending.clear();
 	}
 
+/** @ignore */
 	_clearTimers() {
 		if (this._delayTimer) {
 			Lilact.clearTimeout(this._delayTimer);
@@ -216,6 +214,7 @@ export class Suspense extends Component
 		}
 	}
 
+/** @ignore */
 	_attachPromise(promise) {
 		if (this._pending.has(promise)) return;
 		this._pending.add(promise);
@@ -272,11 +271,13 @@ export class Suspense extends Component
 		promise.then(onSettled, onSettled);
 	}
 
+/** @ignore */
 	componentDidCatch(error, info) {
 		if (!Lilact.isThenable(error)) return;
 		this._attachPromise(error);
 	}
 
+/** @ignore */
 	render() {
 		if (this.state.showingFallback) {
 			return <>{this.props.fallback}</>;

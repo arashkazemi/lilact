@@ -51,6 +51,7 @@
 
 import * as jsxAddons from './jsx.addons.js';
 
+/** @ignore */
 export const transpilerConfig = {
 	addons: jsxAddons,
 	setFunctionLabels: true,
