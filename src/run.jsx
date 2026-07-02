@@ -182,20 +182,6 @@ export function require(path, force_update)
  * Wrapper that enables async, code-split component loading. `lazy` should be used
  * outside the component definintion or it will produce new components on each rerender.
  *
- * 
- * @example
- * ```jsx
- * const LazyWidget = lazy(() => Lilact.require("./Widget"));
- *
- * export function Page() {
- *   return (
- *     <Suspense fallback={<Spinner/>}>
- *       <LazyWidget />
- *     </Suspense>
- *   );
- * }
- * ```
- *
  * @param factory - A function with **no arguments** that returns a `Promise`.
  * The promise must resolve to a module whose module.exports.default is a Lilact component
  * or otherwise it will be whatever the module.exports is set to.
