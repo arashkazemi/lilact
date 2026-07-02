@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>Lilact Demo</title>
+	<script src='./lilact.development.min.js' type="module"></script>
+
+	<script src="prismjs/prism.min.js"></script>
+	<script src="prismjs/prism-jsx.min.js"></script>
+	<link rel="stylesheet" href="prismjs/prism.min.css">
+
+</head>
+
+<body></body>
+
+<script type='text/jsx'>
+	
+const { useRef, useEffect, useState, Suspense, Spinner, run, render, lazy, require } = Lilact;
+const { css,cx,injectGlobal } = Lilact.emotion;
+
+
+
+injectGlobal({"*:not(code):not(code *)" : {fontFamily: "Ubuntu, 'Segoe UI', 'Noto Sans', helvetica, sans", fontSize: "14px"}});
+
+
+injectGlobal({ 	code: { 	whiteSpace: "pre !important",
+												padding: "10px 0",
+												fontSize: "14px !important",
+												display: "block",
+												overflowWrap: "anywhere" } 
+							});
+
+const outer = css({
+	display: "flex",
+	flexDirection: "row",
+	gap: 2,
+	alignItems: "stretch",
+	width: "100%",
+});
+
+const collapsible = css({
+	width: "100%",
+	display: "block",
+	fontSize: "16px",
+	border: "1px solid #888",
+	padding: "5px"
+});
+
+const responsiveOuter = css({
+	"@media (max-width: 600px)": {
+		flexDirection: "column",
+	},
+});
+
+const pane = css({ flex: "1 1 0",
+										border: "1px solid",
+										height: "400px",
+										minHeight: "400px",
+										overflowY: "auto",
+										padding: "10px" 
+									});
+
+const left = css({ float: "left" });
+const right = css({ float: "right" });
+
+
+
+const Mod = lazy( ()=>require('demos/stopwatch.jsx') );
+
+function DemoBlock({file}) 
+{
+	return 	<> 
+						<div>
+							<Suspense fallback={<Spinner/>}>
+					      <Mod/>
+							</Suspense>
+						</div>
+					</>
+	;
+}
+
+
+function App()
+{
+
+	return 	<>
+						<DemoBlock/>
+					</>
+}
+
+render(<App/>, document.body);
+
+</script>
+
+</html>

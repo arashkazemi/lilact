@@ -10,10 +10,10 @@
 	modification, are permitted provided that the following conditions are met:
 
 	* Redistributions of source code must retain the above copyright
-	  notice, this list of conditions and the following disclaimer.
+		notice, this list of conditions and the following disclaimer.
 	* Redistributions in binary form must reproduce the above copyright
-	  notice, this list of conditions and the following disclaimer in the
-	  documentation and/or other materials provided with the distribution.
+		notice, this list of conditions and the following disclaimer in the
+		documentation and/or other materials provided with the distribution.
 
 	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -28,9 +28,10 @@
 
 */
 
-ʔ defineSymbols ( "LILACT", [ "CORE", "COMPONENT" ] ) ʔ
+ʔ defineSymbols ( "LILACT", [ "CORE", "COMPONENT", "LAZY" ] ) ʔ
 
 import Lilact from './lilact.jsx';
+
 
 /**
  * Runs a jsx script. All scripts can access Lilact namespace as a global object. 
@@ -107,13 +108,6 @@ export function run(jsx, path=`<string input ${++Lilact.eval_num}>`, is_inline=t
 	}
 }
 
-// export async function importAsync(path)
-// {
-// 	const res = await fetch(path);
-// 	const text = await res.text();
-
-// 	return Lilact.run(text, path, false);
-// }
 
 /**
  * Loads a jsx script from a path. All scripts can access Lilact namespace as a global object. 
@@ -125,28 +119,51 @@ export function run(jsx, path=`<string input ${++Lilact.eval_num}>`, is_inline=t
  * export, you should use `module.exports = ...`. `Lilact.require` returns `module.exports` value
  * so you can import different modules using the convention above.
  * 
- * @param path - The path to the required file.
+ * If the path is in the format #id, it will query the document for a script element with the given 
+ * id and run its contents.
+ * 
+ * If require is called inside the function given to lazy, it will run async. See `lazy`.
+ * 
+ * @param path - The path to the required file. Must be either absolute path or relative to the current 
+ * document’s URL (the page/location that initiated the request).
+ * 
  * @param force_update - To treat the code as inline. The main difference at the moment is that inline code doesn't include sourcemap.
  * 
  * @returns An array representation of the children.
  */
 export function require(path, force_update)
 {
-	if(Lilact.transpilerConfig.required[path]!==undefined && !force_update) return Lilact.transpilerConfig.required[path].module;
+	//if(Lilact.transpilerConfig.required[path]!==undefined && !force_update) return Lilact.transpilerConfig.required[path].module;
 
 	if(path[0]==='#') {
 
-		const el = document.querySelector(path);
+		const el = document.getElementById(path);
 
 		if(el) {
 			return Lilact.run(el.innerText, path);
 		}
 
 	}
-	else {
+	else if(Lilact?.[LAZY]) {
+		Lilact[LAZY]=false;
 
+		return fetch(path)
+			.then(res => {
+				if (!res.ok) throw new Error(`HTTP ${res.status}`);
+				return res.text();
+			})
+			.then(res => {
+				res = Lilact.run(res, path, false);
+				// todo: this is for the lazy, so we detect default, should we do it in sync mode too?
+				return res?.default ?? res;
+			})
+			.catch(err => {
+				throw err;
+			});
+	}
+	else {
 		// note: this makes a sync request. this is not advised,
-		// but import should be sync. for an async solution use importAsync.
+		// but import should be sync. for an async solution use lazy and suspense.
 
 		const request = new XMLHttpRequest();
 		request.open("GET", path, false);
@@ -160,6 +177,62 @@ export function require(path, force_update)
 	throw `required resource not found (${path})`;
 }
 
+
+/**
+ * Wrapper that enables async, code-split component loading. `lazy` should be used
+ * outside the component definintion ot it will produce new components on each rerender.
+ *
+ * 
+ * @example
+ * ```jsx
+ * const LazyWidget = lazy(() => Lilact.require("./Widget"));
+ *
+ * export function Page() {
+ *   return (
+ *     <Suspense fallback={<Spinner/>}>
+ *       <LazyWidget />
+ *     </Suspense>
+ *   );
+ * }
+ * ```
+ *
+ * @param factory - A function with **no arguments** that returns a `Promise`.
+ * The promise must resolve to a module whose module.exports.default is a Lilact component
+ * or otherwise it will be whatever the module.exports is set to.
+ * 
+ * @returns A Lilact component that should be rendered inside a {@link Suspense} boundary.
+ */
+export function lazy(req_func) {
+	let status = "pending"; // pending | success | error
+	let result;             // component | error
+
+	Lilact[LAZY] = true;
+	result = req_func();
+
+	if(Lilact.isThenable(result)) {
+		result.then(
+			(mod) => {
+				status = "success";
+				result = mod;
+				return result;
+			},
+			(err) => {
+				status = "error";
+				result = err;
+				throw err;
+			}
+		);
+	}
+
+	function LazyComponent(props) {
+		if (status === "pending") throw result;
+		if (status === "error") throw result;   
+		const Component = result;
+		return <Component {...props} />;
+	}
+
+	return LazyComponent;
+}
 
 /**
  * Debug tool to get the Lilact traced location of an error. It can also produce some block based stack trace 
@@ -230,14 +303,14 @@ export function traceError(err)
 }
 
 function scanScriptTagsWithType() {
-  const scripts = Array.from(
-    document.querySelectorAll('script[type="text/jsx"]')
-  );
+	const scripts = Array.from(
+		document.querySelectorAll('script[type="text/jsx"]')
+	);
 
-  return scripts.map((el) => ({
-    src: el.getAttribute("src") ?? null,
-    content: el.textContent ?? ""
-  }));
+	return scripts.map((el) => ({
+		src: el.getAttribute("src") ?? null,
+		content: el.textContent ?? ""
+	}));
 }
 
 /**
