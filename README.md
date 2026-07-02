@@ -8,6 +8,13 @@
 
 [Lilact repo on GitHub](https://github.com/arashkazemi/lilact) - [Lilact on npm](https://www.npmjs.com/package/lilact)
 
+---
+
+If you find Lilact useful, please consider sponsoring. Your support funds ongoing maintenance, 
+performance improvements, and new features. [Sponsor me on GitHub](https://github.com/sponsors/arashkazemi)
+
+---
+
 `Lilact` is an extremely lightweight implementation of the React API that is
 designed to work in the browser. It can be used as a single script
 that is around `70kb` minified and around `25kb` gzipped and includes everything.
