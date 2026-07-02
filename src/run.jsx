@@ -180,7 +180,7 @@ export function require(path, force_update)
 
 /**
  * Wrapper that enables async, code-split component loading. `lazy` should be used
- * outside the component definintion ot it will produce new components on each rerender.
+ * outside the component definintion or it will produce new components on each rerender.
  *
  * 
  * @example
@@ -202,12 +202,12 @@ export function require(path, force_update)
  * 
  * @returns A Lilact component that should be rendered inside a {@link Suspense} boundary.
  */
-export function lazy(req_func) {
+export function lazy(factory) {
 	let status = "pending"; // pending | success | error
 	let result;             // component | error
 
 	Lilact[LAZY] = true;
-	result = req_func();
+	result = factory();
 
 	if(Lilact.isThenable(result)) {
 		result.then(
