@@ -21,21 +21,19 @@ function ModalDialog({ isOpen, children }) {
 
 function Demo() {
 	const [show, setShow] = useState(false);
-	console.log(show);
-	return (
-		<>
-			<button onClick={() => setShow(true)}>
-				Open dialog
-			</button>
-			<ModalDialog isOpen={show}>
-				Hello there!
-				<br />
-				<button onClick={() => {
-					setShow(false);
-				}}>Close</button>
-			</ModalDialog>
-		</>
-		);
+
+	return 	<>
+				<button onClick={() => setShow(true)}>
+					Open dialog
+				</button>
+				<ModalDialog isOpen={show}>
+					Hello there!
+					<br />
+					<button onClick={() => {
+						setShow(false);
+					}}>Close</button>
+				</ModalDialog>
+			</>;
 }
 
 module.exports = Demo;

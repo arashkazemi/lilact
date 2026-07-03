@@ -43,29 +43,27 @@ function Demo({ username })
 		username,
 		createInitialState
 		);
-	return (
-		<>
-		<input
-			value={state.draft}
-			onChange={e => {
-				dispatch({
-					type: 'changed_draft',
-					nextDraft: e.target.value
-				})
-			}}
-		/>
-		<button onClick={() => {
-			dispatch({ type: 'added_todo' });
-		}}>Add</button>
-		<ul>
-			{state.todos.map(item => (
-				<li key={item.id}>
-					{item.text}
-				</li>
-				))}
-		</ul>
-		</>
-		);
+	return 	<>
+				<input
+					value={state.draft}
+					onChange={e => {
+						dispatch({
+							type: 'changed_draft',
+							nextDraft: e.target.value
+						})
+					}}
+				/>
+				<button onClick={() => {
+					dispatch({ type: 'added_todo' });
+				}}>Add</button>
+				<ul>
+					{state.todos.map(item => (
+						<li key={item.id}>
+							{item.text}
+						</li>
+						))}
+				</ul>
+			</>
 }
 
 module.exports = Demo;

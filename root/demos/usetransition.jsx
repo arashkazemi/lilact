@@ -24,13 +24,11 @@ const Demo = ()=>{
 						} )
 					}, [] );
 	return (
-
 		<div className={css({background:bg})}>
-		<h4>{id}</h4>
+			<h4>{id}</h4>
 			{isPending? <b>PENDING...</b> : <i>NOT PENDING</i>}
 			<button onclick={startCB}>START CB</button>
 		</div>
-
 	);
 };
 

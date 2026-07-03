@@ -23,15 +23,12 @@ UserCard.defaultProps = {
   onClick: () => {},
 };
 
-/* App render */
 function Demo() {
-  return (
-    <div><p>Check your browser console to see the logs.</p>
-      <UserCard name="Alex" age={29} tags={['react','js']} />
-      {/* Missing name -> will warn in dev console */}
-      <UserCard age={"not-a-number"} />
-    </div>
-  );
+  return  <div><p>Check your browser console to see the logs.</p>
+            <UserCard name="Alex" age={29} tags={['react','js']} />
+            {/* Missing name -> will warn in dev console */}
+            <UserCard age={"not-a-number"} />
+          </div>
 }
 
 module.exports = Demo;

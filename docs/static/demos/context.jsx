@@ -48,8 +48,7 @@ function Button({ children }) {
 function Demo() {
 	const [theme, setTheme] = useState('dark');
 
-	return (
-			<ThemeContext.Provider value={theme}>
+	return 	<ThemeContext.Provider value={theme}>
 				<Form />
 				<label>
 					<input
@@ -62,7 +61,6 @@ function Demo() {
 					Use dark mode
 				</label>
 			</ThemeContext.Provider>
-		)
 }
 
 module.exports = Demo;

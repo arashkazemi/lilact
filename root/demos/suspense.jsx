@@ -36,12 +36,10 @@ function Child2() {
 }
 
 function Demo() {
-  return (
-    <Suspense minDelay={200} minShowTime={400} fallback={<Spinner/>}>
-      <Child1 />
-      <Child2 />
-    </Suspense>
-  );
+  return  <Suspense minDelay={200} minShowTime={400} fallback={<Spinner/>}>
+            <Child1 />
+            <Child2 />
+          </Suspense>
 }
 
 

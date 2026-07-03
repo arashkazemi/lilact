@@ -216,8 +216,12 @@ class ComponentCore
 			}
 			this.props = next_props;
 
-			if(this.state!==undefined || next_state!==undefined) this.state = next_state;
-			else delete this.state;
+			if(typeof this.next_state==='object') {
+				if(!this.state) this.state = {...next_state};
+				else Object.assign( this.state, next_state );
+			}
+			else if(this.next_state!==undefined) throw 'Component.setState only accepts objects or functions is new state.';
+
 
 			if(this.next_state) delete this.next_state;
 
@@ -532,7 +536,7 @@ const renderErrorHandler = (c, e) =>
 	}
 	if(c?.component?.componentDidCatch) {
 		if(c.entity?.getDerivedStateFromError) {
-			c.component.setState({...c.component.state, ...c.entity.getDerivedStateFromError.call(c, e)});
+			c.component.setState(c.entity.getDerivedStateFromError.call(c, e));
 		}
 
 		if(Lilact.isError(e)) {
@@ -833,7 +837,7 @@ export class Component
 		Lilact.clearTimeout(Lilact.update_timeout);
 
 		Lilact.update_set.add(this[CORE].container || this[CORE]);
-		if(callback) Lilact.update_cbs.add(callback);
+		if(callback) Lilact.update_cbs.add(callback.bind(this));
 		Lilact.update_timeout = Lilact.setTimeout( doUpdates,  Lilact.update_interval_margin );
 	}
 
@@ -841,6 +845,7 @@ export class Component
 	* Update component state.
 	* Accepts a partial state (or a function returning partial state) and schedules a re-render.
 	* @param {any} new state
+	* @param {any} callback to called after updates.
 	* @returns {void}
 	*/
 	setState(next_state, callback)

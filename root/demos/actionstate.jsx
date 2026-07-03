@@ -29,12 +29,10 @@ function AddToCartForm({itemID, itemTitle}) {
 }
 
 function Demo() {
-	return (
-		<>
-		<AddToCartForm itemID="1" itemTitle="JavaScript: The Definitive Guide" />
-		<AddToCartForm itemID="2" itemTitle="JavaScript: The Good Parts" />
-		</>
-		)
+	return 	<>
+				<AddToCartForm itemID="1" itemTitle="JavaScript: The Definitive Guide" />
+				<AddToCartForm itemID="2" itemTitle="JavaScript: The Good Parts" />
+			</>
 }
 
 

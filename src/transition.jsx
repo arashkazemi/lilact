@@ -32,10 +32,10 @@
 
 /* States */
 const UNMOUNTED = "unmounted";
-const EXITED = "exited";
-const ENTERING = "entering";
-const ENTERED = "entered";
-const EXITING = "exiting";
+const EXITED = 	  "exited";
+const ENTERING =  "entering";
+const ENTERED =   "entered";
+const EXITING =   "exiting";
 
 import {setTimeout, clearTimeout} from "./timers.jsx"
 import {Children} from "./misc.jsx"
@@ -81,12 +81,16 @@ export function Transition({
 	this[CORE].is_appeared ??= inProp;
 	this[CORE].timer ??= null;
 
-	if(!this.state) {
-		if (!this[CORE].is_mounted) this.state = UNMOUNTED;
+	this[CORE].childFunctionHandler = (func)=>{
+		return func(this[CORE].mount_state); 
+	}
+
+	if(!this[CORE].mount_state) {
+		if (!this[CORE].is_mounted) this[CORE].mount_state = UNMOUNTED;
 		if (inProp) {
-			this.state = appear && !this[CORE].is_appeared ? ENTERING : ENTERED;
+			this[CORE].mount_state = appear && !this[CORE].is_appeared ? ENTERING : ENTERED;
 		}
-		this.state = EXITED;
+		else this[CORE].mount_state = EXITED;
 	}
 
 	useEffect(() => {
@@ -94,13 +98,14 @@ export function Transition({
 	}, []);
 
 	useEffect(() => {
-		if (!this[CORE].is_appeared && appear && this.state === ENTERING && inProp) {
+		if (!this[CORE].is_appeared && appear && this[CORE].mount_state === ENTERING && inProp) {
 			onEnter?.();
 			requestAnimationFrame(() => {
 				onEntering?.(!this[CORE].is_appeared);
 				clearTimeout(this[CORE].timer);
 				this[CORE].timer = setTimeout(() => {
-					this.setState(ENTERED);
+					this[CORE].mount_state = ENTERED;
+					this.forceUpdate();
 					this[CORE].is_appeared = true;
 					onEntered?.(!this[CORE].is_appeared);
 				}, timeout);
@@ -112,32 +117,38 @@ export function Transition({
 		if (inProp) {
 			this[CORE].is_mounted = true;
 			// If we are already entering/entered, no-op
-			if (this.state === ENTERING || this.state === ENTERED) return;
+			if (this[CORE].mount_state === ENTERING || this[CORE].mount_state === ENTERED) return;
 
 			onEnter?.(!this[CORE].is_appeared);
-			this.setState(ENTERING, () => {
+			this[CORE].mount_state = ENTERING;
+			this.forceUpdate(() => {
 				onEntering?.(!this[CORE].is_appeared);
 				clearTimeout(this[CORE].timer);
+
 				this[CORE].timer = setTimeout(() => {
-					this.setState(ENTERED);
+					this[CORE].mount_state = ENTERED;
+					this.forceUpdate();
 					this[CORE].is_appeared = true;
 					onEntered?.();
 				}, timeout);
 			});
 		} 
 		else {
-			if (this.state === UNMOUNTED || this.state === EXITING || this.state === EXITED) return;
+			if (this[CORE].mount_state === UNMOUNTED || this[CORE].mount_state === EXITING || this[CORE].mount_state === EXITED) return;
 
 			onExit?.();
-			this.setState(EXITING, () => {
+			this[CORE].mount_state = EXITING;
+			this.forceUpdate( () => {
 				onExiting?.();
 				clearTimeout(this[CORE].timer);
 				this[CORE].timer = setTimeout(() => {
-					this.setState(EXITED);
+					this[CORE].mount_state = EXITED;
+					this.forceUpdate();
 					onExited?.();
 					if (unmountOnExit) {
 						this[CORE].is_mounted = false;
-						this.setState(UNMOUNTED);
+						this[CORE].mount_state = UNMOUNTED;
+						this.forceUpdate();
 					}
 				}, timeout);
 			});
@@ -147,20 +158,20 @@ export function Transition({
 	if (!this[CORE].is_mounted) return null;
 
 	if(classNames) {
-		if (this.state === ENTERING) {
+		if (this[CORE].mount_state === ENTERING) {
 			if(this[CORE].is_appeared)
 				this[CORE][CHILD_CLASS_ADDENDUM] = classNames.appearActive;
 			else
 				this[CORE][CHILD_CLASS_ADDENDUM] = classNames.enterActive;
 		}
-		else if (this.state === ENTERED) {
+		else if (this[CORE].mount_state === ENTERED) {
 			if(this[CORE].is_appeared)
 				this[CORE][CHILD_CLASS_ADDENDUM] = classNames.appearDone;
 			else
 				this[CORE][CHILD_CLASS_ADDENDUM] = classNames.enterDone;
 		}
-		else if (this.state === EXITING) this[CORE][CHILD_CLASS_ADDENDUM] = classNames.exitActive;
-		else if (this.state === EXITED) this[CORE][CHILD_CLASS_ADDENDUM] = classNames.exitDone;
+		else if (this[CORE].mount_state === EXITING) this[CORE][CHILD_CLASS_ADDENDUM] = classNames.exitActive;
+		else if (this[CORE].mount_state === EXITED) this[CORE][CHILD_CLASS_ADDENDUM] = classNames.exitDone;
 	}
 	return children;
 }
