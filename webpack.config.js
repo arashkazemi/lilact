@@ -56,7 +56,7 @@ export default (env, argv) => {
 		optimization: {
 		    concatenateModules: true,      // scope hoisting
 		    moduleIds: 'deterministic',   // smaller stable ids (or 'hashed')
-			minimize: true, //mode === 'production',
+			minimize: mode === 'production',
 		},
 		experiments: {    
 			outputModule: true           // enable module output  

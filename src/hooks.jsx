@@ -50,10 +50,10 @@ export function useHook()
 }
 
 /**
- * Adds state to a component using a React-like [value, setter] pattern.
+ * Adds state to a component using a [value, setter] pattern.
  *
  * @param {any} initialValue - Initial state value.
- * @returns {any} Hook result (implementation-dependent; typically `[state, setState]`).
+ * @returns {any} Hook result `[state, setState]`.
  */
 export function useState(val)
 {
@@ -108,7 +108,7 @@ export function useCallback(callback, deps=[{}])
  * Creates a context object for sharing a value through the component tree.
  *
  * @param {any} [defaultValue] - Initial context value when no Provider is present.
- * @returns {any} A context object (implementation-dependent).
+ * @returns {any} A context object
  */
 export function createContext(val)
 {
@@ -164,7 +164,7 @@ export function useId(prefix="N")
 /**
  * Starts a transition and returns helpers for pending updates vs immediate ones.
  *
- * @returns {any} Transition API (implementation-dependent; typically `[isPending, startTransition]`).
+ * @returns {any} `[isPending, startTransition]`
  */
 export function useTransition()
 {
@@ -348,7 +348,7 @@ export function useMemo(fn,deps=[])
  *
  * @param {Function} action - The async/queued action function.
  * @param {any} initialState - Initial state for the hook.
- * @returns {any} Hook result (implementation-dependent).
+ * @returns {any} Hook result
  */
 export function useActionState(fn, initial_state)
 {
@@ -383,7 +383,7 @@ export function useActionState(fn, initial_state)
  * @param {Function} reducer - Reducer function.
  * @param {any} initialArg - Initial state value (or initializer arg).
  * @param {Function} [init] - Optional initializer function for lazy initial state.
- * @returns {any} Hook result (implementation-dependent; typically `[state, dispatch]`).
+ * @returns {any} Hook result `[state, dispatch]`.
  */
 export function useReducer(reducer, initialArg, init)
 {
@@ -458,4 +458,45 @@ export function useDeferredValue(value, initialValue)
 	return deferred;
 }
 
+
+/**
+ * Wraps a render function so that a parent can pass a `ref` into it.
+ * The forwarded `ref` is provided as the second argument to the render function: `(props, ref)`.
+ *
+ * @param {function(props: any, ref: any)} render
+ *   The component render function that receives the props and the forwarded ref.
+ * @returns {}
+ */
+export function forwardRef(render)
+{
+	return (props)=>render({...props, ref: undefined}, props.ref);
+}
+
+
+/**
+ * Customizes the value that is exposed to the parent when it uses a `ref` on a component created with `forwardRef`.
+ * The object returned by `factory` becomes the value of `ref.current` for object refs.
+ *
+ * @param {Ref<any>} ref
+ *   The ref that was received in your component (typically via `forwardRef` as the second argument).
+ * @param {function(): any} factory
+ *   Function that returns the value to expose to the parent. Commonly an object with methods,
+ *   or a DOM node reference.
+ * @param {Array<any>} [deps]
+ *   Dependency list that controls when the exposed value is recalculated.
+ * @returns {void}
+ */
+export function useImperativeHandle(ref, factory, deps)
+{
+	Lilact.setTimeout( ()=>{ 
+			if( !Lilact.defaultIsEqual(deps[d],hk.deps[d]) ) {
+				
+				hk.deps = deps;
+				if(typeof ref.current !== object) {
+					ref.current = {};
+				}
+				Object.assign( ref.current, factory(), 0 );	
+			}
+		});
+}
 

@@ -47,6 +47,7 @@ import * as misc from './misc.jsx';
 
 import * as router from './router.jsx';
 import * as accessories from './accessories.jsx';
+import {ResizablePane} from './pane.jsx';
 
 import {transpileJSX, transpilerConfig} from "./jsx";
 
@@ -61,7 +62,7 @@ import {transpileJSX, transpilerConfig} from "./jsx";
  * @property emotion - Handle to Emotion’s CSS-in-JS package for styling (https://github.com/emotion-js/emotion).
  */
 export const Lilact = 
-{
+{	
 
 	VERSION: "beta.0",
 	
@@ -86,26 +87,23 @@ export const Lilact =
 	...router,
 	...accessories,
 
+	ResizablePane,
+
 	transpileJSX,
 	transpilerConfig,
 
 	// Dependencies ()
 
 	PropTypes,
+	//redux: {...redux, createSlice, createAsyncThunk},
 	redux,
 	emotion,
 
 }
 
-
-// or, if you prefer DOMContentLoaded:
 document.addEventListener('DOMContentLoaded', () => {
   Lilact.runScripts();
 });
-
-function yourFunctionHere() {
-  // ...
-}
 
 ʔ if(DEBUG) {
 	console.log(`Lilact (Version: ${Lilact.VERSION}) - Debug Mode`);
