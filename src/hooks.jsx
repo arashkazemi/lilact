@@ -297,7 +297,7 @@ export function useLayoutEffect(effect, deps=undefined)
  * @param {Array<any>} [deps] - Dependency list.
  * @returns {void}
  */
-export function useEffect(effect, deps=[{}])
+export function useEffect(effect, deps=undefined)
 {
 	if( deps!==undefined && (typeof(deps)!=='object' || deps.constructor.name!=='Array') ) {
 		throw "effect dependencies must be an array or omitted.";
@@ -486,7 +486,7 @@ export function forwardRef(render)
  *   Dependency list that controls when the exposed value is recalculated.
  * @returns {void}
  */
-export function useImperativeHandle(ref, factory, deps)
+export function useImperativeHandle(ref, factory, deps=undefined)
 {
 	if(deps!==undefined && ref?.deps!==undefined && Lilact.shallowEqual(deps, ref.deps)) return;
 
@@ -497,6 +497,6 @@ export function useImperativeHandle(ref, factory, deps)
 			ref.current = {};
 		}
 		Object.assign( ref.current, factory(), 0 );	
-	});
+	}, 0);
 }
 

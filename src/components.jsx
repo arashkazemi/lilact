@@ -401,6 +401,9 @@ class ComponentCore
 					this.event_detachers[al] = Lilact.addWrappedEventListener(this.element, al.substring(2), patch[a]);
 				}
 				else if(al==='style') {
+					for(const x in patch[a]) {
+						if(isFinite(patch[a][x])) patch[a][x]+='px';
+					}
 					Object.assign(this.element.style, patch[a]);
 				}
 				else {
@@ -418,7 +421,7 @@ class ComponentCore
 		}
 
 ʔ if(DEBUG) {
-		this.element.setAttribute('key', this.props.key);
+		//this.element.setAttribute('key', this.props.key);
 ʔ }		
 
 		this.updateElementClass(patch);

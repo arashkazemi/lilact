@@ -1,9 +1,11 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, forwardRef, useImperativeHandle } from "./hooks.jsx";
 import { Children } from "./misc.jsx";
 
-function clamp(n, min, max) {
-	return Math.max(min, Math.min(max, n));
-}
+
+const clamp = (n, min, max) => {
+  if (!Number.isFinite(n)) return n;
+  return Math.min(max, Math.max(min, n));
+};
 
 /**
  * ResizablePane
@@ -17,271 +19,207 @@ function clamp(n, min, max) {
  * - Callback when size changes via onSizeChange
  * - Children are rendered in two separate containers (no portals)
  */
-export const ResizablePane = forwardRef(function Pane(
-	{
-		mode = "horizontal", // "horizontal" | "vertical"
-		initialPosition, // optional (alias-ish to position)
-		position, // controlled position (number)
-		defaultPosition = 0.5, // used if position/initialPosition not provided
-		min = 0.1, // clamp in "percent of container" units: 0..1
-		max = 0.9, // clamp in "percent of container" units: 0..1
-		splitterSize = 8, // px thickness of the drag handle
-		onSizeChange, // (newPosition: number) => void
-		style,
-		className,
-		leftPaneStyle,
-		rightPaneStyle,
-		splitterStyle,
-		children, // expects two children: [A, B]
-	},
-	ref
+export const ResizablePane = forwardRef(function ResizablePane(
+  {
+    mode = "horizontal",
+    position, // controlled: number | undefined/null
+    defaultPosition = 0.5,
+    min = 0.1,
+    max = 0.9,
+    splitterSize = 8,
+    onSizeChange,
+    style,
+    className,
+    leftPaneStyle,
+    rightPaneStyle,
+    splitterStyle,
+    children,
+  },
+  ref
 ) {
-	const [internalMode, setInternalMode] = useState(mode);
-	const [pos, setPos] = useState(() => {
-		const start =
-			position ?? initialPosition ?? (defaultPosition != null ? defaultPosition : 0.5);
-		return clamp(start, min, max);
-	});
+  const containerRef = useRef(null);
+  const panes = Children.toArray(children);
+  const leftChild = panes[0] ?? null;
+  const rightChild = panes[1] ?? null;
 
-	const containerRef = useRef(null);
-	const draggingRef = useRef(false);
+  const isControlled = position != null;
 
-	const panes = Children.toArray(children);
-	const leftChild = panes[0] ?? null;
-	const rightChild = panes[1] ?? null;
+  const [internalMode, setInternalMode] = useState(mode);
 
-	const modeResolved = mode != null ? mode : internalMode;
+  const [posUncontrolled, setPosUncontrolled] = useState(() =>
+    clamp(
+      position ?? defaultPosition,
+      min,
+      max
+    )
+  );
 
-	// Keep internalMode aligned if mode is provided as a prop
-	useEffect(() => {
-		if (mode != null) setInternalMode(mode);
-	}, [mode]);
+  useEffect(() => {
+    if (mode != null) setInternalMode(mode);
+  }, [mode]);
 
-	// Controlled position: update state when prop changes
-	useEffect(() => {
-		if (position == null) return;
-		setPos(clamp(position, min, max));
-	}, [position, min, max]);
+  // keep internal position clamped if min/max change (uncontrolled only)
+  useLayoutEffect(() => {
+    if (isControlled) return;
+    setPosUncontrolled((p) => clamp(p, min, max));
+  }, [min, max, isControlled]);
 
-	const setPosition = (newPos) => {
-		const next = clamp(newPos, min, max);
-		if (position == null) setPos(next); // only update internal state if uncontrolled
-		onSizeChange?.(next);
-	};
+  const posResolved = isControlled ? clamp(position, min, max) : posUncontrolled;
 
-	const setMode = (nextMode) => {
-		const m = nextMode === "vertical" ? "vertical" : "horizontal";
-		if (mode == null) setInternalMode(m);
-		// If mode is controlled via prop, consumer should re-render with new prop.
-	};
+  const setPosition = (next) => {
+    const clamped = clamp(next, min, max);
+    if (!isControlled) setPosUncontrolled(clamped);
+    onSizeChange?.(clamped);
+  };
 
-	useImperativeHandle(
-		ref,
-		() => ({
-			setPosition,
-			setMode,
-			getPosition: () => (position == null ? pos : clamp(position, min, max)),
-			getMode: () => modeResolved,
-		}),
-		[pos, position, min, max, modeResolved, onSizeChange, mode]
-	);
+  const draggingRef = useRef(false);
+  const pointerIdRef = useRef(null);
 
-	const updateFromClientXorY = (clientX, clientY) => {
-		const el = containerRef.current;
-		if (!el) return;
+  const updateFromClient = (clientX, clientY) => {
+    const el = containerRef.current;
+    if (!el) return;
 
-		const rect = el.getBoundingClientRect();
-		let next;
+    const rect = el.getBoundingClientRect();
 
-		if (modeResolved === "horizontal") {
-			const usable = rect.width;
-			if (usable <= 0) return;
-			next = (clientX - rect.left) / usable;
-		} else {
-			const usable = rect.height;
-			if (usable <= 0) return;
-			next = (clientY - rect.top) / usable;
-		}
-		setPosition(next);
-	};
+    if (internalMode === "horizontal") {
+      const usable = rect.width;
+      if (!Number.isFinite(usable) || usable <= 0) return; // no jump on init
+      const raw = (clientX - rect.left) / usable;
+      if (!Number.isFinite(raw)) return;
+      setPosition(raw);
+    } else {
+      const usable = rect.height;
+      if (!Number.isFinite(usable) || usable <= 0) return; // no jump on init
+      const raw = (clientY - rect.top) / usable;
+      if (!Number.isFinite(raw)) return;
+      setPosition(raw);
+    }
+  };
 
-	const onPointerDown = (e) => {
-		e.preventDefault();
-		draggingRef.current = true;
+  // stable global listeners: only act while draggingRef.current === true
+  useEffect(() => {
+    const onMove = (e) => {
+      if (!draggingRef.current) return;
+      if (pointerIdRef.current != null && e.pointerId !== pointerIdRef.current) return;
+      updateFromClient(e.clientX, e.clientY);
+    };
 
-		// Capture pointer so we still get events outside the handle area.
-		try {
-			e.currentTarget.setPointerCapture?.(e.pointerId);
-		} catch {
-			// ignore
-		}
+    const stop = (e) => {
+      if (!draggingRef.current) return;
+      if (pointerIdRef.current != null && e.pointerId !== pointerIdRef.current) return;
+      draggingRef.current = false;
+      pointerIdRef.current = null;
+    };
 
-		updateFromClientXorY(e.clientX, e.clientY);
-	};
+    window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("pointerup", stop, { passive: true });
+    window.addEventListener("pointercancel", stop, { passive: true });
 
-	const onPointerMove = (e) => {
-		if (!draggingRef.current) return;
-		updateFromClientXorY(e.clientX, e.clientY);
-	};
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", stop);
+      window.removeEventListener("pointercancel", stop);
+    };
+  }, [internalMode]); // updateFromClient uses internalMode
 
-	const stopDragging = () => {
-		draggingRef.current = false;
-	};
+  const onPointerDown = (e) => {
+    if (e.button != null && e.button !== 0) return;
+    e.preventDefault();
 
-	// Attach global listeners to ensure smooth dragging even if pointer capture fails
-	useEffect(() => {
-		const handleMove = (e) => {
-			if (!draggingRef.current) return;
-			updateFromClientXorY(e.clientX, e.clientY);
-		};
-		const handleUp = () => stopDragging();
+    draggingRef.current = true;
+    pointerIdRef.current = e.pointerId;
 
-		window.addEventListener("pointermove", handleMove, { passive: false });
-		window.addEventListener("pointerup", handleUp, { passive: true });
-		window.addEventListener("pointercancel", handleUp, { passive: true });
+    try {
+      e.currentTarget.setPointerCapture?.(e.pointerId);
+    } catch {}
 
-		return () => {
-			window.removeEventListener("pointermove", handleMove);
-			window.removeEventListener("pointerup", handleUp);
-			window.removeEventListener("pointercancel", handleUp);
-		};
-	}, [modeResolved, min, max, position, onSizeChange]);
+    updateFromClient(e.clientX, e.clientY); // first update only if rect is sane
+  };
 
-	const posResolved = position == null ? pos : clamp(position, min, max);
+  const onKeyDown = (e) => {
+    const step = 0.02;
+    let delta = 0;
 
-	const sizes = useMemo(() => {
-		if (modeResolved === "horizontal") {
-			// left width = pos, splitter width = splitterSize, right flexes
-			// We set left/right as percentages and keep splitter fixed in px.
-			return {
-				left: `${posResolved * 100}%`,
-				right: `calc(${100 - posResolved * 100}% - ${splitterSize}px)`,
-			};
-		}
-		return {
-			left: `${posResolved * 100}%`,
-			right: `calc(${100 - posResolved * 100}% - ${splitterSize}px)`,
-		};
-	}, [modeResolved, posResolved, splitterSize]);
+    if (internalMode === "horizontal") {
+      if (e.key === "ArrowLeft") delta = -step;
+      if (e.key === "ArrowRight") delta = step;
+    } else {
+      if (e.key === "ArrowUp") delta = -step;
+      if (e.key === "ArrowDown") delta = step;
+    }
 
-	// Improve keyboard accessibility (arrow keys when handle is focused)
-	const onSplitterKeyDown = (e) => {
-		const step = 0.02;
-		let delta = 0;
-		if (modeResolved === "horizontal") {
-			if (e.key === "ArrowLeft") delta = -step;
-			if (e.key === "ArrowRight") delta = step;
-		} else {
-			if (e.key === "ArrowUp") delta = -step;
-			if (e.key === "ArrowDown") delta = step;
-		}
-		if (delta !== 0) {
-			e.preventDefault();
-			setPosition(posResolved + delta);
-		}
-	};
+    if (delta !== 0) {
+      e.preventDefault();
+      setPosition(posResolved + delta);
+    }
+  };
 
-	// Ensure position clamps correctly if min/max change
-	useLayoutEffect(() => {
-		setPos((p) => clamp(p, min, max));
-	}, [min, max]);
+  const sizes = useMemo(() => {
+    const leftPct = `${posResolved * 100}%`;
+    const rightCalc = `calc(${100 - posResolved * 100}% - ${splitterSize}px)`;
+    return { leftPct, rightCalc };
+  }, [posResolved, splitterSize]);
 
-	const rootStyle = {
-		display: "flex",
-		width: "100%",
-		height: "100%",
-		overflow: "hidden",
-		touchAction: "none",
-		...(style || {}),
-		flexDirection: modeResolved === "horizontal" ? "row" : "column",
-	};
+  const rootStyle = {
+    display: "flex",
+    width: "100%",
+    height: "100%",
+    overflow: "hidden",
+    touchAction: "none",
+    ...(style || {}),
+    flexDirection: internalMode === "horizontal" ? "row" : "column",
+  };
 
-	const leftPaneComputed =
-		modeResolved === "horizontal"
-			? {
-					width: sizes.left,
-					flex: `0 0 ${sizes.left}`,
-					overflow: "auto",
-					...(leftPaneStyle || {}),
-				}
-			: {
-					height: sizes.left,
-					flex: `0 0 ${sizes.left}`,
-					overflow: "auto",
-					...(leftPaneStyle || {}),
-				};
+  const leftPaneComputed =
+    internalMode === "horizontal"
+      ? { width: sizes.leftPct, flex: `0 0 ${sizes.leftPct}`, overflow: "auto", ...(leftPaneStyle || {}) }
+      : { height: sizes.leftPct, flex: `0 0 ${sizes.leftPct}`, overflow: "auto", ...(leftPaneStyle || {}) };
 
-	const rightPaneComputed =
-		modeResolved === "horizontal"
-			? {
-					width: `calc(${100 - posResolved * 100}% - ${splitterSize}px)`,
-					flex: `1 1 auto`,
-					overflow: "auto",
-					...(rightPaneStyle || {}),
-				}
-			: {
-					height: `calc(${100 - posResolved * 100}% - ${splitterSize}px)`,
-					flex: `1 1 auto`,
-					overflow: "auto",
-					...(rightPaneStyle || {}),
-				};
+  const rightPaneComputed =
+    internalMode === "horizontal"
+      ? { width: sizes.rightCalc, flex: "1 1 auto", overflow: "auto", ...(rightPaneStyle || {}) }
+      : { height: sizes.rightCalc, flex: "1 1 auto", overflow: "auto", ...(rightPaneStyle || {}) };
 
-	const splitterComputed =
-		modeResolved === "horizontal"
-			? {
-					width: `${splitterSize}px`,
-					flex: `0 0 ${splitterSize}px`,
-					cursor: "col-resize",
-					background: "transparent",
-					...(splitterStyle || {}),
-				}
-			: {
-					height: `${splitterSize}px`,
-					flex: `0 0 ${splitterSize}px`,
-					cursor: "row-resize",
-					background: "transparent",
-					...(splitterStyle || {}),
-				};
+  const splitterComputed =
+    internalMode === "horizontal"
+      ? { width: `${splitterSize}px`, height: '100%', flex: `0 0 ${splitterSize}px`, background: "rgba(0,0,0,0.08)", cursor: "col-resize", ...(splitterStyle || {}) }
+      : { height: `${splitterSize}px`, width: '100%', flex: `0 0 ${splitterSize}px`, background: "rgba(0,0,0,0.08)", cursor: "row-resize", ...(splitterStyle || {}) };
 
-	const dividerVisualStyle =
-		modeResolved === "horizontal"
-			? {
-					height: "100%",
-					width: "100%",
-					background: "rgba(0,0,0,0.08)",
-				}
-			: {
-					width: "100%",
-					height: "100%",
-					background: "rgba(0,0,0,0.08)",
-				};
+  const dividerVisualStyle =
+    internalMode === "horizontal"
+      ? { height: "100%", width: "100%" }
+      : { width: "100%", height: "100%" };
 
-	return (
-		<div
-			ref={containerRef}
-			className={className}
-			style={rootStyle}
-			onPointerMove={onPointerMove}
-		>
-			<div style={leftPaneComputed}>{leftChild}</div>
+  useImperativeHandle(ref, () => ({
+    setPosition,
+    setMode: (nextMode) => setInternalMode(nextMode === "vertical" ? "vertical" : "horizontal"),
+    getPosition: () => posResolved,
+    getMode: () => internalMode,
+  }));
 
-			<div
-				role="separator"
-				aria-orientation={modeResolved === "horizontal" ? "vertical" : "horizontal"}
-				aria-valuemin={min}
-				aria-valuemax={max}
-				aria-valuenow={posResolved}
-				tabIndex={0}
-				onPointerDown={onPointerDown}
-				onPointerUp={stopDragging}
-				onPointerCancel={stopDragging}
-				onKeyDown={onSplitterKeyDown}
-				style={splitterComputed}
-			>
-				<div style={dividerVisualStyle} />
-			</div>
+  return (
+    <div ref={containerRef} className={className} style={rootStyle}>
+      <div style={leftPaneComputed}>{leftChild}</div>
 
-			<div style={rightPaneComputed}>{rightChild}</div>
-		</div>
-	);
+      <div
+        role="separator"
+        aria-orientation={internalMode === "horizontal" ? "vertical" : "horizontal"}
+        aria-valuemin={min}
+        aria-valuemax={max}
+        aria-valuenow={posResolved}
+        tabIndex={0}
+        onPointerDown={onPointerDown}
+        onPointerCancel={() => {
+          draggingRef.current = false;
+          pointerIdRef.current = null;
+        }}
+        onKeyDown={onKeyDown}
+        style={splitterComputed}
+      >
+        <div style={dividerVisualStyle} />
+      </div>
+
+      <div style={rightPaneComputed}>{rightChild}</div>
+    </div>
+  );
 });

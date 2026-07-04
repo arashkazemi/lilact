@@ -414,6 +414,18 @@ export let events_set = new Set([
 	"onabort","oncanplay","oncanplaythrough","oncuechange","ondurationchange","onemptied","onended","onerror",
 	"onloadeddata","onloadedmetadata","onloadstart","onpause","onplay","onplaying","onprogress","onratechange",
 	"onseeked","onseeking","onstalled","onsuspend","ontimeupdate","onvolumechange","onwaiting",
-	"ontoggle"
+	"ontoggle",
+
+	"onpointerdown", "onpointerup", "onpointermove", "onpointercancel", "onpointerover", "onpointerout", 
+	"onpointerenter", "onpointerleave"
+])
+/** @ignore */
+export let length_css_attributes_set = new Set([
+	"width","height","minWidth","minHeight","maxWidth","maxHeight","top","right","bottom","left","margin",
+	"marginTop","marginRight","marginBottom","marginLeft","padding","paddingTop","paddingRight","paddingBottom",
+	"paddingLeft","borderWidth","borderTopWidth","borderRightWidth","borderBottomWidth","borderLeftWidth",
+	"outlineWidth","fontSize","lineHeight","letterSpacing","wordSpacing","textIndent","borderRadius",
+	"borderTopLeftRadius","borderTopRightRadius","borderBottomLeftRadius","borderBottomRightRadius",
+	"columnGap","rowGap","gap"
 ])
 
