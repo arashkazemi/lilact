@@ -207,7 +207,7 @@ export function useTransition()
  * @param {any} initialValue - Initial value used if nothing exists in localStorage.
  * @returns {any} Stored state/result.
  */
-export function useLocalStorage(key, default_val)
+export function useLocalStorage(key, initialValue)
 {
 
 	const hk = Lilact.useHook();
@@ -220,8 +220,8 @@ export function useLocalStorage(key, default_val)
 	}
 
 	if(val===undefined) {
-		if(typeof(default_val)==='function') default_val = default_val();
-		val = default_val;
+		if(typeof(initialValue)==='function') initialValue = initialValue();
+		val = initialValue;
 		localStorage[key] = JSON.stringify(val);
 	}
 
@@ -251,12 +251,12 @@ export function useLocalStorage(key, default_val)
  * @param {any} initialValue - Initial ref value.
  * @returns {Object} Ref object with `.current`.
  */
-export function useRef(val = null)
+export function useRef(initialValue = null)
 {
 	const hk = Lilact.useHook();
 
 	if( Lilact.isEmpty(hk) ) {
-		hk.current = val;
+		hk.current = initialValue;
 	}
 
 	return hk;
@@ -269,7 +269,7 @@ export function useRef(val = null)
  * @param {Array<any>} [deps] - Dependency list.
  * @returns {void}
  */
-export function useLayoutEffect(setup, deps=undefined)
+export function useLayoutEffect(effect, deps=undefined)
 {
 	if( deps!==undefined && (typeof(deps)!=='object' || deps.constructor.name!=='Array') ) {
 		throw "layout effect dependencies must be an array or omitted.";
@@ -286,7 +286,7 @@ export function useLayoutEffect(setup, deps=undefined)
 	}
 
 	hk.deps = deps;
-	Lilact.layout_effects.add( ()=>{ hk.cleanup = setup(); });
+	Lilact.layout_effects.add( ()=>{ hk.cleanup = effect(); });
 	Lilact.current_component[0].component.forceUpdate();
 }
 
@@ -297,7 +297,7 @@ export function useLayoutEffect(setup, deps=undefined)
  * @param {Array<any>} [deps] - Dependency list.
  * @returns {void}
  */
-export function useEffect(setup, deps=[{}])
+export function useEffect(effect, deps=[{}])
 {
 	if( deps!==undefined && (typeof(deps)!=='object' || deps.constructor.name!=='Array') ) {
 		throw "effect dependencies must be an array or omitted.";
@@ -314,7 +314,7 @@ export function useEffect(setup, deps=[{}])
 	}
 
 	hk.deps = deps;
-	Lilact.setTimeout( ()=>{ hk.cleanup = setup(); }, 0 );
+	Lilact.setTimeout( ()=>{ hk.cleanup = effect(); }, 0 );
 
 }
 
@@ -325,7 +325,7 @@ export function useEffect(setup, deps=[{}])
  * @param {Array<any>} deps - Dependency list.
  * @returns {any} Memoized value.
  */
-export function useMemo(fn,deps=undefined)
+export function useMemo(factory,deps=undefined)
 {
 	if( deps!==undefined && (typeof(deps)!=='object' || deps.constructor.name!=='Array') ) {
 		throw "memo dependencies must be an array or omitted.";
@@ -338,7 +338,7 @@ export function useMemo(fn,deps=undefined)
 	}
 
 	hk.deps = deps;
-	hk.value = fn(hk.value);
+	hk.value = factory(hk.value);
 
 	return hk.value;
 }
@@ -350,14 +350,14 @@ export function useMemo(fn,deps=undefined)
  * @param {any} initialState - Initial state for the hook.
  * @returns {any} Hook result
  */
-export function useActionState(fn, initial_state)
+export function useActionState(fn, initialState)
 {
 	const hk = Lilact.useHook();
 	const [is_pending, tran_start_func] = Lilact.useTransition();
 
 	if( Lilact.isEmpty(hk) ) {
 
-		hk.state = initial_state;
+		hk.state = initialState;
 
 		hk.form_action = (sub)=>{
 			event.preventDefault();
