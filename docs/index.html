@@ -71,11 +71,10 @@ the footprint was very important, but it works fine.</p>
     &lt;/head&gt;
     &lt;body&gt;&lt;/body&gt;
     &lt;script type='text/jsx'&gt;
-                            
-            const { render, useState } = Lilact;
-            function App({children}) {
-                    [...]
-                    return &lt;div&gt;Hello World&lt;/div&gt;!
+            const { render } = Lilact;
+
+            function App() {
+                    return &lt;div&gt;Hello World&lt;/div&gt;;
             }
             
             render(&lt;App/&gt;, document.body);

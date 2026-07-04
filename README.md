@@ -98,11 +98,10 @@ As a simple example Lilact can be used like this:
         </head>
         <body></body>
         <script type='text/jsx'>
-                                
-                const { render, useState } = Lilact;
-                function App({children}) {
-                        [...]
-                        return <div>Hello World</div>!
+                const { render } = Lilact;
+
+                function App() {
+                        return <div>Hello World</div>;
                 }
                 
                 render(<App/>, document.body);
