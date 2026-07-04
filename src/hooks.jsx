@@ -489,10 +489,10 @@ export function forwardRef(render)
 export function useImperativeHandle(ref, factory, deps)
 {
 	Lilact.setTimeout( ()=>{ 
-			if( !Lilact.defaultIsEqual(deps[d],hk.deps[d]) ) {
+			if( !Lilact.shallowEqual(deps,ref.current.deps) ) {
 				
-				hk.deps = deps;
-				if(typeof ref.current !== object) {
+				ref.current.deps = deps;
+				if(typeof ref.current !== 'object') {
 					ref.current = {};
 				}
 				Object.assign( ref.current, factory(), 0 );	
