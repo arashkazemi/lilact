@@ -22,7 +22,7 @@ const Demo = ()=>{
 								await new Promise( (res,rej)=>{setTimeout(res, 1000)} ); 
 							});
 						} )
-					}, [] );
+					} );
 	return (
 		<div className={css({background:bg})}>
 			<h4>{id}</h4>

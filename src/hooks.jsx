@@ -82,24 +82,26 @@ export function useState(val)
  * @param {Array<any>} deps - Dependency list.
  * @returns {Function} Memoized callback.
  */
-export function useCallback(callback, deps=[{}])
+export function useCallback(callback, deps=undefined)
 {
+	if( deps!==undefined && (typeof(deps)!=='object' || deps.constructor.name!=='Array') ) {
+		throw "callback dependencies must be an array or omitted.";
+	}
+
 	const hk = Lilact.useHook();
 
 	if( Lilact.isEmpty(hk) ) {
 		hk.callback = callback;
-		hk.deps = deps;
 	}
 	else {
-		for(let d in deps) {
-			if( !Lilact.defaultIsEqual(deps[d],hk.deps[d]) ) {
-				hk.callback = callback;
-
-				hk.deps = deps;
-				break;
-			}
-		}
+		if(deps!==undefined && hk?.deps!==undefined && Lilact.shallowEqual(deps, hk.deps)) return hk.callback;
 	}
+
+	if(hk?.cleanup) {
+		hk.cleanup();
+	}
+
+	hk.deps = deps;
 
 	return hk.callback;
 }
@@ -267,25 +269,25 @@ export function useRef(val = null)
  * @param {Array<any>} [deps] - Dependency list.
  * @returns {void}
  */
-export function useLayoutEffect(setup, deps=[{}])
+export function useLayoutEffect(setup, deps=undefined)
 {
-	if(typeof(deps)!=='object' || deps.constructor.name!=='Array') {
-		throw "effect dependencies must be an array or omitted.";
+	if( deps!==undefined && (typeof(deps)!=='object' || deps.constructor.name!=='Array') ) {
+		throw "layout effect dependencies must be an array or omitted.";
 	}
 
 	const hk = Lilact.useHook();
 
 	if( !Lilact.isEmpty(hk) ) {
-		if(deps.every((v,i)=> v === hk.deps[i])) return;
-		if(hk.cleanup) {
-			hk.cleanup();
-		}
+		if(deps!==undefined && hk?.deps!==undefined && Lilact.shallowEqual(deps, hk.deps)) return;
+	}
+
+	if(hk?.cleanup) {
+		hk.cleanup();
 	}
 
 	hk.deps = deps;
 	Lilact.layout_effects.add( ()=>{ hk.cleanup = setup(); });
 	Lilact.current_component[0].component.forceUpdate();
-
 }
 
 /**
@@ -297,17 +299,18 @@ export function useLayoutEffect(setup, deps=[{}])
  */
 export function useEffect(setup, deps=[{}])
 {
-	if(typeof(deps)!=='object' || deps.constructor.name!=='Array') {
+	if( deps!==undefined && (typeof(deps)!=='object' || deps.constructor.name!=='Array') ) {
 		throw "effect dependencies must be an array or omitted.";
 	}
 
 	const hk = Lilact.useHook();
 
 	if( !Lilact.isEmpty(hk) ) {
-		if(deps.every((v,i)=> v === hk.deps[i])) return;
-		if(hk.cleanup) {
-			hk.cleanup();
-		}
+		if(deps!==undefined && hk?.deps!==undefined && Lilact.shallowEqual(deps, hk.deps)) return;
+	}
+
+	if(hk?.cleanup) {
+		hk.cleanup();
 	}
 
 	hk.deps = deps;
@@ -322,23 +325,20 @@ export function useEffect(setup, deps=[{}])
  * @param {Array<any>} deps - Dependency list.
  * @returns {any} Memoized value.
  */
-export function useMemo(fn,deps=[])
+export function useMemo(fn,deps=undefined)
 {
+	if( deps!==undefined && (typeof(deps)!=='object' || deps.constructor.name!=='Array') ) {
+		throw "memo dependencies must be an array or omitted.";
+	}
+
 	const hk = Lilact.useHook();
 
-	if( Lilact.isEmpty(hk) ) {
-		hk.deps = deps;
-		hk.value = fn();
+	if( !Lilact.isEmpty(hk) ) {
+		if(deps!==undefined && hk?.deps!==undefined && Lilact.shallowEqual(deps, hk.deps)) return hk.value;
 	}
-	else {
-		for(let d in deps) {
-			if( !Lilact.defaultIsEqual(deps[d],hk.deps[d]) ) {
-				hk.deps = deps;
-				hk.value = fn(hk.value);
-				break;
-			}
-		}
-	}
+
+	hk.deps = deps;
+	hk.value = fn(hk.value);
 
 	return hk.value;
 }
@@ -488,15 +488,15 @@ export function forwardRef(render)
  */
 export function useImperativeHandle(ref, factory, deps)
 {
+	if(deps!==undefined && ref?.deps!==undefined && Lilact.shallowEqual(deps, ref.deps)) return;
+
+	ref.deps = deps;
+
 	Lilact.setTimeout( ()=>{ 
-			if( !Lilact.shallowEqual(deps,ref.current.deps) ) {
-				
-				ref.current.deps = deps;
-				if(typeof ref.current !== 'object') {
-					ref.current = {};
-				}
-				Object.assign( ref.current, factory(), 0 );	
-			}
-		});
+		if(typeof ref?.current !== 'object') {
+			ref.current = {};
+		}
+		Object.assign( ref.current, factory(), 0 );	
+	});
 }
 
