@@ -51,7 +51,6 @@ import {ResizablePane} from './pane.jsx';
 
 import {transpileJSX, transpilerConfig} from "./jsx";
 
-//import '../node_modules/@dragdroptouch/drag-drop-touch/dist/drag-drop-touch.esm.min.js';
 
 
 /**
@@ -64,13 +63,13 @@ import {transpileJSX, transpilerConfig} from "./jsx";
 export const Lilact = 
 {	
 
-	VERSION: "beta.0",
+	VERSION: "beta.3",
 	
 	// Configuration
 
 	defaultTransitionTimeout: 300,
 	defaultIsEqual: Object.is, // note: `Lilact.shallowEqual` and `Lilact.deepEqual` are also available, 
-								  // user can set it in your initializer code, and can be changed later too.
+								  					 // user can set it in your initializer code, and can be changed later too.
 	
 	// Units 
 
@@ -82,7 +81,6 @@ export const Lilact =
 	...timers,
 	...misc,
 	...EventWrapper,
-	//...db,
 
 	...router,
 	...accessories,
@@ -92,10 +90,8 @@ export const Lilact =
 	transpileJSX,
 	transpilerConfig,
 
-	// Dependencies ()
-
+	// Dependencies
 	PropTypes,
-	//redux: {...redux, createSlice, createAsyncThunk},
 	redux,
 	emotion,
 

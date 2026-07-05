@@ -81,68 +81,35 @@ export function useDispatch()
  * @param [equalityFn=(a, b) => a === b] - Determines when the selected value should update.
  * @returns The selected slice of state.
  */
-export function useSelector(selector, equalityFn = (a, b) => a === b) 
-{
-	const store = Lilact.useStore();
-	const latestSelectedRef = Lilact.useRef();
-	const latestSelectorRef = Lilact.useRef();
-	const [, forceRender] = Lilact.useState(0);
+export function useSelector(selector, equalityFn = (a, b) => a === b) {
+  const store = Lilact.useStore();
+  const latestSelected = Lilact.useRef();
+  const selectorRef = Lilact.useRef(selector);
+  selectorRef.current = selector;
 
-	if (!latestSelectorRef.current) {
-		latestSelectorRef.current = selector;
-	}
-	latestSelectorRef.current = selector;
+  const [selected, setSelected] = Lilact.useState(() => selector(store.getState()));
 
-	let selected = selector(store.getState()); // todo: should exception be covered?
+  // Keep ref in sync for the subscription callback
+  latestSelected.current = selected;
 
-	if (latestSelectedRef.current === undefined) {
-		latestSelectedRef.current = selected;
-	}
+  Lilact.useEffect(() => {
+    function checkForUpdates() {
+      const nextSelected = selectorRef.current(store.getState());
+      if (!equalityFn(latestSelected.current, nextSelected)) {
+        latestSelected.current = nextSelected;
+        setSelected(nextSelected);
+      }
+    }
 
-	Lilact.useLayoutEffect(() => {
-		// keep latestSelectedRef in sync after render (in case selector used props or similar)
-		latestSelectedRef.current = selected;
-	}, [selected]);
+    const unsubscribe = store.subscribe(checkForUpdates);
 
-	Lilact.useEffect(() => {
+    // In case state changed between render and effect
+    checkForUpdates();
 
-		let didUnsubscribe = false;
+    return unsubscribe;
+  }, [store, equalityFn]);
 
-		function checkForUpdates() {
-			if (didUnsubscribe) return;
-			try {
-				const newSelected = latestSelectorRef.current(store.getState());
-				const oldSelected = latestSelectedRef.current;
-				if (!equalityFn(oldSelected, newSelected)) {
-					latestSelectedRef.current = newSelected;
-
-					forceRender((n) => n + 1);
-				}
-			} catch (err) {
-
-ʔ if(DEBUG) {
-				// todo: which is better? cover the error or throw?
-
-				// If selector throws during subscription notifications, re-render to surface error
-				// (could instead log or ignore)
-				// throw err;
-				console.warn(err);
-ʔ }
-			}
-		}
-
-		const unsubscribe = store.subscribe(checkForUpdates);
-
-		// run check once in case state changed between render and effect
-		checkForUpdates();
-
-		return () => {
-			didUnsubscribe = true;
-			unsubscribe();
-		};
-	}, [store, equalityFn]);
-
-	return latestSelectedRef.current;
+  return selected;
 }
 
 
@@ -196,3 +163,41 @@ export function connect(mapStateToProps, mapDispatchToProps)
 	};
 }
 
+/**
+ * Creates a root reducer by mapping keys to slice reducers.
+ *
+ * Each slice reducer is called with:
+ *   - the previous slice state at `state[key]` (or `undefined` initially)
+ *   - the dispatched action
+ *
+ * The returned reducer builds the next state object using all reducer keys.
+ * If none of the slice reducers produce a change (reference equality),
+ * the previous `state` object is returned to avoid unnecessary updates.
+ *
+ * @param {object} reducers - An object whose values are reducers.
+ * @returns {function} A root reducer function compatible with your createStore.
+ */
+export function combineReducers(reducers) {
+  const reducerKeys = Object.keys(reducers);
+
+  for (const key of reducerKeys) {
+    if (typeof reducers[key] !== "function") {
+      throw new Error(`combineReducers: reducer for key "${key}" is not a function`);
+    }
+  }
+
+  return function rootReducer(state = {}, action) {
+    let hasChanged = false;
+    const nextState = {};
+
+    for (const key of reducerKeys) {
+      const reducer = reducers[key];
+      const prevSlice = state[key];
+      const nextSlice = reducer(prevSlice, action);
+      nextState[key] = nextSlice;
+      hasChanged = hasChanged || nextSlice !== prevSlice;
+    }
+
+    return hasChanged ? nextState : state;
+  };
+}

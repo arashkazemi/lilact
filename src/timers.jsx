@@ -38,11 +38,16 @@
 /**
  * Timer helpers for a promise-friendly timer framework.
  *
- * These functions keep the same call signatures as the standard JavaScript timer APIs where applicable (`setTimeout`/`setInterval`/`clearTimeout`/`clearInterval`), but add extra capabilities for promise-friendly control and lifecycle management. This module can “grab” timers and later pause/resume/reset/release them, plus provide promise wrappers like `timeoutPromise` and `animationFramePromise`.
+ * These functions keep the same call signatures as the standard JavaScript timer APIs where applicable 
+ * (`setTimeout`/`setInterval`/`clearTimeout`/`clearInterval`), 
+ * but add extra capabilities for promise-friendly control and lifecycle management. 
+ * 
+ * This module can “grab” timers and later pause/resume/reset/release them, plus provide promise wrappers 
+ * like `timeoutPromise` and `animationFramePromise`.
  *
  * - `setTimeout` / `setInterval`: schedule callbacks (same interface as the built-ins).
  * - `clearTimeout` / `clearInterval`: cancel scheduled timers (same interface as the built-ins).
- * - `grabTimers` / `pauseTimers` / `resumeTimers` / `resetTimers` / `releaseTimers`: manage tracked timers (implementation-dependent behavior).
+ * - `grabTimers` / `pauseTimers` / `resumeTimers` / `resetTimers` / `releaseTimers`: manage tracked timers.
  * - `timeoutPromise` / `animationFramePromise`: promise-based convenience wrappers.
  */
 

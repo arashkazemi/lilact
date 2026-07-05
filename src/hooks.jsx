@@ -407,7 +407,7 @@ export function useReducer(reducer, initialArg, init)
 
 
 
-// todo: very simple implementation. not lilactish! must be modified
+// todo: very simple implementation. and not lilactish at all! must be modified
 
 /**
  * Returns a deferred value that updates later than the provided input.
@@ -417,7 +417,6 @@ export function useReducer(reducer, initialArg, init)
  */
 export function useDeferredValue(value, initialValue)
 {
-
 	const { useEffect, useRef, useState } = Lilact;
 
 	const [deferred, setDeferred] = useState(
