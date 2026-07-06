@@ -1,7 +1,7 @@
 {
   "name": "lilact",
-  "version": "0.3.0",
-  "description": "A Little JSX/React Runtime Implementation for Browser",
+  "version": "0.4.0",
+  "description": "A Little React/JSX Runtime Implementation for Browser",
   "repository": "github:arashkazemi/lilact",
   "homepage": "https://arashkazemi.github.io/lilact/",
   "keywords": [

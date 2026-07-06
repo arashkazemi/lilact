@@ -187,6 +187,8 @@ class ComponentCore
 			if( typeof(this.entity)==='string' ) {
 				if(!(this.element instanceof Element)) {
 					this.element = document.createElement(this.entity);
+					if(next_props?.defaultValue) this.element.value = String(next_props.defaultValue).slice(0, next_props?.maxLength);
+					if(next_props?.defaultChecked) this.element.checked = next_props.defaultChecked;
 				}
 				this.element[COMPONENT] = this.component;
 			}
@@ -356,20 +358,24 @@ class ComponentCore
 	updateElementProps(patch, force=false) 
 	{
 		if(this.entity==="input") {
-			if(patch?.type!==this.element.type) {
+			if(!patch?.type) patch.type = 'text';
+			if(patch.type!==this.element.type) {
 				this.element.type=patch.type;
 			}
 			
-			if(patch?.value!==this.element.value) {
-				this.element.value=patch.value;
+			if(patch?.value!==undefined && patch?.value!==this.element.value) {
+				if(patch.value===undefined) patch.value='';
+				this.element.value=String(patch.value).slice(0, patch?.maxLength);
 			}
-			
-			if(patch?.type==="checkbox") {
-				const chk = !!patch?.checked;
-
-				if(this.element.checked != chk || this.element.parentNode===null) {
-					this.element.checked = chk;
-				}
+		}
+		else if(this.entity==="textarea") {
+			if(patch?.value!==this.element.value) {
+				this.element.value=String(patch.value).slice(0, patch?.maxLength);
+			}
+		}
+		else if(this.entity==="select") {
+			if(patch?.value!==this.element.value) {
+				Lilact.setTimeout(()=>this.element.value=String(patch.value), 0);
 			}
 		}
 
@@ -406,8 +412,19 @@ class ComponentCore
 					}
 					Object.assign(this.element.style, patch[a]);
 				}
+				else if(Lilact.boolean_html_attributes_set.has(a)) { // not lower cased(al), as it is set as a js property
+					this.element[a] = Lilact.toBool(patch[a]);
+				}
+				else if(a==='autoFocus') { // not lower cased(al), as it is set as a js property
+					this.element['autofocus'] = Lilact.toBool(patch[a]);
+				}
+				else if(a==='htmlFor') { // not lower cased(al), as it is set as a js property
+					this.element.setAttribute('for', patch[a]);
+				}
 				else {
-					this.element.setAttribute(al, patch[a]);
+					if(al!=='value' || ['input', 'textarea', 'select'].indexOf(this.entity)===-1) {
+						this.element.setAttribute(al, patch[a]);
+					}
 				}
 			}
 		}

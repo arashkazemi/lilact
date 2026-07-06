@@ -2,7 +2,7 @@
 
 # Lilact
 
-### A Little JSX/React Runtime Implementation for Browser
+### A Little React/JSX Runtime Implementation for Browser
 
 [Docs on GitHub Pages](https://arashkazemi.github.io/lilact/) - [Demos on GitHub Pages](https://arashkazemi.github.io/lilact/static)
 

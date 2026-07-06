@@ -10,10 +10,10 @@
 	modification, are permitted provided that the following conditions are met:
 
 	* Redistributions of source code must retain the above copyright
-	  notice, this list of conditions and the following disclaimer.
+		notice, this list of conditions and the following disclaimer.
 	* Redistributions in binary form must reproduce the above copyright
-	  notice, this list of conditions and the following disclaimer in the
-	  documentation and/or other materials provided with the distribution.
+		notice, this list of conditions and the following disclaimer in the
+		documentation and/or other materials provided with the distribution.
 
 	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -38,10 +38,10 @@ const typeOf = (input) => {
 	// used for object comparison functions
 	// https://monsterlessons-academy.com/posts/shallow-comparison-vs-deep-comparison-in-javascript
 
-  const rawObject = Object.prototype.toString.call(input).toLowerCase();
-  const typeOfRegex = /\[object (.*)]/g;
-  const type = typeOfRegex.exec(rawObject)[1];
-  return type;
+	const rawObject = Object.prototype.toString.call(input).toLowerCase();
+	const typeOfRegex = /\[object (.*)]/g;
+	const type = typeOfRegex.exec(rawObject)[1];
+	return type;
 };
 
 
@@ -347,7 +347,7 @@ export function isClass(func) {
  * @returns True if the value is an async function; otherwise false.
  */
 export function isAsync(fn) {
-  return typeof fn === 'function' && fn.constructor && fn.constructor.name === 'AsyncFunction';
+	return typeof fn === 'function' && fn.constructor && fn.constructor.name === 'AsyncFunction';
 }
 
 /**
@@ -370,7 +370,25 @@ export function isError(x) {
 	return x instanceof Error || Object.prototype.toString.call(x) === '[object Error]';
 }
 
+/**
+ * Converts the input to a boolean value
+ *
+ * @param value - Value to inspect.
+ * @returns boolean value
+ */
+export function toBool(x) {
+	if (typeof x === "boolean") return x;
 
+	if (typeof x === "number") return x !== 0;
+
+	if (typeof x === "string") {
+		x = x.trim().toLowerCase();
+		if (x === "true") return true;
+		if (x === "false") return false;
+	}
+
+	return Boolean(x);
+}
 
 
 // Internals
@@ -395,13 +413,18 @@ export let update_cbs  = new Set;
 /** @ignore */
 export let roots  = new Set;
 /** @ignore */
-export let special_attributes = new Set(["classname", "classname", "ref", "action", "lilact_jsx_loc", "children", "key"]);
-/** @ignore */
 export let err = null; // this is only to ease debuggin,
 /** @ignore */
 export let layout_effects = new Set;
+
 /** @ignore */
-export let events_set = new Set([
+export const special_attributes = new Set([
+		"classname", "classname", "ref", "action", "lilact_jsx_loc", "children", "key",
+		"defaultvalue", "defaultchecked"
+	]);
+
+/** @ignore */
+export const events_set = new Set([
 	"onafterprint","onbeforeprint","onbeforeunload","onerror","onhashchange","onload","onmessage",
 	"onoffline","ononline","onpagehide","onpageshow","onpopstate","onresize","onstorage","onunload",
 	"onblur","onchange","oncontextmenu","onfocus","oninput","oninvalid","onreset","onsearch","onselect",
@@ -418,14 +441,19 @@ export let events_set = new Set([
 
 	"onpointerdown", "onpointerup", "onpointermove", "onpointercancel", "onpointerover", "onpointerout", 
 	"onpointerenter", "onpointerleave"
-])
+]);
+
 /** @ignore */
-export let length_css_attributes_set = new Set([
+export const length_css_attributes_set = new Set([
 	"width","height","minWidth","minHeight","maxWidth","maxHeight","top","right","bottom","left","margin",
 	"marginTop","marginRight","marginBottom","marginLeft","padding","paddingTop","paddingRight","paddingBottom",
 	"paddingLeft","borderWidth","borderTopWidth","borderRightWidth","borderBottomWidth","borderLeftWidth",
 	"outlineWidth","fontSize","lineHeight","letterSpacing","wordSpacing","textIndent","borderRadius",
 	"borderTopLeftRadius","borderTopRightRadius","borderBottomLeftRadius","borderBottomRightRadius",
 	"columnGap","rowGap","gap"
-])
+]);
 
+/** @ignore */
+export const boolean_html_attributes_set = new 
+	Set(["disabled", "readOnly", "required", "checked", "multiple",
+			 "hidden","open","loop","muted","controls","playsInline","allowFullScreen"]);

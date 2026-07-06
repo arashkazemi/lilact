@@ -1012,7 +1012,11 @@ export function transpileJSX( jsx, {
 				if(node.type==='xml') s = s.trim();
 				if(s.length) {
 					if(node.type==='xml') {
-						node.children.push( '"'+s.replaceAll("\n", "\\\n")+'"' );
+						node.children.push( '"'+s.replace(/[\\\"\n]/g, m => ({
+														  '\\': '\\\\',
+														  '"': '\\"',
+														  '\n': '\\\n'
+														}[m]))+'"' );
 					}
 					else {
 						node.children.push( ...s.split(tokenize_re) );
