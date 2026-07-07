@@ -110,12 +110,12 @@ function DemoView({ file })
 	const viewRef = useRef();
 	const codeRef = useRef();
 
-  const resource = createResource("./demos/"+file[0]);
+  const resource = createResource("demos/"+file[0]);
   const code = resource.read(); // Suspense will handle the promise
 
   if(isOpen) {
 		useEffect(() => {
-			const Comp = run(code);
+			const Comp = run(code, "demos/"+file[0]);
 			Lilact.render(<Comp/>, viewRef.current);
 		});
 
@@ -167,7 +167,6 @@ function App()
 		['proptypes.jsx',				'( PropTypes )'],
 		['router.jsx',					'( HashRouter, NavLink, Routes, Route, useNavigate, useLocation )'],
 		['use-deffered.jsx',		'( useState, useDeferredValue )'],
-		['boundary.jsx',				'( ErrorBoundary, useState )'],
 		['css-transition.jsx',	'( CSSTransition, useState, useRef )'],
 		['reducer.jsx',					'( useReducer )'],
 		['usetransition.jsx',		'( useTransition, useState, useCallback, useId ), emotion:( css, cx )'],
@@ -175,7 +174,11 @@ function App()
 		['suspense.jsx',				'( Suspense, Spinner )'],
 		['transition.jsx',			'( useState, Transition )'],
 		['lazy.jsx',						'( lazy, require, Suspene, Spinner )'],
-		['form-elements.jsx',		'()']
+		['form-elements.jsx',		'()'],
+		['error-boundary.jsx',				'( ErrorBoundary, useState )'],
+		['error-1.jsx',						'(JSX Parser Error)'],
+		['error-2.jsx',						'(Error in Component)'],
+		['error-3.jsx',						'(Error in Callback)'],
 	];
 
 	return 	<>

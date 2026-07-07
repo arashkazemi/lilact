@@ -58,7 +58,7 @@ if (typeof Event !== 'undefined' && !Event.prototype.composedPath) {
 const _pool = [];
 const MAX_POOL_SIZE = 10;
 
-function createSyntheticEvent(nativeEvent, currentTarget) {
+export function createSyntheticEvent(nativeEvent, currentTarget) {
 	// Reuse object from pool if available
 	const e = _pool.length ? _pool.pop() : {};
 
@@ -104,7 +104,7 @@ function createSyntheticEvent(nativeEvent, currentTarget) {
 	return e;
 }
 
-function releaseSyntheticEvent(e) {
+export function releaseSyntheticEvent(e) {
 	if (e && !e.isPersistent) {
 		// Clean up references to avoid leaks
 		e.nativeEvent = null;
@@ -133,7 +133,7 @@ function releaseSyntheticEvent(e) {
 // Main wrapper factory
 // fn: function(syntheticEvent) { ... }
 // opts: { capture: bool, passive: bool, once: bool, stopPropagationOnTrueReturn: bool }
-function wrapListener(fn, opts = {}) {
+export function wrapListener(fn, opts = {}) {
 	const { stopPropagationOnTrueReturn = false } = opts;
 
 	return function handler(nativeEvent) {
@@ -156,20 +156,10 @@ function wrapListener(fn, opts = {}) {
 }
 
 // Convenience: add/remove wrapper-managed listener
-function addWrappedEventListener(target, type, fn, options = {}) {
+export function addWrappedEventListener(target, type, fn, options = {}) {
 	const handler = wrapListener(fn, options);
 
 	target.addEventListener(type, handler, options);
 	// Return a remover
 	return () => target.removeEventListener(type, handler, options);
 }
-
-// Export (CommonJS / ES module-friendly)
-const EventWrapper = {
-	wrapListener,
-	addWrappedEventListener,
-	createSyntheticEvent, // exported for advanced use
-	releaseSyntheticEvent
-};
-
-export default EventWrapper;

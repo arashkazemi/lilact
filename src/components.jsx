@@ -558,19 +558,21 @@ const renderErrorHandler = (c, e) =>
 		if(c.entity?.getDerivedStateFromError) {
 			c.component.setState(c.entity.getDerivedStateFromError.call(c, e));
 		}
+	}
+	
+	if(Lilact.isError(e)) {
+		e = Lilact.traceError(e);
+	}
 
-		if(Lilact.isError(e)) {
-			e = Lilact.traceError(e);
-		}
+	let stack_log = Array.prototype
+			          .map.call(stack, x => ("in " + 
+			          		( (typeof x.entity==='string'? x.entity:x.entity?.name) || 
+			          			x.component?.name || 
+			          			x.constructor?.name
+			          		) ?? 'undefined') ) 
+			          .join('\n');
 
-		let stack_log = Array.prototype
-				          .map.call(stack, x => ("in " + 
-				          		( (typeof x.entity==='string'? x.entity:x.entity?.name) || 
-				          			x.component?.name || 
-				          			x.constructor?.name
-				          		) ?? 'undefined') ) 
-				          .join('\n');
-
+	if(c?.component?.componentDidCatch) {
 		c.component.componentDidCatch(e, {componentStack: stack, componentStackLog: stack_log});  
 	}
 	else throw(e);
@@ -1053,7 +1055,7 @@ export function createRoot(element)
 				return root;
 			}
 			else {
-				throw "root already initialized!";
+				throw "root already rendered!";
 			}
 		},
 

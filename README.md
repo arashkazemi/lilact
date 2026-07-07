@@ -42,7 +42,7 @@ To ease working, it already includes a `HashRouter`, `CSSTransition`, `ErrorBoun
 that can be paused and resumed at will. `Lilact`'s `Suspense` even has a few more features
 than the standard API.
 
-You can see all the methods available in the documentation. And there is a list of
+You can see all the available methods in the documentation. And there is a list of
 demos that can all be seen alongside their code at [Lilact Demo Examples](./static/index.html).
 Just note that the modules are separated in the documentation to improve the doc
 structure, and in practice all the methods and members are accessible via the `Lilact` object 

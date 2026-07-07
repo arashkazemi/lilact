@@ -39,10 +39,11 @@ import * as components from './components.jsx';
 import * as hooks from './hooks.jsx';
 import * as run from './run.jsx';
 import * as transition from './transition.jsx';
-import EventWrapper from './events.jsx';
+import * as events from './events.jsx';
 import * as redux_wrapper from './redux.jsx';
 import * as timers from './timers.jsx';
 import * as misc from './misc.jsx';
+import * as errors from './errors.jsx';
 
 
 import * as router from './router.jsx';
@@ -63,7 +64,7 @@ import {transpileJSX, transpilerConfig} from "./jsx";
 export const Lilact = 
 {	
 
-	VERSION: "beta.4",
+	VERSION: "beta.5",
 	
 	// Configuration
 
@@ -73,14 +74,15 @@ export const Lilact =
 	
 	// Units 
 
+	...misc,
+	...run,
 	...components,
 	...hooks,
-	...run,
 	...transition,
 	...redux_wrapper,
 	...timers,
-	...misc,
-	...EventWrapper,
+	...events,
+	...errors,
 
 	...router,
 	...accessories,
@@ -97,8 +99,14 @@ export const Lilact =
 
 }
 
+globalThis.Lilact = Lilact;
+
 document.addEventListener('DOMContentLoaded', () => {
   Lilact.runScripts();
+});
+
+window.addEventListener('error', (e) => {
+	Lilact.globalErrorHandler(e);
 });
 
 ʔ if(DEBUG) {

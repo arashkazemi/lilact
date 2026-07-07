@@ -54,17 +54,12 @@ import * as jsxAddons from './jsx.addons.js';
 /** @ignore */
 export const transpilerConfig = {
 	addons: jsxAddons,
-	setFunctionLabels: true,
+	setBlockLabels: true,
 	enableLabelStack: false,
 	injectLabels: true,
 	// todo: alt+shift+7 on apple abc extended layout is better i think, 
 	// but my current editor doesn't support syntax highlighting with it.
 	preprocessorDelimiter: 'ʔ', // alt+shift+. on apple abc extended layout   
-
-
-	required: {},
-	func_labels: {},
-	func_num: Math.floor(Math.random()*10000)
 }
 
 
@@ -163,7 +158,7 @@ function parseComment(code, index, container)
 		index++;
 	}
 
-	raiseError(`unterminated comment`, index);
+	raiseError(`Unterminated comment`, b.begin);
 }
 
 
@@ -215,7 +210,7 @@ function parseDirective(code, index, container)
 		}
 	}
 
-	raiseError('error in preprocessor statement.')
+	raiseError('Error in preprocessor statement', index);
 }
 
 
@@ -336,7 +331,7 @@ function parseString(code, index, q, container)
 			return b;
 
 		case '\n':
-			if(q!=='\`') raiseError(`unterminated string`, index);
+			if(q!=='\`') raiseError(`Unterminated string`, b.begin);
 			break;
 
 		case '$':
@@ -357,7 +352,7 @@ function parseString(code, index, q, container)
 		index++;
 	}
 
-	raiseError(`unterminated string`, index);
+	raiseError(`Unterminated string`, b.begin);
 }
 
 
@@ -387,7 +382,7 @@ function parseXMLContent(code, index, container, eols)
 				const tag = code.substring(i,j).trim();
 
 				if(container.tag!==tag) {
-					throw `ill-formed xml (close tag) [${container.tag},${tag}] ${j}`;
+					raiseError(`Ill-formed xml (not closed properly)`, index);
 				}
 
 				container.end = j+1;
@@ -623,7 +618,7 @@ function parseParanthesis(code, index, container)
 			break;
 
 		case '}':
-			raiseError(`unmatched curly bracket`, index);
+			raiseError(`Unmatched curly bracket`, b.begin);
 			break;
 
 		case ')':
@@ -646,7 +641,7 @@ function parseParanthesis(code, index, container)
 		}
 	}
 
-	raiseError(`unterminated paranthesis block (started at ${b.begin})`, index);
+	raiseError(`Unterminated paranthesis block`, b.begin);
 }
 
 
@@ -689,7 +684,7 @@ function parseJS(code, index=0, is_block=false, container)
 			break;
 
 		case ')': // this is only for function detection
-			raiseError(`unmatched paranthesis ${index} [from ${b.begin}]`, index);
+			raiseError(`Unmatched paranthesis`, b.begin);
 			break;
 
 		case '}':
@@ -699,7 +694,7 @@ function parseJS(code, index=0, is_block=false, container)
 				if(container) container.children.push(b);
 				return b;
 			}
-			raiseError(`unmatched curly bracket`, index);
+			raiseError(`Unmatched curly bracket`, b.begin);
 			break;
 
 		case '/':
@@ -726,7 +721,7 @@ function parseJS(code, index=0, is_block=false, container)
 		}
 	}
 
-	if(is_block) raiseError(`unterminated js block at ${index} (started at ${b.begin})`);
+	if(is_block) raiseError(`Unterminated JS block`, b.begin);
 
 	b.end = index;
 	b.cend = index;
@@ -738,7 +733,7 @@ function parseJS(code, index=0, is_block=false, container)
 // this is for lilact internal use, it is a workaround for approximating error location
 // in eval when transpiling and running jsx directly in browser.
 
-function labelFunctions(node, eols)
+function labelFunctions(node, eols, blocks_info)
 {
 
 	node.already_labeled = true;
@@ -781,12 +776,12 @@ function labelFunctions(node, eols)
 
 			if(transpilerConfig.injectTraceLabels && typeof(nxt)==='object' && nxt.type==='js') {
 				const begin = getRowCol(eols, chi); // begin is always the location of function args paranthesis
-				nxt.children.splice(1,0, `/*LILACTBLOCK${++transpilerConfig.func_num}:${begin}:${label}*/try{`);
+				nxt.children.splice(1,0, `/*LILACTBLOCK${++blocks_info.counter}:${begin}:${label}*/try{`);
 				if(transpilerConfig.enableLabelStack) {
-					nxt.children.splice(nxt.children.length-1, 0, `} catch(e){ if(typeof(e)!=='object') e=new Error(e);e.lilact_trace=[${transpilerConfig.func_num},e.lilact_trace];throw e}`);
+					nxt.children.splice(nxt.children.length-1, 0, `} catch(e){ if(typeof(e)!=='object') e=new Error(e);e.lilact_trace=[${blocks_info.counter},e.lilact_trace];throw e}`);
 				}
 				else {
-					nxt.children.splice(nxt.children.length-1, 0, `} catch(e){ if(typeof(e)!=='object') e=new Error(e);e.lilact_trace=${transpilerConfig.func_num};throw e}`);
+					nxt.children.splice(nxt.children.length-1, 0, `} catch(e){ if(typeof(e)!=='object') e=new Error(e);e.lilact_trace=${blocks_info.counter};throw e}`);
 				}
 				chi += 2;				
 			}
@@ -806,15 +801,15 @@ function labelFunctions(node, eols)
 					if(transpilerConfig.injectTraceLabels) {
 
 						nxt.children.splice(1,0, 
-							`/*LILACTBLOCK${++transpilerConfig.func_num}:${begin}:<ARROW>*/try {`);
+							`/*LILACTBLOCK${++blocks_info.counter}:${begin}:<ARROW>*/try {`);
 
 						if(transpilerConfig.enableLabelStack) {
 							nxt.children.splice(nxt.children.length-1, 0, 
-								`} catch(e){if(typeof(e)!=='object') e=new Error(e);e.lilact_trace=[${transpilerConfig.func_num},e.lilact_trace];throw e}`);
+								`} catch(e){if(typeof(e)!=='object') e=new Error(e);e.lilact_trace=[${blocks_info.counter},e.lilact_trace];throw e}`);
 						}
 						else {
 							nxt.children.splice(nxt.children.length-1, 0, 
-								`} catch(e){if(typeof(e)!=='object') e=new Error(e);e.lilact_trace=${transpilerConfig.func_num};throw e}`);
+								`} catch(e){if(typeof(e)!=='object') e=new Error(e);e.lilact_trace=${blocks_info.counter};throw e}`);
 						}
 
 					}					
@@ -943,17 +938,18 @@ export function transpileJSX( jsx, {
 	factory = "Lilact.createComponent", 
 	path = "anonymous", 
 	appendSourcemap = true,
-	mappings = [], 
+	blocks_info = {
+		labels: {},
+		counter: 0
+	},
+	mappings = [],
 	injectTraceLabels = false,
 	discardComments = false
 } = {} )
 {
 
-	// func_num is shared so consecutive transpilations create new ids each time.
-	transpilerConfig.func_num ??= 0;
 	transpilerConfig.preprocessorDelimiter ??= 'ʔ'; // alt+shift+. on apple abc extended layout  
-	
-	transpilerConfig.injectTraceLabels ??= injectTraceLabels; // alt+shift+. on apple abc extended layout  
+	transpilerConfig.injectTraceLabels ??= injectTraceLabels;
 
 	const eols = scanEOLs(jsx);
 
@@ -961,6 +957,7 @@ export function transpileJSX( jsx, {
 		const er = new Error(msg);
 		er.name = 'JSXParseError';
 		[er.lineNumber, er.columnNumber] = getRowCol(eols, index);
+		er.fileName = path;
 		er.lilact_trace = 'parse';
 		throw er;
 	}).bind(null, eols);
@@ -1026,8 +1023,8 @@ export function transpileJSX( jsx, {
 
 			node.children = node.children.filter( (x)=>x!=="" );
 
-			if(transpilerConfig.setFunctionLabels && !node.already_labeled) {
-				labelFunctions(node,eols);
+			if(transpilerConfig.setBlockLabels && !node.already_labeled) {
+				labelFunctions(node,eols, blocks_info);
 			}
 		}
 	}
@@ -1131,25 +1128,16 @@ export function transpileJSX( jsx, {
 
 	let out = '';
 	if(injectTraceLabels) {
-		out=`/*LILACTBLOCK${++transpilerConfig.func_num}:0,0:<EXEC>*/try{`
-
-		transpilerConfig.func_labels[transpilerConfig.func_num] = {
-			path,
-			row: 1,
-			col: 1,
-			label: transpilerConfig.func_num,
-			required: transpilerConfig.required[path]
-		};
-
+		out=`/*LILACTBLOCK${++blocks_info.counter}:0,0:<EXEC>*/try{`
 	}
 	out+=codify(0, json);
 
 	if(injectTraceLabels) {
 		if(transpilerConfig.enableLabelStack) {
-			out += `}catch(e){ if(typeof(e)!=='object') e=new Error(e);e.lilact_trace=[${transpilerConfig.func_num},e.lilact_trace];throw e}`;
+			out += `}catch(e){ if(typeof(e)!=='object') e=new Error(e);e.lilact_trace=[${blocks_info.counter},e.lilact_trace];throw e}`;
 		}
 		else {
-			out += `}catch(e){ if(typeof(e)!=='object') e=new Error(e);e.lilact_trace=${transpilerConfig.func_num};throw e}`;
+			out += `}catch(e){ if(typeof(e)!=='object') e=new Error(e);e.lilact_trace=${blocks_info.counter};throw e}`;
 		}
 	}
 

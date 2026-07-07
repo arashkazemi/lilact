@@ -45,7 +45,7 @@ function usage()
 			"  --out <filepath>      Output filepath for transpiled files. Multiple inputs will be concatenated. If not given, each file will have a separate output with an additinoal .transpiled.js in its name.\n" +
 			"  --isDebug             Add debug labels \n\n" +
 			"  --discardComments     Discard comments \n\n" +
-			"  --injectTraceLabels   Inject trace labels needed by Lilact only \n\n" +
+//			"  --injectTraceLabels   Inject trace labels needed by Lilact only \n\n" +
 			"  --factory <func>      The factory function (default: createComponent)\n\n" +
 			"  -h, --help            Show help\n\n" +
 			"Example:\n" +
@@ -82,9 +82,9 @@ for (let i = 0; i < argv.length; i++) {
 	else if (a === "--discardComments") {
 		discardComments = true;
 	} 
-	else if (a === "--injectTraceLabels") {
-		injectTraceLabels = true;
-	} 
+	// else if (a === "--injectTraceLabels") {
+	// 	injectTraceLabels = true;
+	// } 
 	else if (a === "--factory") {
 		factory = argv[++i];
 	} 
@@ -117,7 +117,7 @@ for (const entry of entries) {
 									appendSourcemap: globalThis.DEBUG,
 									factory, 
 									//mappings: [], 
-									injectTraceLabels: injectTraceLabels,
+									//injectTraceLabels: injectTraceLabels,
 									discardComments: discardComments
 								}
 	);

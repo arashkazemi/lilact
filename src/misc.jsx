@@ -146,63 +146,6 @@ export const Children = {
 };
 
 
-// Lilact API
-/** @ignore */
-export function getErrorLocation(err) // works for both error and error-event, and also in node env
-{
-	if(err.lineno!==undefined || err.line!==undefined || err.lineNumber!==undefined) {
-		const l = err.lineno || err.line || err.lineNumber;
-		const c = err.colno || err.column || err.columnNumber;
-
-		return [l, c];
-	}
-
-	let match = /:(\d+):(\d+)[\n].*/m.exec(err.stack);
-	if(match===null) {
-		match = /:(\d+):(\d+)\)\s+at .*/m.exec(err.stack);
-	}
-
-	if(match) {
-		return [parseInt(match[1]), parseInt(match[2])]
-	}
-
-	return null;
-}
-
-/** @ignore */
-export function mapLocation(mps, r,c)
-{
-	let map = [0,0,0,0];
-
-	for(const i in mps) {
-		if(mps[i][0]<r) continue;
-		if(mps[i][0]>r || mps[i][1]>=c) {
-			map = mps[i-1];
-			break;
-		}
-	}
-
-	return [r-map[0]+map[2], ((r-map[0]===0)?map[3]:0)];
-}
-
-
-/** @ignore */
-export function scanFunctionLabels(code, path)
-{
-	const ls = Array.from( code.matchAll(/LILACTBLOCK(\d+):(\d+),(\d+):([^*]+)\*\//mg) );
-
-	ls.forEach(
-		(x) => Lilact.transpilerConfig.func_labels[x[1]] = {
-			path,
-			row: parseInt(x[2])+1,
-			col: parseInt(x[3])+1,
-			label: x[4],
-			required: Lilact.transpilerConfig.required[path]
-		} );
-
-}
-
-
 /**
  * Debug tool to detect the component visible at a point on screen.
  *
@@ -393,6 +336,8 @@ export function toBool(x) {
 
 // Internals
 
+export const required_scripts = {};
+
 /** @ignore */
 export let update_timeout = undefined;
 /** @ignore */
@@ -412,8 +357,6 @@ export let update_set  = new Set;
 export let update_cbs  = new Set;
 /** @ignore */
 export let roots  = new Set;
-/** @ignore */
-export let err = null; // this is only to ease debuggin,
 /** @ignore */
 export let layout_effects = new Set;
 

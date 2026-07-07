@@ -16,7 +16,7 @@ function usage() {
       "  --outDir <dir>         Output directory for transpiled files (required)\n\n" +
       "  --isDebug              Add debug labels \n" +
       "  --discardComments      Discard comments \n" +
-      "  --injectTraceLabels    Inject trace labels needed by Lilact only \n" +
+//      "  --injectTraceLabels    Inject trace labels needed by Lilact only \n" +
       "  --factory <func>       The factory function (default: createComponent)\n" +
       "  -h, --help             Show help\n"
   );
@@ -100,7 +100,7 @@ for (const inputPath of files) {
 
   if(isDebug) args.push("--isDebug");
   if(discardComments) args.push("--discardComments");
-  if(injectTraceLabels) args.push("--injectTraceLabels");
+//  if(injectTraceLabels) args.push("--injectTraceLabels");
 
   const res = spawnSync(
     process.execPath,

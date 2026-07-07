@@ -50,11 +50,18 @@ import Lilact from './lilact.jsx';
  */
 export function run(jsx, path=`<string input ${++Lilact.eval_num}>`, is_inline=true)
 {
-	if(Lilact.checkTraceErrors) Lilact.checkTraceErrors;
-
 	const mappings = [];
-
+	const module = {};
 	let processed;
+
+	Lilact.required_scripts[path] = { 	
+		mappings,
+		module,
+		is_inline,
+		path,
+		code: jsx,
+	};
+
 
 	try {
 		processed = Lilact.transpileJSX( jsx,
@@ -63,37 +70,23 @@ export function run(jsx, path=`<string input ${++Lilact.eval_num}>`, is_inline=t
 			mappings,
 			factory: "Lilact.createComponent",
 			append_sourcemap: !is_inline,
-			wrap_all: false
+			blocks_info: Lilact.blocks_info,
+
+			injectTraceLabels: true,
 		} );
 	}
 	catch(e) {
-		e.lilact_trace = path;
+		//e = Lilact.traceError(e);
+		Lilact.error = e;
 		throw e;
 	}
 
-	// the separation of module property is to create the required object even on error
 
-	const module = {};
-
-	Lilact.transpilerConfig.required[path] = { 	
-		mappings,
-		processed,
-		module,
-		is_inline,
-		path,
-		code: jsx
-	};
-
+ʔ if(DEBUG) {
+		Lilact.required_scripts[path].processed = processed;
+ʔ }		
 	
-	Lilact.scanFunctionLabels(processed, path);
-
-	Lilact.transpilerConfig.func_labels[path] = {
-		path,
-		row: 0,
-		col: 0,
-		label: "<EXEC>",
-		required: Lilact.transpilerConfig.required[path]
-	}
+	Lilact.scanBlockLabels(processed, path);
 
 	try {
 		globalThis.Lilact = Lilact;
@@ -103,7 +96,7 @@ export function run(jsx, path=`<string input ${++Lilact.eval_num}>`, is_inline=t
 		return res;
 	}
 	catch(e) {
-		e.lilact_trace = path;
+		e = Lilact.traceError(e);
 		throw e;
 	}
 }
@@ -220,74 +213,6 @@ export function lazy(factory) {
 	return LazyComponent;
 }
 
-/**
- * Debug tool to get the Lilact traced location of an error. It can also produce some block based stack trace 
- * if `Lilact.transpilerConfig.enableLabelStack` is set to `true` before loading the script. This is `false`
- * by default for efficiency.
- *
- * @returns A new object that includes `path`, `row`, `col`, `msg`, `name`, and optional `stack`. 
- * The exception itself is stored as `err`.
- */
-export function traceError(err)
-{
-	const loc = Lilact.getErrorLocation(err);
-
-	const obj = {
-		path: err.fileName,
-		label: null,
-		
-		row: loc[0],
-		col: loc[1],
-
-		msg: err.message,
-		name: err.name,
-
-		stack: null,
-		err: err
-	};		
-
-
-	if(err.lilact_trace!==undefined) {
-
-		// to be able to trace, we assume that all of the scripts are running inside lilact.
-		// if not, the error is returned unchanged and stack and label would remain null.
-
-		let mps;
-		let blk;
-		if(typeof(err.lilact_trace)==='string') {
-			blk = Lilact.func_labels[err.lilact_trace];
-			mps = blk.required.mappings;
-		}
-		else if(typeof(err.lilact_trace)==='object') {
-			blk = Lilact.func_labels[err.lilact_trace[0]];
-			mps = blk.mappings;
-		}
-
-		obj.path = blk.path;
-		obj.label = blk.label;
-
-		[obj.row, obj.col] = Lilact.mapLocation(mps, obj.row,obj.col);
-
-		//const rm = Lilact.func_labels[func_num].required;
-
-		// Lilact.onError( err.message,
-		// 				rm.path,
-		// 				Lilact.func_labels[func_num].label,
-		// 				...Lilact.mapLocation(...loc,mps),
-		// 				Lilact.call_stack.map(
-		// 					(x)=>({ path: Lilact.func_labels[x].path,
-		// 							label: Lilact.func_labels[x].label,
-		// 							row: Lilact.func_labels[x].row
-		// 						})
-		// 				),	err );
-
-		
-	}
-
-	return obj;
-	
-}
-
 function scanScriptTagsWithType() {
 	const scripts = Array.from(
 		document.querySelectorAll('script[type="text/jsx"]')
@@ -321,3 +246,4 @@ export function runScripts()
 		if(s.content) Lilact.run(s.content);
 	}
 }
+
