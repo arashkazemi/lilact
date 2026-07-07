@@ -336,6 +336,7 @@ export function toBool(x) {
 
 // Internals
 
+/** @ignore */
 export const required_scripts = {};
 
 /** @ignore */
