@@ -10,6 +10,8 @@
     ".tmp/router.js",
     ".tmp/accessories.js",
     ".tmp/components.js",
+    ".tmp/errors.js",
+    ".tmp/pane.js",
     // ".tmp/events.js",
     ".tmp/hooks.js",
     ".tmp/misc.js",

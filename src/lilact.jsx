@@ -105,9 +105,11 @@ document.addEventListener('DOMContentLoaded', () => {
   Lilact.runScripts();
 });
 
+ʔ if(DEBUG) {
 window.addEventListener('error', (e) => {
 	Lilact.globalErrorHandler(e);
 });
+ʔ }
 
 ʔ if(DEBUG) {
 	console.log(`Lilact (Version: ${Lilact.VERSION}) - Debug Mode`);

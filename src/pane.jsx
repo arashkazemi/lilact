@@ -8,17 +8,79 @@ const clamp = (n, min, max) => {
 };
 
 /**
- * ResizablePane
+ * A split-pane container with a draggable splitter, supporting both horizontal and vertical layouts.
  *
- * Features:
- * - Supports "horizontal" (left/top size affects width) and "vertical" (affects height)
- * - Initial position via props.position
- * - Methods to set mode and position via ref:
- *     ref.current.setMode(mode)
- *     ref.current.setPosition(position)
- * - Callback when size changes via onSizeChange
- * - Children are rendered in two separate containers (no portals)
+ * The pane can be either:
+ * - **Controlled** via the `position` prop (number between `min` and `max`), or
+ * - **Uncontrolled** via `defaultPosition` (used as the initial position).
+ *
+ * Layout behavior:
+ * - `mode="horizontal"`: the `position` controls the width of the **left** pane.
+ * - `mode="vertical"`: the `position` controls the height of the **top** pane.
+ *
+ * Ref API:
+ * - Exposes imperative methods on `ref.current`:
+ *   - `getMode()` to get the current mode
+ *   - `setMode(mode)` to switch between `"horizontal"` and `"vertical"`
+ *   - `getPosition()` to get the current splitter position
+ *   - `setPosition(position)` to update the splitter position
+ *
+ * Events:
+ * - Calls `onSizeChange(position)` whenever the pane size/position changes (e.g., via dragging).
+ *
+ * Rendering:
+ * - Renders `children` into two separate containers (no portals).
+ *
+ * @param mode - Split direction: `"horizontal"` or `"vertical"`. Defaults to `"horizontal"`.
+ * @param position - Controlled splitter position. Normalized value within `[min, max]`.
+ * If provided, the component uses this value instead of internal state.
+ * @param defaultPosition - Initial splitter position for uncontrolled usage. Defaults to `0.5`.
+ * @param min - Minimum allowed position. Defaults to `0.1`.
+ * @param max - Maximum allowed position. Defaults to `0.9`.
+ * @param splitterSize - Thickness of the draggable splitter in pixels. Defaults to `8`.
+ * @param onSizeChange - Callback invoked when the position changes. Receives the new normalized position.
+ * @param style - Optional root container styles.
+ * @param className - Optional root container CSS class.
+ * @param leftPaneStyle - Optional styles applied to the left pane (or top pane in vertical mode).
+ * @param rightPaneStyle - Optional styles applied to the right pane (or bottom pane in vertical mode).
+ * @param splitterStyle - Optional styles applied to the splitter element.
+ * @param children - React children to be rendered into the two pane containers.
+ *
+ * @example
+ * ```tsx
+ * const ref = useRef<ResizablePaneHandle>(null);
+ *
+ * <ResizablePane
+ *   ref={ref}
+ *   mode="horizontal"
+ *   defaultPosition={0.5}
+ *   min={0.1}
+ *   max={0.9}
+ *   onSizeChange={(pos) => console.log(pos)}
+ * >
+ *   <div /> <div />
+ * </ResizablePane>
+ * ```
  */
+export const ResizablePane = forwardRef(function ResizablePane(
+  {
+    mode = "horizontal",
+    position, // controlled: number | undefined/null
+    defaultPosition = 0.5,
+    min = 0.1,
+    max = 0.9,
+    splitterSize = 8,
+    onSizeChange,
+    style,
+    className,
+    leftPaneStyle,
+    rightPaneStyle,
+    splitterStyle,
+    children,
+  },
+  ref
+) {});
+
 export const ResizablePane = forwardRef(function ResizablePane(
   {
     mode = "horizontal",

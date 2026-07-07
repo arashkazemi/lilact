@@ -159,6 +159,22 @@ export function traceError(err)
 	
 }
 
+/**
+ * The global Lilact error handler that shows a modal containing information 
+ * when an exception is not handled. 
+ * 
+ * It is  by default attached to the `window.onerror` when using the development 
+ * bundle. It is not attached in the production mode, but it is available in the 
+ * bundle and can be attached.
+ *
+ * 
+ * `
+ * window.addEventListener('error', (e) => {
+ *	Lilact.globalErrorHandler(e);
+ * });
+ * `
+ * 
+ */
 export function globalErrorHandler(err)
 {
 	//console.log(err);
