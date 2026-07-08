@@ -79,25 +79,6 @@ export const ResizablePane = forwardRef(function ResizablePane(
     children,
   },
   ref
-) {});
-
-export const ResizablePane = forwardRef(function ResizablePane(
-  {
-    mode = "horizontal",
-    position, // controlled: number | undefined/null
-    defaultPosition = 0.5,
-    min = 0.1,
-    max = 0.9,
-    splitterSize = 8,
-    onSizeChange,
-    style,
-    className,
-    leftPaneStyle,
-    rightPaneStyle,
-    splitterStyle,
-    children,
-  },
-  ref
 ) {
   const containerRef = useRef(null);
   const panes = Children.toArray(children);
