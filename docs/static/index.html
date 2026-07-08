@@ -65,7 +65,9 @@ injectGlobal({ 	code: { 	whiteSpace: "pre !important",
 												padding: "10px 0",
 												fontSize: "14px !important",
 												display: "block",
-												overflowWrap: "anywhere" } 
+												overflowWrap: "anywhere" },
+								p: {padding: "10px"},
+								body: {padding: "20px"}
 							});
 
 const outer = css({
@@ -125,7 +127,7 @@ function DemoView({ file })
 	}
 	
 	return 	<>
-						<button onClick={()=>setOpen(!isOpen)} className={collapsible}>
+						<button onClick={()=>setOpen(!isOpen)} className={collapsible} type="button">
 							<span className={left}>{ (isOpen?'- ':'+ ') + file[0] + ' '}</span>
 							<b className={right}>{file[1]}</b>
 						</button>
@@ -145,14 +147,11 @@ function DemoView({ file })
 
 function DemoBlock({file}) 
 {
-	return 	<> 
-						<div>
+	return <div key={file[0]}>
 							<Suspense fallback={<Spinner/>}>
 					      <DemoView file={file} />
 							</Suspense>
-						</div>
-					</>
-	;
+					</div>
 }
 
 
@@ -175,36 +174,41 @@ function App()
 		['transition.jsx',			'( useState, Transition )'],
 		['lazy.jsx',						'( lazy, require, Suspene, Spinner )'],
 		['form-elements.jsx',		'()'],
-		['error-boundary.jsx',				'( ErrorBoundary, useState )'],
-		['error-1.jsx',						'-- JSX Parser Error --'],
-		['error-2.jsx',						'-- Error in Component initialization --'],
-		// ['error-3.jsx',						'-- Error in Callback --'],
-		// ['error-4.jsx',						'-- Error Component Stack --'],
+		['error-boundary.jsx',						'( ErrorBoundary, useState )'],
+		['error-parser.jsx',							'-- JSX Parser Error --'],
+		['error-init.jsx',								'-- Error in Component initialization --'],
+		['error-component-stack.jsx',			'-- Error Component Stack --'],
+		['error-callback.jsx',						'-- Error in Callback --'],
 	];
 
 	return 	<>
-						<h3>Lilact Demos</h3>
-						
+						<center>
+						<img src="icon.png" width="128"/><br/>
+						<h1>Lilact Demos</h1>
+
 						<p>These scripts are transpiled and run directly in your browser. You have already loaded Lilact completely!</p>
 
 						<p>These examples are not meant to be pretty.
 
 							These are bare minimum examples of the React API implemented in Lilact.</p>
 
-						<p>Note that we are using the development version here to have proptypes warnings.
-							If you switch to production mode proptypes won't check anything.</p>
+						<p>Note that we are using the development version here to have PropTypes warnings.
+							If you switch to production mode PropTypes won't check anything.</p>
 
-						<p>In many examples like boundary or proptypes you should have your browser console opened to see the logs.</p>
+						<p>In many examples like boundary or PropTypes you should have your browser console opened to see the logs.</p>
+
+						<p><b>Error examples other than ErrorBoundary demo will cause the page to stop working, as there is no
+						boundary in place.<br/>It is natural of course, and you should refresh the page to continue testing.</b></p>
 						
 						<p>See the{" "}<a href="../">Lilact Documentation</a>{" "}for more info.</p>
-
+						</center>
 						{demos.map((x)=><DemoBlock file={x}/>)}
 
 						<hr/>
 						<p>
-Copyright (C) 2024-2026 Arash Kazemi {" <contact.arash.kazemi@gmail.com>"}. All rights reserved.
-<br/><br/>
-Lilact project is subject to the terms of BSD-2-Clause License. See the `LICENSE.TXT` file for more details.
+							Copyright (C) 2024-2026 Arash Kazemi {" <contact.arash.kazemi@gmail.com>"}. All rights reserved.
+							<br/><br/>
+							Lilact project is subject to the terms of BSD-2-Clause License. See the `LICENSE.TXT` file for more details.
 						</p>
 					</>
 }

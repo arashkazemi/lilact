@@ -78,9 +78,6 @@ export const findDOMNode = (comp)=>{
 
 	Unlike React, in Lilact findDOMNode can also be used on function components.
 	*/
-
-	console.warn("NOT IMPLEMENTED YET")
-
 	if(!comp[CORE]?.element?.parentNode) throw "findDOMNode only works on mounted components.";
 	return comp[CORE].element;
 }

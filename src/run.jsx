@@ -81,7 +81,6 @@ export function run(jsx, path=`<string input ${++Lilact.eval_num}>`, is_inline=t
 		throw e;
 	}
 
-
 ʔ if(DEBUG) {
 		Lilact.required_scripts[path].processed = processed;
 ʔ }		

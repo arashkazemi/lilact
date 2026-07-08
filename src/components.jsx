@@ -559,10 +559,6 @@ const renderErrorHandler = (c, e) =>
 			c.component.setState(c.entity.getDerivedStateFromError.call(c, e));
 		}
 	}
-	
-	if(Lilact.isError(e)) {
-		e = Lilact.traceError(e);
-	}
 
 	let stack_log = Array.prototype
 			          .map.call(stack, x => ("in " + 
@@ -571,6 +567,9 @@ const renderErrorHandler = (c, e) =>
 			          			x.constructor?.name
 			          		) ?? 'undefined') ) 
 			          .join('\n');
+
+	e.componentStack = stack;
+	e.componentStackLog = stack_log;
 
 	if(c?.component?.componentDidCatch) {
 		c.component.componentDidCatch(e, {componentStack: stack, componentStackLog: stack_log});  
@@ -639,9 +638,6 @@ function constructFunc(core, parent) // returns {text} or component, and not com
 				comp[CORE].hook_index = 0;
 			}
 			else {
-ʔ if(DEBUG) {
-				console.error(core);
-ʔ }
 				throw "createComponent accepts a component class or a function or undefined for the first argument.";
 			}
 

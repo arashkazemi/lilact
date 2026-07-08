@@ -1130,8 +1130,8 @@ export function transpileJSX( jsx, {
 	if(injectTraceLabels) {
 		out=`/*LILACTBLOCK${++blocks_info.counter}:0,0:<EXEC>*/try{`
 	}
-	out+=codify(0, json);
-	//console.log(json);
+	out+=codify(out.length, json);
+
 	if(injectTraceLabels) {
 		if(transpilerConfig.enableLabelStack) {
 			out += `}catch(e){ if(typeof(e)!=='object') e=new Error(e);e.lilact_trace=[${blocks_info.counter},e.lilact_trace];throw e}`;

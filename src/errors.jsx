@@ -35,8 +35,8 @@
 export function getErrorLocation(err) // works for both error and error-event, and also in node env
 {
 	if(err.lineno!==undefined || err.line!==undefined || err.lineNumber!==undefined) {
-		const l = err.lineno || err.line || err.lineNumber;
-		const c = err.colno || err.column || err.columnNumber;
+		const l = err.lineNumber || err.lineno || err.line;
+		const c = err.columnNumber || err.colno || err.column;
 
 		return [l, c];
 	}
@@ -56,7 +56,7 @@ export function getErrorLocation(err) // works for both error and error-event, a
 /** @ignore */
 export function mapLocation(mps, r,c)
 {
-	let map = [0,0,0,0];
+	let map = null;
 
 	for(const i in mps) {
 		if(mps[i][0]<r) continue;
@@ -65,7 +65,7 @@ export function mapLocation(mps, r,c)
 			break;
 		}
 	}
-
+	if(!map) map = mps[mps.length-1];
 	return [r-map[0]+map[2], ((r-map[0]===0)?map[3]:0)];
 }
 
@@ -75,13 +75,13 @@ export function scanBlockLabels(code, path)
 {
 	const ls = Array.from( code.matchAll(/LILACTBLOCK(\d+):(\d+),(\d+):([^*]+)\*\//mg) );
 
+	// todo: this is not memory efficient, the structure should be upside-down
 	ls.forEach(
 		(x) => {
 			Lilact.blocks_info.labels[x[1]] = {
 				path,
 				desc: x[4]
 			}
-			//console.log(Lilact.blocks_info.labels[x[1]]);
 		} );
 }
 
@@ -96,6 +96,10 @@ export function scanBlockLabels(code, path)
  */
 export function traceError(err)
 {
+	if(err?.is_traced) {
+		return err;
+	}
+
 	const loc = Lilact.getErrorLocation(err);
 
 	const obj = {
@@ -109,12 +113,12 @@ export function traceError(err)
 		name: err.name,
 
 		stack: null,
-		error: err,
+		_error: err,
 
 		is_traced: true
 	};		
 
-	if(err.lilact_trace!==undefined) {
+	if( err.name!=='JSXParseError' && err.lilact_trace!==undefined ) {
 
 		// to be able to trace, we assume that all of the scripts are running inside lilact.
 		// if not, the error is returned unchanged and stack and label would remain null.
@@ -135,7 +139,7 @@ export function traceError(err)
 
 			mps = Lilact.required_scripts[blk.path].mappings;
 
-			[obj.lineNumber, obj.columnNumber] = Lilact.mapLocation(mps, obj.lineNumber,obj.columnNumber);
+			[obj.lineNumber, obj.columnNumber] = Lilact.mapLocation(mps, obj.lineNumber-1,obj.columnNumber-1);
 
 			//const rm = Lilact.block_labels[block_num].required;
 
@@ -152,6 +156,7 @@ export function traceError(err)
 		}
 		
 	}
+
 	Lilact.error = obj;
 	return obj;
 	
@@ -175,10 +180,9 @@ export function traceError(err)
  */
 export function globalErrorHandler(err)
 {
-	//console.log(err);
 	if(err.error) err = err.error;
 
-	if(!err?.is_traced && err.name!=='JSXParseError') err = Lilact.traceError(err);
+	err = Lilact.traceError(err);
 	const cls = Lilact.emotion.css(`
 			background: linear-gradient(135deg, #fff2f2d4, #ffffffd4);
 			backdrop-filter: blur(10px);
@@ -194,19 +198,23 @@ export function globalErrorHandler(err)
 			code {
 				border: 1px solid #0003;
 				overflow: auto;
+				padding: 10px;
 			}
 		`);
 
 	const el = document.createElement('dialog');
 
-
 	el.className=cls;
+	//<b>⚠</b> 
 	el.innerHTML = 
 		`<h3 style=""><red>Error!</red></h3>
 		At <b>${err.fileName}: Line ${err.lineNumber+1}</b><br><br>
 		<b>${err.name}</b>:&nbsp;<span>${err.message}</span><br><br>
 		<code><pre></pre><pre><red></red></pre><pre></pre></code>
+		${err._error.componentStackLog?'<br>Component Stack:<br><code><pre>'+err._error.componentStackLog+'</pre></code>':''}
 		`;
+
+
 	document.body.appendChild(el);
 
 
