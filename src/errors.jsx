@@ -79,8 +79,6 @@ export function scanBlockLabels(code, path)
 		(x) => {
 			Lilact.blocks_info.labels[x[1]] = {
 				path,
-				row: parseInt(x[2]),
-				col: parseInt(x[3]),
 				desc: x[4]
 			}
 			//console.log(Lilact.blocks_info.labels[x[1]]);
@@ -205,7 +203,7 @@ export function globalErrorHandler(err)
 	el.className=cls;
 	el.innerHTML = 
 		`<h3 style=""><red>Error!</red></h3>
-		At <b>${err.fileName}: Line ${err.lineNumber+1}, Column ${err.columnNumber+1}</b><br><br>
+		At <b>${err.fileName}: Line ${err.lineNumber+1}</b><br><br>
 		<b>${err.name}</b>:&nbsp;<span>${err.message}</span><br><br>
 		<code><pre></pre><pre><red></red></pre><pre></pre></code>
 		`;

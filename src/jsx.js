@@ -870,9 +870,10 @@ function generateSourceMap(json, path, jsx_eols, out_eols, mappings=[])
 
 
 	const scan_leaves = (node)=>{
-		if(!!node.children) {
+		//console.log("SCAN", node, node.begin, node.out_index);
+		if(node.out?.length>0) {
 
-			for(const ch of node.children) {
+			for(const ch of node.out) {
 				scan_leaves(ch);
 			}
 		}
@@ -908,14 +909,12 @@ function generateSourceMap(json, path, jsx_eols, out_eols, mappings=[])
 		}
 
 		mstr+=',';
-
 		mstr+=( vlq.encode(m[1]-oc,0,m[2]-lr,m[3]-lc) );
 
 		oc = m[1];
 		lr = m[2];
 		lc = m[3];
 	}
-
 	sourcemap.mappings = mstr.substring(1).replace(/;,/g, ";"); 
 
 	return "\n\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,"+btoa(JSON.stringify(sourcemap));
@@ -1038,6 +1037,7 @@ export function transpileJSX( jsx, {
 		if(typeof(node)!=='object') return node;
 
 		node.out_index = outlen;
+		//console.log("CODIFY", node, node.out_index);
 
 		if(node.type==='string') return jsx.substring(node.begin, node.end);
 		if(node.type==='regex') return jsx.substring(node.begin, node.end);
@@ -1131,7 +1131,7 @@ export function transpileJSX( jsx, {
 		out=`/*LILACTBLOCK${++blocks_info.counter}:0,0:<EXEC>*/try{`
 	}
 	out+=codify(0, json);
-
+	//console.log(json);
 	if(injectTraceLabels) {
 		if(transpilerConfig.enableLabelStack) {
 			out += `}catch(e){ if(typeof(e)!=='object') e=new Error(e);e.lilact_trace=[${blocks_info.counter},e.lilact_trace];throw e}`;

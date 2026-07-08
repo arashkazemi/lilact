@@ -20,7 +20,7 @@ designed to work in the browser. It can be used as a single script
 that is around `70kb` minified and around `25kb` gzipped and includes everything.
 `Lilact` is very fast, it uses minimum resources and handles memory very efficiently.
 
-`Lilact` uses its own robust JSX transpiler, and not babel. It is a recursive-descent 
+`Lilact` uses its own JSX transpiler, and not babel. It is a recursive-descent 
 parser with lookahead, but it doesn't parse the JS syntax completely and relies on the 
 JS runtime to detect some errors. The transpiler weights
 only a few kilobytes and can be even incorporated into other React engines. To
