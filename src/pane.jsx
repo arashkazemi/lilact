@@ -80,6 +80,8 @@ export const ResizablePane = forwardRef(function ResizablePane(
   },
   ref
 ) {
+  this.displayName = 'ResizablePane';
+
   const containerRef = useRef(null);
   const panes = Children.toArray(children);
   const leftChild = panes[0] ?? null;
@@ -266,3 +268,5 @@ export const ResizablePane = forwardRef(function ResizablePane(
     </div>
   );
 });
+
+

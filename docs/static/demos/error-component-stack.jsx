@@ -1,4 +1,4 @@
-const { ErrorBoundary, useState } = Lilact;
+const { useState } = Lilact;
 
 function Demo() {
   const [mode, setMode] = useState("safe"); // "safe" | "direct" | "deep"

@@ -102,6 +102,7 @@ export function Spinner({
  */
 
 export class ErrorBoundary extends Component {
+	displayName = 'ErrorBoundary';
 	
 	state = { hasError: false, error: null };
 
@@ -139,6 +140,7 @@ export class ErrorBoundary extends Component {
 
 export class Suspense extends Component 
 {
+	displayName = 'Suspense';
 
 	static defaultProps = { minDelay: 200, minShowTime: 300 };
 

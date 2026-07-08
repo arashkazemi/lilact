@@ -549,8 +549,7 @@ class ComponentCore
 const renderErrorHandler = (c, e) =>
 {
 	const stack = [c];
-
-	while(c && !c?.component?.componentDidCatch) {
+	while(c && !c.component?.componentDidCatch) {
 		c = c.parent;
 		if(c) stack.push(c);
 	}
@@ -561,11 +560,8 @@ const renderErrorHandler = (c, e) =>
 	}
 
 	let stack_log = Array.prototype
-			          .map.call(stack, x => ("in " + 
-			          		( (typeof x.entity==='string'? x.entity:x.entity?.name) || 
-			          			x.component?.name || 
-			          			x.constructor?.name
-			          		) ?? 'undefined') ) 
+			          .map.call(stack, x => (`in  ${typeof(x.component.displayName)==='function'?
+			          									x.component.displayName():x.component.displayName}` ) ) 
 			          .join('\n');
 
 	e.componentStack = stack;
@@ -721,18 +717,18 @@ const generateComponentKey = (entity, props)=> {
 		key = ':p:'+props.path;
 	}
 	else if(props[TEXT]!==undefined) {
-		key = ':text';
+		key = ':text:';
 	}
 	else {
 
 		if(typeof(entity)==='string') { 
 			key = ':t:'+entity;
 		}
-		else if(!entity) {
-			key = "::";
+		else if(entity?.name) {
+			key = entity.name;
 		}
 		else {
-			key = entity.name;
+			key = "::";
 		}
 
 		if(props.name!==undefined) {
@@ -839,6 +835,21 @@ export class Component
 	*/
 	get key() { return this[CORE].props.key }
 	set key(v) { throw 'component key is immutable.' }
+
+
+	/**
+	* The displayed name for the component. It is overridable.
+	* It can also be set for function components.
+	* @type {string}
+	*/
+	displayName()
+	{
+		if(this[CORE].entity?.displayName) return this[CORE].entity?.displayName;
+		if(typeof(this[CORE].entity)==='string') return this[CORE].entity;
+		if( Lilact.isClass(this[CORE].entity) ) this[CORE].entity.constructor.name;
+		if( typeof(this[CORE].entity)==='function' ) return this[CORE].entity.name;
+		return "Component";
+	}
 
 	constructor(props)
 	{
@@ -962,6 +973,8 @@ export class HTMLComponent extends Component
 
 export class RootComponent extends HTMLComponent 
 {
+	displayName = "Root";
+
 	constructor(element, props)
 	{
 		super(':root', props);
