@@ -17,7 +17,7 @@ performance improvements, and new features. [Sponsor me on GitHub](https://githu
 
 `Lilact` is an extremely lightweight implementation of the React API that is
 designed to work in the browser. It can be used as a single script
-that is around `70kb` minified and around `25kb` gzipped and includes everything.
+that is around `80kb` minified and around `27kb` gzipped and includes its whole api.
 `Lilact` is very fast, it uses minimum resources and handles memory very efficiently.
 
 `Lilact` uses its own JSX transpiler, and not babel. It is a recursive-descent 
