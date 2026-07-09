@@ -48,7 +48,7 @@ module.exports = function loader(source) {
 								{ 
 									path: this.resource,
 									appendSourcemap: DEBUG,
-									//factory: "Lialct.createComponent", 
+									//factory: "createComponent", 
 									//mappings: [], 
 									//injectTraceLabels: false,
 									//discardComments: false

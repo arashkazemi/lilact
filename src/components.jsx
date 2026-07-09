@@ -222,7 +222,7 @@ class ComponentCore
 				if(!this.state) this.state = {...next_state};
 				else Object.assign( this.state, next_state );
 			}
-			else if(this.next_state!==undefined) throw 'Component.setState only accepts objects or functions is new state.';
+			else if(this.next_state!==undefined) throw new Error('Component.setState only accepts objects or functions is new state.');
 
 
 			if(this.next_state) delete this.next_state;
@@ -612,7 +612,7 @@ function constructFunc(core, parent) // returns {text} or component, and not com
 									this[CORE].state = v;
 								}
 								else {
-									throw 'assigning component state this way is not allowed.';
+									throw new Error('Assigning component state this way is not allowed.');
 								}
 							}
 						});
@@ -634,7 +634,7 @@ function constructFunc(core, parent) // returns {text} or component, and not com
 				comp[CORE].hook_index = 0;
 			}
 			else {
-				throw "createComponent accepts a component class or a function or undefined for the first argument.";
+				throw new Error("Invalid component for createComponent.");
 			}
 
 			comp[CORE].entity = core.entity;
@@ -656,7 +656,7 @@ function prepareCore(parent, core)
 {
 	try {
 		parent.cache ??= new ComponentCache(parent);
-		core =  parent.cache.pick( 	core[TEXT]===undefined?core?.props?.key:':text', 
+		core =  parent.cache.pick( 	core[TEXT]===undefined?core?.props?.key:':text:', 
 									()=>(  (core[TEXT]!==undefined || core instanceof ComponentCore) ?   
 											 core : constructFunc(core, parent)[CORE]  ) 
 								);
@@ -792,7 +792,7 @@ export class Component
 			this[CORE].state = v;
 		}
 		else {
-			throw 'assigning component state this way is not allowed.';
+			throw new Error('Assigning component state this way is not allowed.');
 		}
 	}
 		
@@ -802,7 +802,7 @@ export class Component
 	* @protected
 	*/
 	get context() { return this[CORE].context }
-	set context(v) { throw 'assigning component context this way is not allowed.' }
+	set context(v) { throw new Error('Assigning component context this way is not allowed.') }
 
 	/**
 	* Component context value.
@@ -810,7 +810,7 @@ export class Component
 	* @type {any}
 	*/
 	get type() { return this[CORE].entity }
-	set type(v) { throw 'component type is immutable.' }
+	set type(v) { throw new Error('Component type is immutable.') }
 
 	/**
 	* Props passed into the component instance.
@@ -818,7 +818,7 @@ export class Component
 	* @type {any}
 	*/
 	get props() { return this[CORE].props }
-	set props(v) { throw 'assigning component props this way is not allowed.' }
+	set props(v) { throw new Error('Assigning component props this way is not allowed.') }
 
 	/**
 	* A reference associated with the component to be used with useRef.
@@ -826,7 +826,7 @@ export class Component
 	* @type {any}
 	*/
 	get ref() { return this[CORE].ref }
-	set ref(v) { throw 'component ref is immutable.' }
+	set ref(v) { throw new Error('Component ref is immutable.') }
 
 	/**
 	* A unique identifier for the component instance. 
@@ -834,7 +834,7 @@ export class Component
 	* @type {string|number}
 	*/
 	get key() { return this[CORE].props.key }
-	set key(v) { throw 'component key is immutable.' }
+	set key(v) { throw new Error('Component key is immutable.') }
 
 
 	/**
@@ -1007,6 +1007,9 @@ export class RootComponent extends HTMLComponent
 
 export function createComponent(entity, props={}, ...children)
 {
+	if(entity!==undefined && typeof(entity)!=='string' && typeof(entity)!=='function') {
+		throw new Error("Invalid component for createComponent.");		
+	}
 
 	for(let i=0; i<children.length; i++) {
 		let ch = children[i];
@@ -1064,7 +1067,7 @@ export function createRoot(element)
 				return root;
 			}
 			else {
-				throw "root already rendered!";
+				throw new Error("root already rendered!");
 			}
 		},
 
@@ -1091,7 +1094,7 @@ export function createRoot(element)
 export function render(component, element)
 {
 	if(component[CORE] && (component[CORE].container || component[CORE].parent)) {
-		throw "component is already in use";
+		throw new Error("Component is already in use");
 	}
 	return createRoot(element).render(component);
 }

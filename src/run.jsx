@@ -35,12 +35,6 @@ import Lilact from './lilact.jsx';
 
 /**
  * Runs a jsx script. All scripts can access Lilact namespace as a global object. 
- * 
- * Notice that `run` uses eval internally. There is no standard way of getting the error location when
- * running it with eval. Lilact has its own experimental workarounds for this.
- * When an inline script raises an exception, the original exception does not report
- * which eval has caused the error, so Lilact should guess it from some labels, and for the sake of 
- * efficiency, it is block based and not exact.
  *
  * @param jsx - The code to run.
  * @param path - The optional path to be used in reporting errors.
@@ -48,10 +42,10 @@ import Lilact from './lilact.jsx';
  * 
  * @returns An array representation of the children.
  */
-export function run(jsx, path=`<string input ${++Lilact.eval_num}>`, is_inline=true)
+export function run(jsx, path=`InlineJSX-${++Lilact.eval_num}`, is_inline=true)
 {
 	const mappings = [];
-	const module = {};
+	const module = {exports: {}};
 	let processed;
 
 	Lilact.required_scripts[path] = { 	
@@ -68,8 +62,8 @@ export function run(jsx, path=`<string input ${++Lilact.eval_num}>`, is_inline=t
 		{
 			path,
 			mappings,
-			factory: "Lilact.createComponent",
-			append_sourcemap: !is_inline,
+			factory: "createComponent",
+			appendSourcemap: false,
 			blocks_info: Lilact.blocks_info,
 
 			injectTraceLabels: true,
@@ -85,12 +79,18 @@ export function run(jsx, path=`<string input ${++Lilact.eval_num}>`, is_inline=t
 		Lilact.required_scripts[path].processed = processed;
 ʔ }		
 	
+	processed += "\n//# sourceURL=eval:/" + path;
+
+	// todo: this seems to be only useful in safari, should be assessed latera
 	Lilact.scanBlockLabels(processed, path);
 
 	try {
 		globalThis.Lilact = Lilact;
+		globalThis.createComponent = Lilact.createComponent;
+		globalThis.Fragment = Lilact.Fragment;
 
-		const res = eval ( processed );
+		//const res = new Function( "module", processed )(module);
+		const res = eval(processed);
 		if(module.exports) return module.exports;
 		return res;
 	}
@@ -106,7 +106,7 @@ export function run(jsx, path=`<string input ${++Lilact.eval_num}>`, is_inline=t
  * 
  * `Lilact.require` loads synchronously, as it is expected to be loaded on the next instruction.
  * 
- * As running the transpiled scripts rely on `eval`, it is not possible to use module imports 
+ * As running the transpiled scripts rely on `new Function`, it is not possible to use module imports 
  * and exports. So to import you should use `const {useState} = Lilact` convention. And to 
  * export, you should use `module.exports = ...`. `Lilact.require` returns `module.exports` value
  * so you can import different modules using the convention above.
@@ -160,13 +160,12 @@ export function require(path, force_update)
 		const request = new XMLHttpRequest();
 		request.open("GET", path, false);
 		request.send(null);
-
 		if (request.status === 200) {
 			return Lilact.run(request.responseText, path, false);
 		}
 	}
 
-	throw `required resource not found (${path})`;
+	throw new Error(`Required resource not found (${path})`);
 }
 
 

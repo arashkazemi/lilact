@@ -336,9 +336,8 @@ function parseString(code, index, q, container)
 
 		case '$':
 			if(q==='`') {
-				index++;
-				if(code[index]==='{') {
-					[index] = lookAhead( parseJS, code, index, true, container );
+				if(code[index+1]==='{') {
+					[index] = lookAhead( parseJS, code, index+1, true, container );
 					index--;
 				}
 			}
@@ -934,7 +933,8 @@ function generateSourceMap(json, path, jsx_eols, out_eols, mappings=[])
  */
 
 export function transpileJSX( jsx, { 
-	factory = "Lilact.createComponent", 
+	factory = "createComponent", 
+	fragment = "Fragment", 
 	path = "anonymous", 
 	appendSourcemap = true,
 	blocks_info = {
@@ -1081,7 +1081,7 @@ export function transpileJSX( jsx, {
 		if(node.type==='xml') {
 
 			if(node.tag.length===0) {
-				node.tag = "null";
+				node.tag = fragment;
 			}
 			else if(node.tag[0]!==node.tag[0].toUpperCase()) {
 				node.tag = `"${node.tag}"`;

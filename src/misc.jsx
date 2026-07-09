@@ -78,7 +78,7 @@ export const findDOMNode = (comp)=>{
 
 	Unlike React, in Lilact findDOMNode can also be used on function components.
 	*/
-	if(!comp[CORE]?.element?.parentNode) throw "findDOMNode only works on mounted components.";
+	if(!comp[CORE]?.element?.parentNode) throw new Error("findDOMNode only works on mounted components.");
 	return comp[CORE].element;
 }
 
@@ -119,7 +119,7 @@ export const Children = {
 				i--;
 			}
 			if(i>1) {
-				throw "no child or child is not the only one";
+				throw new Error("No child or child is not the only one");
 			}
 			i++;
 		}
@@ -343,7 +343,7 @@ export let update_interval_margin = 0;
 /** @ignore */
 export let id_num = Math.floor(Math.random()*10000);
 /** @ignore */
-export let eval_num = Math.floor(Math.random()*10000);
+export let eval_num = 0;//Math.floor(Math.random()*10000);
 
 
 // todo =improve these stacks

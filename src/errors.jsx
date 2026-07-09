@@ -31,14 +31,14 @@
 
 
 // Lilact API
-/** @ignore */
-export function getErrorLocation(err) // works for both error and error-event, and also in node env
+
+function getErrorLocation(err) // works for both error and error-event, and also in node env
 {
 	if(err.lineno!==undefined || err.line!==undefined || err.lineNumber!==undefined) {
 		const l = err.lineNumber || err.lineno || err.line;
 		const c = err.columnNumber || err.colno || err.column;
 
-		return [l, c];
+		return {line: l, col: c};
 	}
 
 	let match = /:(\d+):(\d+)[\n].*/m.exec(err.stack);
@@ -47,26 +47,61 @@ export function getErrorLocation(err) // works for both error and error-event, a
 	}
 
 	if(match) {
-		return [parseInt(match[1]), parseInt(match[2])]
+		return {line: parseInt(match[1]), col: parseInt(match[2])}
 	}
 
 	return null;
 }
 
-/** @ignore */
-export function mapLocation(mps, r,c)
+// Extract { url, line, col } from an Error.stack.
+// Works with common formats like:
+// Chrome/Edge:   at fn (eval:xxx:LINE:COL)
+// Firefox:       fn@eval:xxx:LINE:COL
+// Safari:        @eval:xxx:LINE:COL   (sometimes)
+function parseEvalLocationFromStack(stack, urlPrefix = "eval:/") {
+  const raw = typeof stack === "string" ? stack : String(stack || "");
+  const lines = raw.split(/\r?\n/);
+
+  // Match "... (eval:path:LINE:COL)" or "... eval:path:LINE:COL"
+  // Group 1: url, group 2: line, group 3: col (col optional in some formats)
+  const re = new RegExp(`\\(?((?:${escapeRegExp(urlPrefix)})[^\\s):]+):(\\d+):(?:(\\d+))?\\)?$`);
+
+  for (const l of lines) {
+    const line = l.trim();
+    if (!line.includes(urlPrefix)) continue;
+
+    const m = line.match(re);
+    if (!m) continue;
+
+    const url = m[1];
+    const parsedLine = Number(m[2]);
+    const parsedCol = m[3] == null ? null : Number(m[3]);
+
+    if (Number.isFinite(parsedLine) && (parsedCol === null || Number.isFinite(parsedCol))) {
+      return { url, line: parsedLine, col: parsedCol, matched: line };
+    }
+  }
+
+  return { url: null, line: null, col: null, matched: null, stackPreview: lines.slice(0, 6).join("\n") };
+}
+
+function escapeRegExp(s) {
+  return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function mapLocation(mps, r,c)
 {
 	let map = null;
 
 	for(const i in mps) {
 		if(mps[i][0]<r) continue;
-		if(mps[i][0]>r || mps[i][1]>=c) {
+		if(mps[i][0]>r || (mps[i][0]===r && mps[i][1]>=c)) {
 			map = mps[i-1];
 			break;
 		}
 	}
 	if(!map) map = mps[mps.length-1];
-	return [r-map[0]+map[2], ((r-map[0]===0)?map[3]:0)];
+	return {line: r-map[0]+map[2], col: ((r-map[0]===0)?map[3]:0) };
 }
 
 
@@ -100,61 +135,69 @@ export function traceError(err)
 		return err;
 	}
 
-	const loc = Lilact.getErrorLocation(err);
+	const loc = parseEvalLocationFromStack(err.stack);
 
 	const obj = {
-		fileName: err.fileName,
-		label: null,
+		fileName: loc.url?.slice(6) || err.fileName,
 		
-		lineNumber: loc[0],
-		columnNumber: loc[1],
+		lineNumber: loc.line,
+		columnNumber: loc.col,
 
 		message: err.message,
 		name: err.name,
 
-		stack: null,
+		stack: err.stack,
 		_error: err,
 
 		is_traced: true
 	};		
 
-	if( err.name!=='JSXParseError' && err.lilact_trace!==undefined ) {
-
-		// to be able to trace, we assume that all of the scripts are running inside lilact.
-		// if not, the error is returned unchanged and stack and label would remain null.
+	if( err.name!=='JSXParseError' ) {
 
 		let mps;
-		let blk;
 
-		if(typeof(err.lilact_trace)==='object') {
-			blk = Lilact.blocks_info.labels[err.lilact_trace[0]];
+		if(loc.url) {
+			const rm = Lilact.required_scripts[obj.fileName];
+			mps = rm.mappings;
+			
+			const mloc = mapLocation(mps, obj.lineNumber-1, obj.columnNumber-1);
+
+			obj.lineNumber = mloc.line;
+			obj.columnNumber = mloc.col;
 		}
-		else {
-			blk = Lilact.blocks_info.labels[err.lilact_trace];
-		}
+		else if( err.lilact_trace!==undefined) {
 
-		if(blk) {
-			obj.fileName = blk.path;
-			obj.label = blk.label;
+			let loc = getErrorLocation(err);
 
-			mps = Lilact.required_scripts[blk.path].mappings;
+			let mps;
+			let blk;
 
-			[obj.lineNumber, obj.columnNumber] = Lilact.mapLocation(mps, obj.lineNumber-1,obj.columnNumber-1);
+			if(typeof(err.lilact_trace)==='object') {
+				blk = Lilact.blocks_info.labels[err.lilact_trace[0]];
+			}
+			else {
+				blk = Lilact.blocks_info.labels[err.lilact_trace];
+			}
 
-			//const rm = Lilact.block_labels[block_num].required;
+			if(blk) {
+				obj.fileName = blk.path;
+				obj.label = blk.label;
 
-			// Lilact.onError( err.message,
-			// 				rm.path,
-			// 				Lilact.block_labels[block_num].label,
-			// 				...Lilact.mapLocation(...loc,mps),
-			// 				Lilact.call_stack.map(
-			// 					(x)=>({ path: Lilact.block_labels[x].path,
-			// 							label: Lilact.block_labels[x].label,
-			// 							lineNumber: Lilact.block_labels[x].lineNumber
-			// 						})
-			// 				),	err );
+				mps = Lilact.required_scripts[blk.path].mappings;
+
+				loc = mapLocation(mps, loc.line-1, loc.col-1);
+
+				obj.lineNumber = loc.line;
+				obj.columnNumber = loc.col;
+			}
 		}
 		
+	}
+	else {
+		const loc = getErrorLocation(err);
+		if(err.fileName) obj.fileName = err.fileName;
+		obj.lineNumber = loc.line;
+		obj.columnNumber = loc.col;
 	}
 
 	Lilact.error = obj;
@@ -180,9 +223,11 @@ export function traceError(err)
  */
 export function globalErrorHandler(err)
 {
+	Lilact.pauseTimers();
 	if(err.error) err = err.error;
 
 	err = Lilact.traceError(err);
+
 	const cls = Lilact.emotion.css(`
 			background: linear-gradient(135deg, #fff2f2d4, #ffffffd4);
 			backdrop-filter: blur(10px);
@@ -199,6 +244,7 @@ export function globalErrorHandler(err)
 				border: 1px solid #0003;
 				overflow: auto;
 				padding: 10px;
+				display: block;
 			}
 		`);
 
@@ -208,25 +254,28 @@ export function globalErrorHandler(err)
 	//<b>⚠</b> 
 	el.innerHTML = 
 		`<h3 style=""><red>Error!</red></h3>
-		At <b>${err.fileName}: Line ${err.lineNumber+1}</b><br><br>
+		<b>${err.fileName?'At '+err.fileName:''}
+		${Number.isFinite(err.lineNumber)?": Line "+(err.lineNumber+1):""}</b><br><br>
 		<b>${err.name}</b>:&nbsp;<span>${err.message}</span><br><br>
-		<code><pre></pre><pre><red></red></pre><pre></pre></code>
+		${Lilact.required_scripts[err.fileName]?'<code><pre></pre><pre><red></red></pre><pre></pre></code>':''}
 		${err._error.componentStackLog?'<br>Component Stack:<br><code><pre>'+err._error.componentStackLog+'</pre></code>':''}
 		`;
 
 
 	document.body.appendChild(el);
 
+	const pres = el.querySelectorAll('pre');
 
 	if(Lilact.required_scripts[err.fileName]) {
 		const lines = Lilact.required_scripts[err.fileName].code.split("\n");
-		if(err.lineNumber>0)
-			el.querySelectorAll('pre')[0].innerText = lines[err.lineNumber-1];
 
-		el.querySelector('pre red').innerText = lines[err.lineNumber];
+		if(lines?.[err.lineNumber-1])
+			pres[0].innerText = lines[err.lineNumber-1];
 
-		if(err.lineNumber<lines.length-1)
-			el.querySelectorAll('pre')[2].innerText = lines[err.lineNumber+1];
+		if(lines?.[err.lineNumber]) el.querySelector('pre red').innerText = lines[err.lineNumber];
+
+		if(lines?.[err.lineNumber+1])
+			pres[2].innerText = lines[err.lineNumber+1];
 	}
 
 	el.showModal();

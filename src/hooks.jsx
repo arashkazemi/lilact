@@ -85,7 +85,7 @@ export function useState(val)
 export function useCallback(callback, deps=undefined)
 {
 	if( deps!==undefined && (typeof(deps)!=='object' || deps.constructor.name!=='Array') ) {
-		throw "callback dependencies must be an array or omitted.";
+		throw new Error("Callback dependencies must be an array or omitted.");
 	}
 
 	const hk = Lilact.useHook();
@@ -272,7 +272,7 @@ export function useRef(initialValue = null)
 export function useLayoutEffect(effect, deps=undefined)
 {
 	if( deps!==undefined && (typeof(deps)!=='object' || deps.constructor.name!=='Array') ) {
-		throw "layout effect dependencies must be an array or omitted.";
+		throw new Error("Layout effect dependencies must be an array or omitted.");
 	}
 
 	const hk = Lilact.useHook();
@@ -300,7 +300,7 @@ export function useLayoutEffect(effect, deps=undefined)
 export function useEffect(effect, deps=undefined)
 {
 	if( deps!==undefined && (typeof(deps)!=='object' || deps.constructor.name!=='Array') ) {
-		throw "effect dependencies must be an array or omitted.";
+		throw new Error("Effect dependencies must be an array or omitted.");
 	}
 
 	const hk = Lilact.useHook();
@@ -328,7 +328,7 @@ export function useEffect(effect, deps=undefined)
 export function useMemo(factory,deps=undefined)
 {
 	if( deps!==undefined && (typeof(deps)!=='object' || deps.constructor.name!=='Array') ) {
-		throw "memo dependencies must be an array or omitted.";
+		throw new Error("Memo dependencies must be an array or omitted.");
 	}
 
 	const hk = Lilact.useHook();
