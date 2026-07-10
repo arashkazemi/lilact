@@ -126,7 +126,7 @@ export function run(jsx, path=`InlineJSX-${++Lilact.eval_num}`, is_inline=true)
  */
 export function require(path, force_update)
 {
-	if(Lilact.required_scripts[path] && !force_update) return Lilact.required_scripts[path].module;
+	if(Lilact.required_scripts[path] && !force_update) return Lilact.required_scripts[path].module.exports;
 	
 	if(path[0]==='#') {
 
@@ -200,6 +200,9 @@ export function lazy(factory) {
 				throw err;
 			}
 		);
+	}
+	else {
+		status = "success";
 	}
 
 	function LazyComponent(props) {
