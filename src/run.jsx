@@ -48,6 +48,7 @@ export function run(jsx, path=`InlineJSX-${++Lilact.eval_num}`, is_inline=true)
 	const module = {exports: {}};
 	let processed;
 
+
 	Lilact.required_scripts[path] = { 	
 		mappings,
 		module,
@@ -125,8 +126,8 @@ export function run(jsx, path=`InlineJSX-${++Lilact.eval_num}`, is_inline=true)
  */
 export function require(path, force_update)
 {
-	//if(Lilact.transpilerConfig.required[path]!==undefined && !force_update) return Lilact.transpilerConfig.required[path].module;
-
+	if(Lilact.required_scripts[path] && !force_update) return Lilact.required_scripts[path].module;
+	
 	if(path[0]==='#') {
 
 		const el = document.getElementById(path);
