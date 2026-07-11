@@ -87,8 +87,8 @@ export const findDOMNode = (comp)=>{
  *
  * @param children - The nodes to group without adding an extra DOM element.
  */
-export const Fragment = ({children})=>children;
-
+export const Fragment = function ({children}) { return children };
+Fragment.displayName = "Fragment";
 
 /**
  * Children namespace for utilities that operate on `props.children`. `Children` is deprecated

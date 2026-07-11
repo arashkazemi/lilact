@@ -22,38 +22,38 @@ const { css,cx,injectGlobal } = Lilact.emotion;
 const cache = new Map();
 
 function createResource(url) {
-  let record = cache.get(url);
-  if (!record) {
-    record = {
-      status: "pending",
-      promise: null,
-      data: null,
-      error: null,
-    };
+	let record = cache.get(url);
+	if (!record) {
+		record = {
+			status: "pending",
+			promise: null,
+			data: null,
+			error: null,
+		};
 
-    record.promise = fetch(url)
-      .then(r => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.text();
-      })
-      .then(data => {
-        record.status = "success";
-        record.data = data;
-      })
-      .catch(err => {
-        record.status = "error";
-        record.error = err;
-      });
+		record.promise = fetch(url)
+			.then(r => {
+				if (!r.ok) throw new Error(`HTTP ${r.status}`);
+				return r.text();
+			})
+			.then(data => {
+				record.status = "success";
+				record.data = data;
+			})
+			.catch(err => {
+				record.status = "error";
+				record.error = err;
+			});
 
-    cache.set(url, record);
-  }
-  return {
-    read() {
-      if (record.status === "pending") throw record.promise;
-      if (record.status === "error") throw record.error;
-      return record.data;
-    }
-  };
+		cache.set(url, record);
+	}
+	return {
+		read() {
+			if (record.status === "pending") throw record.promise;
+			if (record.status === "error") throw record.error;
+			return record.data;
+		}
+	};
 }
 
 
@@ -61,14 +61,17 @@ function createResource(url) {
 injectGlobal({"*:not(code):not(code *)" : {fontFamily: "Ubuntu, 'Segoe UI', 'Noto Sans', helvetica, sans", fontSize: "14px"}});
 
 
-injectGlobal({ 	code: { 	whiteSpace: "pre !important",
-												padding: "10px 0",
-												fontSize: "14px !important",
-												display: "block",
-												overflowWrap: "anywhere" },
-								p: {padding: "10px"},
-								body: {padding: "20px"}
-							});
+injectGlobal({ 	
+		code: { 
+			whiteSpace: "pre !important",
+			padding: "10px 0",
+			fontSize: "14px !important",
+			display: "block",
+			overflowWrap: "anywhere" 
+		},
+		p: {padding: "10px"},
+		body: {padding: "20px"}
+	});
 
 const outer = css({
 	display: "flex",
@@ -112,10 +115,10 @@ function DemoView({ file })
 	const viewRef = useRef();
 	const codeRef = useRef();
 
-  const resource = createResource("demos/"+file[0]);
-  const code = resource.read(); // Suspense will handle the promise
+	const resource = createResource("demos/"+file[0]);
+	const code = resource.read(); // Suspense will handle the promise
 
-  if(isOpen) {
+	if(isOpen) {
 		useEffect(() => {
 			const Comp = run(code, "demos/"+file[0]);
 			Lilact.render(<Comp/>, viewRef.current);
@@ -149,7 +152,7 @@ function DemoBlock({file})
 {
 	return <div key={file[0]}>
 							<Suspense fallback={<Spinner/>}>
-					      <DemoView file={file} />
+								<DemoView file={file} />
 							</Suspense>
 					</div>
 }

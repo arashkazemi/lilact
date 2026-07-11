@@ -1,6 +1,6 @@
 {
   "name": "lilact",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "description": "A Little React/JSX Runtime Implementation for Browser",
   "repository": "github:arashkazemi/lilact",
   "homepage": "https://arashkazemi.github.io/lilact/",
@@ -18,7 +18,9 @@
     "doc": "bin/transpile-dir.js --inDir src --outDir .tmp && npx typedoc --out docs --tsconfig tsconfig.json && bin/copy-demo.js",
     "build:debug": "webpack --mode development",
     "build:release": "webpack --mode production",
-    "build": "npm-run-all build:debug build:release doc"
+    "build:debug.min": "webpack --mode development --env minify=true",
+    "build:release.min": "webpack --mode production --env minify=true",
+    "build": "npm-run-all build:debug.min build:debug build:release.min doc"
   },
   "bin": {
     "transpile": "./bin/transpile.js"

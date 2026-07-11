@@ -634,7 +634,7 @@ function constructFunc(core, parent) // returns {text} or component, and not com
 				comp[CORE].hook_index = 0;
 			}
 			else {
-				throw new Error("Invalid component for createComponent.");
+				throw new Error("Invalid entity for createComponent.");
 			}
 
 			comp[CORE].entity = core.entity;
@@ -1008,7 +1008,7 @@ export class RootComponent extends HTMLComponent
 export function createComponent(entity, props={}, ...children)
 {
 	if(entity!==undefined && typeof(entity)!=='string' && typeof(entity)!=='function') {
-		throw new Error("Invalid component for createComponent.");		
+		throw new Error("Invalid entity for createComponent.");		
 	}
 
 	for(let i=0; i<children.length; i++) {
@@ -1032,7 +1032,7 @@ export function createComponent(entity, props={}, ...children)
 		}
 	}
 
-	if(entity===null) return children; // <> style fragment
+	//if(entity===null) return children; // <> style fragment
 
 	props.key = generateComponentKey(entity, props);
 	props.children = children;

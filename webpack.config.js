@@ -39,14 +39,13 @@ import 'webpack';
 
 
 export default (env, argv) => {
-
 	const mode = argv.mode || 'development';
+	const minify = env?.minify==='true';
 	
 	const __filename = fileURLToPath(import.meta.url);
 	const __dirname = dirname(__filename);
 
-	//const filename = `lilact.${mode}${mode==="development"?"":".min"}.js`;
-	const filename = `lilact.${mode}.min.js`;
+	const filename = `lilact.${mode}${minify?'.min':''}.js`;
 
 	return {
 		entry: './src/lilact.jsx',
@@ -56,7 +55,7 @@ export default (env, argv) => {
 		optimization: {
 		    concatenateModules: true,      // scope hoisting
 		    moduleIds: 'deterministic',   // smaller stable ids (or 'hashed')
-			minimize: true //mode === 'production',
+			minimize: minify,
 		},
 		experiments: {    
 			outputModule: true           // enable module output  
@@ -68,7 +67,8 @@ export default (env, argv) => {
 		output: {
 			filename,
 			path: path.resolve(__dirname, 'dist'),
-			library: {      type: 'module'             // important: emit an ES module   
+			library: {      
+				type: 'module'             // important: emit an ES module   
 		    },
 		},
 		resolve: {
