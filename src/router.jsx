@@ -205,7 +205,7 @@ export function NavLink({
 function compilePath(pattern) {
 	const paramNames = [];
 	// escape regex and replace :param and * 
-	let regexSource = "^" + pattern.replace(/\/+$/,"").replace(/([.+?^=!:${}()|[\]\/\\])/g, "\\$1")
+	let regexSource = "^" + pattern.replace(/\/+$/,"").replace(/([.+?^=!:${}()|[\]/\\])/g, "\\$1")
 		.replace(/\\\:([A-Za-z0-9_]+)/g, (_, name) => {
 			paramNames.push(name);
 			return "([^/]+)";
