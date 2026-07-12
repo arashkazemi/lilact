@@ -22,7 +22,7 @@ that is around `80kb` minified and around `27kb` gzipped and includes its whole 
 
 `Lilact` works in the browser, so it doesn't rely on any JS/node back-end and can 
 essentially work with any kind of web server/back-end. An example of using it with a PHP/MySQL
-data store is available on [LilactPHPDemo](https://github.com/arashkazemi/LilactPHPDemo).
+data store is available on [lilact-php-demo](https://github.com/arashkazemi/lilact-php-demo).
 
 `Lilact` uses its own JSX transpiler, and not babel. It is a recursive-descent 
 parser with lookahead, but it doesn't parse the JS syntax completely and relies on the 
