@@ -474,10 +474,12 @@ function parseXML(code, index, container)
 				index++;
 				skip_spaces();
 
-				if(code[index]==='/') { // todo: comment after =, should be tested
-					[i] = lookAhead( parseComment, code, index );
-					if(i>index) index = i;
+				while(code[index]==='/') {
+					const res = lookAhead( parseComment, code, index );
+
+					if(res[0]>index) index = res[0];
 					else index++;
+					skip_spaces();
 				}
 
 				let av; // attribute value
@@ -498,22 +500,20 @@ function parseXML(code, index, container)
 					break;					
 
 				default: 
-					{
-						i = index;
-						while( i<code.length && delims.indexOf(code[i])===-1 ) {
-							i++;
-						}
-
-						if(i===code.length) {
-							return; // not xml
-						}
-
-						const tok = code.substring(index,i);
-						index = i;
-
-						b.attributes[last_attr] = tok;
-						last_attr = undefined;
+					i = index;
+					while( i<code.length && delims.indexOf(code[i])===-1 ) {
+						i++;
 					}
+
+					if(i===code.length) {
+						return; // not xml
+					}
+
+					const tok = code.substring(index,i);
+					index = i;
+
+					b.attributes[last_attr] = tok;
+					last_attr = undefined;
 				}
 			}
 			else {
