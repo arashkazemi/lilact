@@ -439,6 +439,7 @@ function parseXML(code, index, container)
 	skip_spaces();
 	
 	let i = index;
+
 	while(i<code.length && delims.indexOf(code[i])===-1) i++;
 	if(i===code.length) return;
 
@@ -542,8 +543,9 @@ function parseXML(code, index, container)
 				return b;
 			}
 
-			[i] = lookAhead( parseComment, code, index );
-			if(i>index) index = i;
+			const res = lookAhead( parseComment, code, index );
+
+			if(res[0]>index) index = res[0];
 			else index++;
 
 			break;
