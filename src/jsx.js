@@ -429,7 +429,7 @@ function parseXML(code, index, container, look_behind=false)
 {
 	if(look_behind) {
 		// valid tokens before start of an xml in js code (not in xml content)
-		const prevs = [/*'return', 'yield', 'throw', */'=', ',', '(', '&', '|', '?', ':', '{']; 
+		const prevs = [/*'return', 'yield', 'throw', */'=', ',', '(', '&', '|', '?', ':', '{', '[']; 
 
 		let i = index;
 
