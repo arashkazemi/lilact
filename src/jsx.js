@@ -425,8 +425,30 @@ function parseXMLContent(code, index, container, eols)
 }
 
 
-function parseXML(code, index, container)
+function parseXML(code, index, container, look_behind=false)
 {
+	if(look_behind) {
+		// valid tokens before start of an xml in js code (not in xml content)
+		const prevs = [/*'return', 'yield', 'throw', */'=', ',', '(', '&', '|', '?', ':', '{']; 
+
+		let i = index;
+
+		while(--i>0) { 
+			if( ' \t\r\n'.indexOf(code[i])!==-1 ) continue;
+			if(prevs.indexOf(code[i])!==-1) break;
+			if(i>1 && code[i-1]==='=' && code[i]==='>') break;
+			if(i>=5) if(code.slice(i-5,i+1)==='return') {
+				if(i>5) if( ' \t\r\n{};)'.indexOf(code[i-6])===-1 ) return;
+				break;
+			}
+			if(i>=4) if(code.slice(i-4,i+1)==='yield' || code.slice(i-4,i+1)==='throw') {
+				if(i>4) if( ' \t\r\n{};)'.indexOf(code[i-5])===-1 ) return;
+				break;
+			}
+			return;
+		}
+
+	}
 	// delimiters
 	const delims =  [ ' ','\t','\n', '/','&','^','%','|','!','~','+','*','?',
 					'<','>',';',',','=','{','}','(',')','[',']','\'','\"',
@@ -607,7 +629,7 @@ function parseParanthesis(code, index, container)
 		switch(ch) {
 
 		case '<':{
-			let [i] = lookAhead( parseXML, code, index, b );
+			let [i] = lookAhead( parseXML, code, index, b, true );
 			if(i>index) index = i;
 			else index++;
 			break;
@@ -669,7 +691,7 @@ function parseJS(code, index=0, is_block=false, container)
 		switch(ch) {
 
 		case '<': {
-			let [i] = lookAhead( parseXML, code, index, b );
+			let [i] = lookAhead( parseXML, code, index, b, true );
 
 			if(i>index) index = i;
 			else index++;
@@ -1130,7 +1152,7 @@ export function transpileJSX( jsx, {
 			}
 
 			const loc = getRowCol(eols,node.begin);
-			out = `${factory}( ${node.tag}, { ${out} )`; //lilact_jsx_loc:["${path}", ${loc}]
+			out = ` ${factory}( ${node.tag}, { ${out} )`; //lilact_jsx_loc:["${path}", ${loc}]
 
 			return out;
 		}
