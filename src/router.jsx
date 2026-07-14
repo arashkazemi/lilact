@@ -63,16 +63,32 @@ export function HashRouter({ children, basename = "" }) {
 
 	const [location, setLocation] = useState(readLocation);
 	useEffect(() => {
-		const onHash = () => setLocation(readLocation());
-		window.addEventListener("hashchange", onHash);
-		return () => window.removeEventListener("hashchange", onHash);
+		const onChange = () => setLocation(readLocation());
+
+		window.addEventListener("hashchange", onChange);
+		window.addEventListener("popstate", onChange);
+
+		// initialize once in case hash/state are already set
+		onChange();
+
+		return () => {
+			window.removeEventListener("hashchange", onChange);
+			window.removeEventListener("popstate", onChange);
+		};
 	}, [basename]);
 
 	const navigate = useCallback((to, { replace = false, state } = {}) => {
+		if (typeof to === "number") {
+			history.go(to);
+			return;
+		}
+
 		const url = createURL(to);
 		const href = "#" + (basename + url);
+
 		if (replace) history.replaceState({ __state: state }, "", href);
 		else history.pushState({ __state: state }, "", href);
+
 		setLocation(readLocation());
 	}, [basename]);
 
