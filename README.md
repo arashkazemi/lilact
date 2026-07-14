@@ -8,6 +8,8 @@
 
 [Lilact repo on GitHub](https://github.com/arashkazemi/lilact) - [Lilact on npm](https://www.npmjs.com/package/lilact)
 
+[Lilact/PHP Demo](https://github.com/arashkazemi/lilact-php-demo) - [Lilact/Python Demo](https://github.com/arashkazemi/lilact-python-demo)
+
 ---
 
 If you find Lilact useful, please consider sponsoring. Your support funds ongoing maintenance, 
@@ -18,11 +20,13 @@ performance improvements, and new features. [Sponsor me on GitHub](https://githu
 `Lilact` is a very lightweight implementation of the React API that is
 designed to work in the browser. It can be used as a single script
 that is around `80kb` minified and around `27kb` gzipped and includes its whole api.
-`Lilact` is very fast, it uses minimum resources and handles memory very efficiently.
+`Lilact` is very fast, it uses minimal resources and handles memory very efficiently.
 
 `Lilact` works in the browser, so it doesn't rely on any JS/node back-end and can 
 essentially work with any kind of web server/back-end. An example of using it with a PHP/MySQL
 data store is available on [lilact-php-demo](https://github.com/arashkazemi/lilact-php-demo).
+And an example of using it with a Python/SQLite data store is available on 
+[lilact-python-demo](https://github.com/arashkazemi/lilact-python-demo).
 
 `Lilact` uses its own JSX transpiler, and not babel. It is a recursive-descent 
 parser with lookahead, but it doesn't parse the JS syntax completely and relies on the 
