@@ -1,4 +1,4 @@
-<img src="./icon.png" alt="Description" width="200" style="margin-left: -.75rem"/>
+<img src="./icon.png" alt="Description" width="128" style="margin-left: -.76rem"/>
 
 # Lilact
 
@@ -28,27 +28,26 @@ data store is available on [lilact-php-demo](https://github.com/arashkazemi/lila
 And an example of using it with a Python/SQLite data store is available on 
 [lilact-python-demo](https://github.com/arashkazemi/lilact-python-demo).
 
-`Lilact` uses its own JSX transpiler, and not babel. It is a recursive-descent 
-parser with lookahead, but it doesn't parse the JS syntax completely and relies on the 
-JS runtime to detect some errors. The transpiler weights
-only a few kilobytes and can be even incorporated into other React engines. To
-make it better, it even generates sourcemaps like a charm, without relying on
-any 3rd party library. There is a `transpile.js` helper in the bin directory to
-show how you can use it. 
+`Lilact` uses its own JSX transpiler (not Babel). It is a recursive-descent 
+parser with lookahead, that doesn't parse the JS syntax completely and relies on the 
+JS runtime to detect some errors. The transpiler weights only a few kilobytes and can 
+be incorporated into other React engines too. It even generates sourcemaps without relying 
+on any 3rd party library. There is a `transpile.js` helper in the bin directory to show 
+how you can use it. 
 
 `Lilact` implements both the **legacy class based** and **modern hook based** APIs. And it 
 has almost everything  necessary. In addition to the API, it also includes the official 
 `Redux` and `PropTypes` libraries to be used (see the `redux.jsx` and `proptypes.jsx` demos). 
-So yes it has redux support and has many of the functions and hooks, i.e. `connect` and 
+So it has redux support and has many of the functions and hooks, i.e. `connect` and 
 `useDispatch`.
 
 It also includes the amazing `@emotion/css` library to ease working with styles.
 It can be accessed through `Lilact.emotion`.
 
 To ease working, it already includes a `HashRouter`, `CSSTransition`, `ErrorBoundary`,
-`Suspense`, `Spinner`, and many other stuff. It also has a specific timeout implementation 
-that can be paused and resumed at will. `Lilact`'s `Suspense` even has a few more features
-than the standard API.
+`Suspense`, and some helper components like `Spinner` and `ResizablePane`. It also has 
+a specific timeout implementation that can be paused and resumed at will. `Lilact`'s 
+`Suspense` has a few more features than the standard API.
 
 You can see all the available methods in the documentation. And there is a list of
 demos that can all be seen alongside their code at [Lilact Demo Examples](./static/index.html).
