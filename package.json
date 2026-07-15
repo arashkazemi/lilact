@@ -1,6 +1,6 @@
 {
   "name": "lilact",
-  "version": "0.7.11",
+  "version": "0.7.12",
   "description": "A Little React/JSX Runtime Implementation for Browser",
   "repository": "github:arashkazemi/lilact",
   "homepage": "https://arashkazemi.github.io/lilact/",
@@ -31,13 +31,16 @@
     "http-server": "^14.1.1",
     "npm-run-all": "^4.1.5",
     "typedoc": "^0.28.19",
-    "webpack": "^5.97.1",
     "webpack-cli": "^6.0.1",
     "webpack-dev": "^1.1.1"
   },
   "dependencies": {
     "@emotion/css": "^11.13.5",
+    "css-loader": "^7.1.4",
     "prop-types": "^15.8.1",
-    "redux": "^5.0.1"
-  }
+    "redux": "^5.0.1",
+    "style-loader": "^4.0.0",
+    "webpack": "^5.97.1"
+  },
+  "exports": {}
 }
