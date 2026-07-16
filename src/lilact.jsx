@@ -28,11 +28,8 @@
 
 */
 
-
-
 import * as redux from "redux";
 import * as emotion from "@emotion/css";
-
 import PropTypes from 'prop-types';
 
 import * as components from './components.jsx';
@@ -44,14 +41,27 @@ import * as redux_wrapper from './redux.jsx';
 import * as timers from './timers.jsx';
 import * as misc from './misc.jsx';
 import * as errors from './errors.jsx';
-
-
 import * as router from './router.jsx';
 import * as accessories from './accessories.jsx';
 import {ResizablePane} from './pane.jsx';
-
 import {transpileJSX, transpilerConfig} from "./jsx";
 
+
+export {redux, emotion, PropTypes};
+
+export * from './components.jsx';
+export * from './hooks.jsx';
+export * from './run.jsx';
+export * from './transition.jsx';
+export * from './events.jsx';
+export * from './redux.jsx';
+export * from './timers.jsx';
+export * from './misc.jsx';
+export * from './errors.jsx';
+export * from './router.jsx';
+export * from './accessories.jsx';
+export {ResizablePane} from './pane.jsx';
+export {transpileJSX, transpilerConfig} from "./jsx";
 
 
 /**
@@ -100,6 +110,8 @@ export const Lilact =
 }
 
 globalThis.Lilact = Lilact;
+globalThis.createComponent = Lilact.createComponent;
+globalThis.Fragment = Lilact.Fragment;
 
 document.addEventListener('DOMContentLoaded', () => {
   Lilact.runScripts();
@@ -117,3 +129,4 @@ window.addEventListener('error', (e) => {
 ʔ }
 
 export default Lilact;
+

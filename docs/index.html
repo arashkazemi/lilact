@@ -12,11 +12,19 @@ performance improvements, and new features. <a href="https://github.com/sponsors
 designed to work in the browser. It can be used as a single script
 that is around <code>80kb</code> minified and around <code>27kb</code> gzipped and includes its whole api.
 <code>Lilact</code> is very fast, it uses minimal resources and handles memory very efficiently.</p>
-<p><code>Lilact</code> works in the browser, so it doesn't rely on any JS/node back-end and can
-essentially work with any kind of web server/back-end. An example of using it with a PHP/MySQL
+<p>When used in node environment, <code>Lilact</code> can be incorporated and imported similar to React,
+and it also provides a <code>webpack</code> based bundler. The bundler is in the <code>bin</code> directory, and can
+be used like</p>
+<pre><code>    npx lilact-bundle --entry client/App.jsx --mode production --name bundle.js --out public/dist
+</code></pre>
+<p>A complete example of a <code>Lilact</code> project with an <code>express</code> request handler is available on
+<a href="https://github.com/arashkazemi/lilact-express">lilact-express</a>.</p>
+<p><code>Lilact</code> essentially works in the browser, so it doesn't rely on node environment and can
+work with any kind of webserver/back-end. An example of using it with a PHP/MySQL
 data store is available on <a href="https://github.com/arashkazemi/lilact-php-demo">lilact-php-demo</a>.
 And an example of using it with a Python/SQLite data store is available on
 <a href="https://github.com/arashkazemi/lilact-python-demo">lilact-python-demo</a>.</p>
+<hr>
 <p><code>Lilact</code> uses its own JSX transpiler (not Babel). It is a recursive-descent
 parser with lookahead, that doesn't parse the JS syntax completely and relies on the
 JS runtime to detect some errors. The transpiler weights only a few kilobytes and can
@@ -30,24 +38,25 @@ So it has redux support and has many of the functions and hooks, i.e. <code>conn
 <code>useDispatch</code>.</p>
 <p>It also includes the amazing <code>@emotion/css</code> library to ease working with styles.
 It can be accessed through <code>Lilact.emotion</code>.</p>
-<p>To ease working, it already includes a <code>HashRouter</code>, <code>CSSTransition</code>, <code>ErrorBoundary</code>,
+<p>To ease working, it already includes <code>HashRouter</code>, <code>CSSTransition</code>, <code>ErrorBoundary</code>,
 <code>Suspense</code>, and some helper components like <code>Spinner</code> and <code>ResizablePane</code>. It also has
 a specific timeout implementation that can be paused and resumed at will. <code>Lilact</code>'s
 <code>Suspense</code> has a few more features than the standard API.</p>
-<p>You can see all the available methods in the documentation. And there is a list of
-demos that can all be seen alongside their code at <a href="./static/index.html">Lilact Demo Examples</a>.
+<p>You can see all the available members and methods in the documentation. And there is a list of
+demos that can all be seen alongside their code at <a href="https://arashkazemi.github.io/lilact/static">Lilact Demo Examples</a>.
 Just note that the modules are separated in the documentation to improve the doc
 structure, and in practice all the methods and members are accessible via the <code>Lilact</code> object
 itself directly.</p>
-<p><code>Lilact</code> runs in the browser, so it uses <code>eval</code> to run the transpiled scripts, and cannot
-use import and exports the same as a module. So you should import the functions using the following
-convention</p>
+<hr>
+<p>If you use <code>Lilact</code> outside node environment, <code>Lilact</code> runs in the browser, so it uses <code>eval</code>
+to run the transpiled scripts, and cannot use import and exports the same way as a module. So
+you should import the functions using the following convention</p>
 <pre><code>    const { useState, useRef, render } = Lilact;
 </code></pre>
 <p>And to export you can use <code>module.exports = ...</code>.</p>
 <hr>
 <p>To use in other node projects, install <code>Lilact</code> from npm public repository:</p>
-<pre><code>    npm install lilact  
+<pre><code>    npm i lilact  
 </code></pre>
 <p>It is also available via unpkg CDN and can be included in HTML files using</p>
 <pre><code>    &lt;script src=&quot;https://unpkg.com/lilact/dist/lilact.development.min.js&quot;&gt;&lt;/script&gt;
@@ -58,15 +67,25 @@ convention</p>
 <p>To use in a webpage, first download the source code and extract it. The minified
 script itself is available in the <code>/dist</code> directory and the documentation
 can be found in the <code>/docs</code> and also in the source files.</p>
-<p>Note that the production version, like the official React API, doesn't do the proptypes
+<p>Note that the production version, like the official React API, doesn't do the PropTypes
 checks, but you can access PropTypes using Lilact.PropTypes.</p>
-<p>After being loaded, Lilact automatically scans the document for any scirpt elements
-with <code>type='text/jsx'</code> and it will run them. If the <code>src</code> attribute is set it will load
+<p>After being loaded, Lilact automatically scans the document for any script elements
+with <code>type='text/jsx'</code> and it will run them. If the <code>src</code> attribute is script it will load
 the resource, and if there is inner content it will be executed. Of course this is not the
-only way.</p>
-<p>Lilact wraps the browser events to mimic React events, this mimicry is not perfect, as
-the footprint was very important, but it works fine.</p>
-<p>As a simple example Lilact can be used like this:</p>
+only way and in node projects you can have your <code>jsx</code> files and import <code>Lilact</code> as a
+standard module.</p>
+<p>Lilact wraps the browser events to mimic React events, this mimicry is not perfect on
+some edge cases, as the footprint was very important, but it works without a problem overall.</p>
+<p>As a simple example <code>Lilact</code> can be used like this in <code>node</code> environment:</p>
+<pre><code>    import { render } from &quot;lilact&quot;;
+
+    function App() {
+            return &lt;div&gt;Hello World&lt;/div&gt;;
+    }
+    
+    render(&lt;App/&gt;, document.body);
+</code></pre>
+<p>And outside <code>node</code>, i.e. in integration with <code>php</code> or <code>python</code>, it should be used this way:</p>
 <pre><code>    &lt;!DOCTYPE html&gt;
     &lt;html&gt;
     &lt;head&gt;
@@ -86,9 +105,8 @@ the footprint was very important, but it works fine.</p>
     &lt;/script&gt;
     &lt;/html&gt;
 </code></pre>
-<p>To know more about using <code>Lilact</code>, see the included example and for the details
-see the class documentation. And of course don't forget to check the
-<a href="./static/index.html">Lilact Demo Examples</a>.</p>
+<p>To know more about using <code>Lilact</code>, see the included examples <a href="https://arashkazemi.github.io/lilact/static">Lilact Demo Examples</a>
+and for the details see the documentation.</p>
 <p><code>Lilact</code> is currently in its beta state. It is under heavy tests and improvements are
 being made. Please report any possible issues or bugs, they will be fixed
 without any hesitation!</p>

@@ -22,11 +22,22 @@ designed to work in the browser. It can be used as a single script
 that is around `80kb` minified and around `27kb` gzipped and includes its whole api.
 `Lilact` is very fast, it uses minimal resources and handles memory very efficiently.
 
-`Lilact` works in the browser, so it doesn't rely on any JS/node back-end and can 
-essentially work with any kind of web server/back-end. An example of using it with a PHP/MySQL
+When used in node environment, `Lilact` can be incorporated and imported similar to React, 
+and it also provides a `webpack` based bundler. The bundler is in the `bin` directory, and can
+be used like
+
+        npx lilact-bundle --entry client/App.jsx --mode production --name bundle.js --out public/dist
+
+A complete example of a `Lilact` project with an `express` request handler is available on
+[lilact-express](https://github.com/arashkazemi/lilact-express).
+
+`Lilact` essentially works in the browser, so it doesn't rely on node environment and can 
+work with any kind of webserver/back-end. An example of using it with a PHP/MySQL
 data store is available on [lilact-php-demo](https://github.com/arashkazemi/lilact-php-demo).
 And an example of using it with a Python/SQLite data store is available on 
 [lilact-python-demo](https://github.com/arashkazemi/lilact-python-demo).
+
+---
 
 `Lilact` uses its own JSX transpiler (not Babel). It is a recursive-descent 
 parser with lookahead, that doesn't parse the JS syntax completely and relies on the 
@@ -44,31 +55,32 @@ So it has redux support and has many of the functions and hooks, i.e. `connect` 
 It also includes the amazing `@emotion/css` library to ease working with styles.
 It can be accessed through `Lilact.emotion`.
 
-To ease working, it already includes a `HashRouter`, `CSSTransition`, `ErrorBoundary`,
+To ease working, it already includes `HashRouter`, `CSSTransition`, `ErrorBoundary`,
 `Suspense`, and some helper components like `Spinner` and `ResizablePane`. It also has 
 a specific timeout implementation that can be paused and resumed at will. `Lilact`'s 
 `Suspense` has a few more features than the standard API.
 
-You can see all the available methods in the documentation. And there is a list of
-demos that can all be seen alongside their code at [Lilact Demo Examples](./static/index.html).
+You can see all the available members and methods in the documentation. And there is a list of
+demos that can all be seen alongside their code at [Lilact Demo Examples](https://arashkazemi.github.io/lilact/static).
 Just note that the modules are separated in the documentation to improve the doc
 structure, and in practice all the methods and members are accessible via the `Lilact` object 
 itself directly.
 
-`Lilact` runs in the browser, so it uses `eval` to run the transpiled scripts, and cannot 
-use import and exports the same as a module. So you should import the functions using the following 
-convention
+---
+
+If you use `Lilact` outside node environment, `Lilact` runs in the browser, so it uses `eval` 
+to run the transpiled scripts, and cannot use import and exports the same way as a module. So 
+you should import the functions using the following convention
 
         const { useState, useRef, render } = Lilact;
 
 And to export you can use `module.exports = ...`. 
 
-
 ---
 
 To use in other node projects, install `Lilact` from npm public repository:
 
-        npm install lilact  
+        npm i lilact  
 
 It is also available via unpkg CDN and can be included in HTML files using
 
@@ -83,18 +95,29 @@ To use in a webpage, first download the source code and extract it. The minified
 script itself is available in the `/dist` directory and the documentation 
 can be found in the `/docs` and also in the source files. 
 
-Note that the production version, like the official React API, doesn't do the proptypes 
+Note that the production version, like the official React API, doesn't do the PropTypes 
 checks, but you can access PropTypes using Lilact.PropTypes. 
 
-After being loaded, Lilact automatically scans the document for any scirpt elements
-with `type='text/jsx'` and it will run them. If the `src` attribute is set it will load
+After being loaded, Lilact automatically scans the document for any script elements
+with `type='text/jsx'` and it will run them. If the `src` attribute is script it will load
 the resource, and if there is inner content it will be executed. Of course this is not the 
-only way.
+only way and in node projects you can have your `jsx` files and import `Lilact` as a
+standard module. 
 
-Lilact wraps the browser events to mimic React events, this mimicry is not perfect, as 
-the footprint was very important, but it works fine. 
+Lilact wraps the browser events to mimic React events, this mimicry is not perfect on
+some edge cases, as the footprint was very important, but it works without a problem overall. 
 
-As a simple example Lilact can be used like this:
+As a simple example `Lilact` can be used like this in `node` environment:
+
+        import { render } from "lilact";
+
+        function App() {
+                return <div>Hello World</div>;
+        }
+        
+        render(<App/>, document.body);
+
+And outside `node`, i.e. in integration with `php` or `python`, it should be used this way:
 
         <!DOCTYPE html>
         <html>
@@ -116,9 +139,8 @@ As a simple example Lilact can be used like this:
         </html>
 
 
-To know more about using `Lilact`, see the included example and for the details
-see the class documentation. And of course don't forget to check the 
-[Lilact Demo Examples](./static/index.html).
+To know more about using `Lilact`, see the included examples [Lilact Demo Examples](https://arashkazemi.github.io/lilact/static)
+and for the details see the documentation.
 
 `Lilact` is currently in its beta state. It is under heavy tests and improvements are 
 being made. Please report any possible issues or bugs, they will be fixed

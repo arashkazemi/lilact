@@ -55,7 +55,7 @@ export default (env, argv) => {
 		optimization: {
 		    concatenateModules: true,      // scope hoisting
 		    moduleIds: 'deterministic',   // smaller stable ids (or 'hashed')
-			minimize: minify,
+		    minimize: minify,
 		},
 		experiments: {    
 			outputModule: true           // enable module output  
@@ -69,7 +69,7 @@ export default (env, argv) => {
 			path: path.resolve(__dirname, 'dist'),
 			library: {      
 				type: 'module'             // important: emit an ES module   
-		    },
+			},
 		},
 		resolve: {
 			// alias: {      
@@ -99,16 +99,32 @@ export default (env, argv) => {
 							mode
 						}
 					}]
+				},
+				{
+					test: /\.css$/i,
+					use: [
+						{
+							loader: "style-loader"
+						},
+						{
+							loader: "css-loader",
+							options: {
+		                		// keeps behavior simple; you can enable modules if you want
+								modules: false,
+								importLoaders: 0
+							}
+						}
+					]
 				}
 			]
 		},
 		plugins: [{
-				apply: (compiler) => {
-					compiler.hooks.done.tap('license-plugin', (compilation) => {
-						fs.readFile('./dist/' + filename, 'utf8', function(err, jssc) {
+			apply: (compiler) => {
+				compiler.hooks.done.tap('license-plugin', (compilation) => {
+					fs.readFile('./dist/' + filename, 'utf8', function(err, jssc) {
 
-							let out =
-								`/*
+						let out =
+						`/*
 
 Lilact
 Copyright (C) 2024-2025 Arash Kazemi <contact.arash.kazemi@gmail.com>
@@ -169,18 +185,18 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
-${jssc}`;
+						${jssc}`;
 
-							fs.writeFile('./dist/' + filename, out, {}, function() {});
-							fs.writeFile('./root/' + filename, out, {}, function() {});
-						});
-
+						fs.writeFile('./dist/' + filename, out, {}, function() {});
+						fs.writeFile('./root/' + filename, out, {}, function() {});
 					});
-				}
-			},
+
+				});
+			}
+		},
 			//new webpack.ProvidePlugin({
 			//Buffer: ['buffer', 'Buffer'],
 			//   })
-		]
-	}
+	]
+}
 };

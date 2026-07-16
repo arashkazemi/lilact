@@ -59,7 +59,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
-/******/ var __webpack_modules__ = ({
+						/******/ var __webpack_modules__ = ({
 
 /***/ 207:
 /*!********************!*\
@@ -1382,8 +1382,109 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 
 // EXPORTS
 __webpack_require__.d(__webpack_exports__, {
+  CSSTransition: () => (/* reexport */ CSSTransition),
+  Children: () => (/* reexport */ Children),
+  Component: () => (/* reexport */ Component),
+  ErrorBoundary: () => (/* reexport */ ErrorBoundary),
+  Fragment: () => (/* reexport */ misc_Fragment),
+  HTMLComponent: () => (/* reexport */ HTMLComponent),
+  HashRouter: () => (/* reexport */ HashRouter),
   Lilact: () => (/* binding */ lilact_Lilact),
-  "default": () => (/* binding */ lilact)
+  Link: () => (/* reexport */ Link),
+  NavLink: () => (/* reexport */ NavLink),
+  PropTypes: () => (/* reexport */ (prop_types_default())),
+  Provider: () => (/* reexport */ Provider),
+  ResizablePane: () => (/* reexport */ ResizablePane),
+  RootComponent: () => (/* reexport */ RootComponent),
+  Route: () => (/* reexport */ Route),
+  Routes: () => (/* reexport */ Routes),
+  Spinner: () => (/* reexport */ Spinner),
+  Suspense: () => (/* reexport */ Suspense),
+  Transition: () => (/* reexport */ Transition),
+  TransitionGroup: () => (/* reexport */ TransitionGroup),
+  addWrappedEventListener: () => (/* reexport */ addWrappedEventListener),
+  animationFramePromise: () => (/* reexport */ animationFramePromise),
+  blocks_info: () => (/* reexport */ blocks_info),
+  boolean_html_attributes_set: () => (/* reexport */ boolean_html_attributes_set),
+  classNames: () => (/* reexport */ classNames),
+  clearInterval: () => (/* reexport */ timers_clearInterval),
+  clearTimeout: () => (/* reexport */ timers_clearTimeout),
+  combineReducers: () => (/* reexport */ redux_combineReducers),
+  connect: () => (/* reexport */ connect),
+  createComponent: () => (/* reexport */ components_createComponent),
+  createContext: () => (/* reexport */ createContext),
+  createElement: () => (/* reexport */ createElement),
+  createRoot: () => (/* reexport */ createRoot),
+  createSyntheticEvent: () => (/* reexport */ createSyntheticEvent),
+  current_component: () => (/* reexport */ current_component),
+  deepEqual: () => (/* reexport */ deepEqual),
+  "default": () => (/* binding */ lilact),
+  emotion: () => (/* reexport */ emotion_css_development_esm_namespaceObject),
+  error: () => (/* reexport */ error),
+  eval_num: () => (/* reexport */ eval_num),
+  events_set: () => (/* reexport */ events_set),
+  findDOMNode: () => (/* reexport */ findDOMNode),
+  forwardRef: () => (/* reexport */ forwardRef),
+  getComponentByPointer: () => (/* reexport */ getComponentByPointer),
+  globalErrorHandler: () => (/* reexport */ globalErrorHandler),
+  grabTimers: () => (/* reexport */ grabTimers),
+  id_num: () => (/* reexport */ id_num),
+  isAsync: () => (/* reexport */ isAsync),
+  isClass: () => (/* reexport */ isClass),
+  isEmpty: () => (/* reexport */ isEmpty),
+  isError: () => (/* reexport */ misc_isError),
+  isThenable: () => (/* reexport */ isThenable),
+  isValidElement: () => (/* reexport */ isValidElement),
+  layout_effects: () => (/* reexport */ layout_effects),
+  lazy: () => (/* reexport */ run.lazy),
+  length_css_attributes_set: () => (/* reexport */ length_css_attributes_set),
+  pauseTimers: () => (/* reexport */ pauseTimers),
+  redux: () => (/* reexport */ redux_namespaceObject),
+  releaseSyntheticEvent: () => (/* reexport */ releaseSyntheticEvent),
+  releaseTimers: () => (/* reexport */ releaseTimers),
+  render: () => (/* reexport */ render),
+  require: () => (/* reexport */ run.require),
+  required_scripts: () => (/* reexport */ required_scripts),
+  resetTimers: () => (/* reexport */ resetTimers),
+  resumeTimers: () => (/* reexport */ resumeTimers),
+  roots: () => (/* reexport */ roots),
+  run: () => (/* reexport */ run.run),
+  runScripts: () => (/* reexport */ run.runScripts),
+  scanBlockLabels: () => (/* reexport */ scanBlockLabels),
+  setInterval: () => (/* reexport */ timers_setInterval),
+  setTimeout: () => (/* reexport */ timers_setTimeout),
+  shallowEqual: () => (/* reexport */ shallowEqual),
+  special_attributes: () => (/* reexport */ special_attributes),
+  timeoutPromise: () => (/* reexport */ timeoutPromise),
+  toBool: () => (/* reexport */ toBool),
+  traceError: () => (/* reexport */ traceError),
+  transpileJSX: () => (/* reexport */ jsx.transpileJSX),
+  transpilerConfig: () => (/* reexport */ jsx.transpilerConfig),
+  update_cbs: () => (/* reexport */ update_cbs),
+  update_interval_margin: () => (/* reexport */ update_interval_margin),
+  update_set: () => (/* reexport */ update_set),
+  update_timeout: () => (/* reexport */ update_timeout),
+  useActionState: () => (/* reexport */ useActionState),
+  useCallback: () => (/* reexport */ useCallback),
+  useContext: () => (/* reexport */ useContext),
+  useDeferredValue: () => (/* reexport */ useDeferredValue),
+  useDispatch: () => (/* reexport */ useDispatch),
+  useEffect: () => (/* reexport */ useEffect),
+  useHook: () => (/* reexport */ useHook),
+  useId: () => (/* reexport */ useId),
+  useImperativeHandle: () => (/* reexport */ useImperativeHandle),
+  useLayoutEffect: () => (/* reexport */ useLayoutEffect),
+  useLocalStorage: () => (/* reexport */ useLocalStorage),
+  useLocation: () => (/* reexport */ useLocation),
+  useMemo: () => (/* reexport */ useMemo),
+  useNavigate: () => (/* reexport */ useNavigate),
+  useReducer: () => (/* reexport */ useReducer),
+  useRef: () => (/* reexport */ useRef),
+  useSelector: () => (/* reexport */ useSelector),
+  useState: () => (/* reexport */ useState),
+  useStore: () => (/* reexport */ useStore),
+  useTransition: () => (/* reexport */ useTransition),
+  wrapListener: () => (/* reexport */ wrapListener)
 });
 // ESM COMPAT FLAG
 __webpack_require__.r(__webpack_exports__);
@@ -8400,6 +8501,16 @@ var jsx = __webpack_require__(207);
 
 
 
+
+
+
+
+
+
+
+
+
+
 /**
  * @namespace Lilact
  * 
@@ -8446,6 +8557,8 @@ const lilact_Lilact =
 }
 
 globalThis.Lilact = lilact_Lilact;
+globalThis.createComponent = lilact_Lilact.createComponent;
+globalThis.Fragment = lilact_Lilact.Fragment;
 
 document.addEventListener('DOMContentLoaded', () => {
   lilact_Lilact.runScripts();
@@ -8460,7 +8573,9 @@ window.addEventListener('error', (e) => {
 
 /* harmony default export */ const lilact = (lilact_Lilact);
 
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9saWxhY3QuanN4Iiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9saWxhY3QuanN4Il0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLEFBQUE7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O1FBa0RROztRQUVBOzs7O0NBSVA7Ozs7Ozs7O0NBUUE7Ozs7RUFJQzs7OzZCQUcyQjtpQkFDWjs7RUFFZjs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7RUFvQkE7Ozs7Ozs7OzswQkFTd0Isb0JBQXFCLE1BQU07bUJBQ2pDOzs7d0JBSUksU0FBVSxPQUFPOzBCQUNkOzs7YUFLZDthQUNBIn0=
+
+
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9saWxhY3QuanN4Iiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9saWxhY3QuanN4Il0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLEFBQUE7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztRQTZDUTtRQUNBOzs7UUFHQTs7Ozs7Ozs7Ozs7OztRQWFBO1FBQ0E7OztDQUdQOzs7Ozs7OztDQVFBOzs7O0VBSUM7Ozs2QkFHMkI7aUJBQ1o7O0VBRWY7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0VBb0JBOzs7Ozs7Ozs7OzswQkFXd0Isb0JBQXFCLE1BQU07bUJBQ2pDOzs7d0JBSUksU0FBVSxPQUFPOzBCQUNkOzs7YUFLZDthQUNBIn0=
 
 /***/ }),
 
@@ -10004,9 +10119,110 @@ module.exports = ReactPropTypesSecret;
 /******/ // Load entry module and return exports
 /******/ // This entry module is referenced by other modules so it can't be inlined
 /******/ var __webpack_exports__ = __webpack_require__(241);
+/******/ const __webpack_exports__CSSTransition = __webpack_exports__.CSSTransition;
+/******/ const __webpack_exports__Children = __webpack_exports__.Children;
+/******/ const __webpack_exports__Component = __webpack_exports__.Component;
+/******/ const __webpack_exports__ErrorBoundary = __webpack_exports__.ErrorBoundary;
+/******/ const __webpack_exports__Fragment = __webpack_exports__.Fragment;
+/******/ const __webpack_exports__HTMLComponent = __webpack_exports__.HTMLComponent;
+/******/ const __webpack_exports__HashRouter = __webpack_exports__.HashRouter;
 /******/ const __webpack_exports__Lilact = __webpack_exports__.Lilact;
+/******/ const __webpack_exports__Link = __webpack_exports__.Link;
+/******/ const __webpack_exports__NavLink = __webpack_exports__.NavLink;
+/******/ const __webpack_exports__PropTypes = __webpack_exports__.PropTypes;
+/******/ const __webpack_exports__Provider = __webpack_exports__.Provider;
+/******/ const __webpack_exports__ResizablePane = __webpack_exports__.ResizablePane;
+/******/ const __webpack_exports__RootComponent = __webpack_exports__.RootComponent;
+/******/ const __webpack_exports__Route = __webpack_exports__.Route;
+/******/ const __webpack_exports__Routes = __webpack_exports__.Routes;
+/******/ const __webpack_exports__Spinner = __webpack_exports__.Spinner;
+/******/ const __webpack_exports__Suspense = __webpack_exports__.Suspense;
+/******/ const __webpack_exports__Transition = __webpack_exports__.Transition;
+/******/ const __webpack_exports__TransitionGroup = __webpack_exports__.TransitionGroup;
+/******/ const __webpack_exports__addWrappedEventListener = __webpack_exports__.addWrappedEventListener;
+/******/ const __webpack_exports__animationFramePromise = __webpack_exports__.animationFramePromise;
+/******/ const __webpack_exports__blocks_info = __webpack_exports__.blocks_info;
+/******/ const __webpack_exports__boolean_html_attributes_set = __webpack_exports__.boolean_html_attributes_set;
+/******/ const __webpack_exports__classNames = __webpack_exports__.classNames;
+/******/ const __webpack_exports__clearInterval = __webpack_exports__.clearInterval;
+/******/ const __webpack_exports__clearTimeout = __webpack_exports__.clearTimeout;
+/******/ const __webpack_exports__combineReducers = __webpack_exports__.combineReducers;
+/******/ const __webpack_exports__connect = __webpack_exports__.connect;
+/******/ const __webpack_exports__createComponent = __webpack_exports__.createComponent;
+/******/ const __webpack_exports__createContext = __webpack_exports__.createContext;
+/******/ const __webpack_exports__createElement = __webpack_exports__.createElement;
+/******/ const __webpack_exports__createRoot = __webpack_exports__.createRoot;
+/******/ const __webpack_exports__createSyntheticEvent = __webpack_exports__.createSyntheticEvent;
+/******/ const __webpack_exports__current_component = __webpack_exports__.current_component;
+/******/ const __webpack_exports__deepEqual = __webpack_exports__.deepEqual;
 /******/ const __webpack_exports__default = __webpack_exports__["default"];
-/******/ export { __webpack_exports__Lilact as Lilact, __webpack_exports__default as default };
+/******/ const __webpack_exports__emotion = __webpack_exports__.emotion;
+/******/ const __webpack_exports__error = __webpack_exports__.error;
+/******/ const __webpack_exports__eval_num = __webpack_exports__.eval_num;
+/******/ const __webpack_exports__events_set = __webpack_exports__.events_set;
+/******/ const __webpack_exports__findDOMNode = __webpack_exports__.findDOMNode;
+/******/ const __webpack_exports__forwardRef = __webpack_exports__.forwardRef;
+/******/ const __webpack_exports__getComponentByPointer = __webpack_exports__.getComponentByPointer;
+/******/ const __webpack_exports__globalErrorHandler = __webpack_exports__.globalErrorHandler;
+/******/ const __webpack_exports__grabTimers = __webpack_exports__.grabTimers;
+/******/ const __webpack_exports__id_num = __webpack_exports__.id_num;
+/******/ const __webpack_exports__isAsync = __webpack_exports__.isAsync;
+/******/ const __webpack_exports__isClass = __webpack_exports__.isClass;
+/******/ const __webpack_exports__isEmpty = __webpack_exports__.isEmpty;
+/******/ const __webpack_exports__isError = __webpack_exports__.isError;
+/******/ const __webpack_exports__isThenable = __webpack_exports__.isThenable;
+/******/ const __webpack_exports__isValidElement = __webpack_exports__.isValidElement;
+/******/ const __webpack_exports__layout_effects = __webpack_exports__.layout_effects;
+/******/ const __webpack_exports__lazy = __webpack_exports__.lazy;
+/******/ const __webpack_exports__length_css_attributes_set = __webpack_exports__.length_css_attributes_set;
+/******/ const __webpack_exports__pauseTimers = __webpack_exports__.pauseTimers;
+/******/ const __webpack_exports__redux = __webpack_exports__.redux;
+/******/ const __webpack_exports__releaseSyntheticEvent = __webpack_exports__.releaseSyntheticEvent;
+/******/ const __webpack_exports__releaseTimers = __webpack_exports__.releaseTimers;
+/******/ const __webpack_exports__render = __webpack_exports__.render;
+/******/ const __webpack_exports__require = __webpack_exports__.require;
+/******/ const __webpack_exports__required_scripts = __webpack_exports__.required_scripts;
+/******/ const __webpack_exports__resetTimers = __webpack_exports__.resetTimers;
+/******/ const __webpack_exports__resumeTimers = __webpack_exports__.resumeTimers;
+/******/ const __webpack_exports__roots = __webpack_exports__.roots;
+/******/ const __webpack_exports__run = __webpack_exports__.run;
+/******/ const __webpack_exports__runScripts = __webpack_exports__.runScripts;
+/******/ const __webpack_exports__scanBlockLabels = __webpack_exports__.scanBlockLabels;
+/******/ const __webpack_exports__setInterval = __webpack_exports__.setInterval;
+/******/ const __webpack_exports__setTimeout = __webpack_exports__.setTimeout;
+/******/ const __webpack_exports__shallowEqual = __webpack_exports__.shallowEqual;
+/******/ const __webpack_exports__special_attributes = __webpack_exports__.special_attributes;
+/******/ const __webpack_exports__timeoutPromise = __webpack_exports__.timeoutPromise;
+/******/ const __webpack_exports__toBool = __webpack_exports__.toBool;
+/******/ const __webpack_exports__traceError = __webpack_exports__.traceError;
+/******/ const __webpack_exports__transpileJSX = __webpack_exports__.transpileJSX;
+/******/ const __webpack_exports__transpilerConfig = __webpack_exports__.transpilerConfig;
+/******/ const __webpack_exports__update_cbs = __webpack_exports__.update_cbs;
+/******/ const __webpack_exports__update_interval_margin = __webpack_exports__.update_interval_margin;
+/******/ const __webpack_exports__update_set = __webpack_exports__.update_set;
+/******/ const __webpack_exports__update_timeout = __webpack_exports__.update_timeout;
+/******/ const __webpack_exports__useActionState = __webpack_exports__.useActionState;
+/******/ const __webpack_exports__useCallback = __webpack_exports__.useCallback;
+/******/ const __webpack_exports__useContext = __webpack_exports__.useContext;
+/******/ const __webpack_exports__useDeferredValue = __webpack_exports__.useDeferredValue;
+/******/ const __webpack_exports__useDispatch = __webpack_exports__.useDispatch;
+/******/ const __webpack_exports__useEffect = __webpack_exports__.useEffect;
+/******/ const __webpack_exports__useHook = __webpack_exports__.useHook;
+/******/ const __webpack_exports__useId = __webpack_exports__.useId;
+/******/ const __webpack_exports__useImperativeHandle = __webpack_exports__.useImperativeHandle;
+/******/ const __webpack_exports__useLayoutEffect = __webpack_exports__.useLayoutEffect;
+/******/ const __webpack_exports__useLocalStorage = __webpack_exports__.useLocalStorage;
+/******/ const __webpack_exports__useLocation = __webpack_exports__.useLocation;
+/******/ const __webpack_exports__useMemo = __webpack_exports__.useMemo;
+/******/ const __webpack_exports__useNavigate = __webpack_exports__.useNavigate;
+/******/ const __webpack_exports__useReducer = __webpack_exports__.useReducer;
+/******/ const __webpack_exports__useRef = __webpack_exports__.useRef;
+/******/ const __webpack_exports__useSelector = __webpack_exports__.useSelector;
+/******/ const __webpack_exports__useState = __webpack_exports__.useState;
+/******/ const __webpack_exports__useStore = __webpack_exports__.useStore;
+/******/ const __webpack_exports__useTransition = __webpack_exports__.useTransition;
+/******/ const __webpack_exports__wrapListener = __webpack_exports__.wrapListener;
+/******/ export { __webpack_exports__CSSTransition as CSSTransition, __webpack_exports__Children as Children, __webpack_exports__Component as Component, __webpack_exports__ErrorBoundary as ErrorBoundary, __webpack_exports__Fragment as Fragment, __webpack_exports__HTMLComponent as HTMLComponent, __webpack_exports__HashRouter as HashRouter, __webpack_exports__Lilact as Lilact, __webpack_exports__Link as Link, __webpack_exports__NavLink as NavLink, __webpack_exports__PropTypes as PropTypes, __webpack_exports__Provider as Provider, __webpack_exports__ResizablePane as ResizablePane, __webpack_exports__RootComponent as RootComponent, __webpack_exports__Route as Route, __webpack_exports__Routes as Routes, __webpack_exports__Spinner as Spinner, __webpack_exports__Suspense as Suspense, __webpack_exports__Transition as Transition, __webpack_exports__TransitionGroup as TransitionGroup, __webpack_exports__addWrappedEventListener as addWrappedEventListener, __webpack_exports__animationFramePromise as animationFramePromise, __webpack_exports__blocks_info as blocks_info, __webpack_exports__boolean_html_attributes_set as boolean_html_attributes_set, __webpack_exports__classNames as classNames, __webpack_exports__clearInterval as clearInterval, __webpack_exports__clearTimeout as clearTimeout, __webpack_exports__combineReducers as combineReducers, __webpack_exports__connect as connect, __webpack_exports__createComponent as createComponent, __webpack_exports__createContext as createContext, __webpack_exports__createElement as createElement, __webpack_exports__createRoot as createRoot, __webpack_exports__createSyntheticEvent as createSyntheticEvent, __webpack_exports__current_component as current_component, __webpack_exports__deepEqual as deepEqual, __webpack_exports__default as default, __webpack_exports__emotion as emotion, __webpack_exports__error as error, __webpack_exports__eval_num as eval_num, __webpack_exports__events_set as events_set, __webpack_exports__findDOMNode as findDOMNode, __webpack_exports__forwardRef as forwardRef, __webpack_exports__getComponentByPointer as getComponentByPointer, __webpack_exports__globalErrorHandler as globalErrorHandler, __webpack_exports__grabTimers as grabTimers, __webpack_exports__id_num as id_num, __webpack_exports__isAsync as isAsync, __webpack_exports__isClass as isClass, __webpack_exports__isEmpty as isEmpty, __webpack_exports__isError as isError, __webpack_exports__isThenable as isThenable, __webpack_exports__isValidElement as isValidElement, __webpack_exports__layout_effects as layout_effects, __webpack_exports__lazy as lazy, __webpack_exports__length_css_attributes_set as length_css_attributes_set, __webpack_exports__pauseTimers as pauseTimers, __webpack_exports__redux as redux, __webpack_exports__releaseSyntheticEvent as releaseSyntheticEvent, __webpack_exports__releaseTimers as releaseTimers, __webpack_exports__render as render, __webpack_exports__require as require, __webpack_exports__required_scripts as required_scripts, __webpack_exports__resetTimers as resetTimers, __webpack_exports__resumeTimers as resumeTimers, __webpack_exports__roots as roots, __webpack_exports__run as run, __webpack_exports__runScripts as runScripts, __webpack_exports__scanBlockLabels as scanBlockLabels, __webpack_exports__setInterval as setInterval, __webpack_exports__setTimeout as setTimeout, __webpack_exports__shallowEqual as shallowEqual, __webpack_exports__special_attributes as special_attributes, __webpack_exports__timeoutPromise as timeoutPromise, __webpack_exports__toBool as toBool, __webpack_exports__traceError as traceError, __webpack_exports__transpileJSX as transpileJSX, __webpack_exports__transpilerConfig as transpilerConfig, __webpack_exports__update_cbs as update_cbs, __webpack_exports__update_interval_margin as update_interval_margin, __webpack_exports__update_set as update_set, __webpack_exports__update_timeout as update_timeout, __webpack_exports__useActionState as useActionState, __webpack_exports__useCallback as useCallback, __webpack_exports__useContext as useContext, __webpack_exports__useDeferredValue as useDeferredValue, __webpack_exports__useDispatch as useDispatch, __webpack_exports__useEffect as useEffect, __webpack_exports__useHook as useHook, __webpack_exports__useId as useId, __webpack_exports__useImperativeHandle as useImperativeHandle, __webpack_exports__useLayoutEffect as useLayoutEffect, __webpack_exports__useLocalStorage as useLocalStorage, __webpack_exports__useLocation as useLocation, __webpack_exports__useMemo as useMemo, __webpack_exports__useNavigate as useNavigate, __webpack_exports__useReducer as useReducer, __webpack_exports__useRef as useRef, __webpack_exports__useSelector as useSelector, __webpack_exports__useState as useState, __webpack_exports__useStore as useStore, __webpack_exports__useTransition as useTransition, __webpack_exports__wrapListener as wrapListener };
 /******/ 
 
 //# sourceMappingURL=lilact.development.js.map

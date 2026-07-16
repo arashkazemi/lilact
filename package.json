@@ -1,6 +1,6 @@
 {
   "name": "lilact",
-  "version": "0.7.12",
+  "version": "0.8.0",
   "description": "A Little React/JSX Runtime Implementation for Browser",
   "repository": "github:arashkazemi/lilact",
   "homepage": "https://arashkazemi.github.io/lilact/",
@@ -9,7 +9,8 @@
     "jsx",
     "transpiler",
     "hook",
-    "component"
+    "component",
+    "bundle"
   ],
   "main": "src/lilact.jsx",
   "type": "module",
@@ -23,7 +24,8 @@
     "build": "npm-run-all build:debug.min build:debug build:release.min doc"
   },
   "bin": {
-    "transpile": "./bin/transpile.js"
+    "transpile": "./bin/transpile.js",
+    "lilact-bundler": "./bin/bundle.cjs"
   },
   "author": "Arash Kazemi <contact.arash.kazemi@gmail.com>",
   "license": "BSD-2-Clause",
@@ -42,5 +44,8 @@
     "style-loader": "^4.0.0",
     "webpack": "^5.97.1"
   },
-  "exports": {}
+  "exports": {
+    ".": "./dist/lilact.development.js",
+    "./package.json": "./package.json"
+  }
 }
