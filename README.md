@@ -6,11 +6,11 @@
 
 ---
 
-[Docs on GitHub Pages](arashkazemi.github.io/lilact/) — [Demos on GitHub Pages](arashkazemi.github.io/lilact/static)
+[Docs on GitHub Pages](https://arashkazemi.github.io/lilact/) — [Demos on GitHub Pages](https://arashkazemi.github.io/lilact/static)
 
-[Lilact repo on GitHub](github.com/arashkazemi/lilact) — [Lilact on npm](www.npmjs.com/package/lilact)
+[Lilact repo on GitHub](https://github.com/arashkazemi/lilact) — [Lilact on npm](https://www.npmjs.com/package/lilact)
 
-[Lilact/Node/Express Demo Project](github.com/arashkazemi/lilact-express) — [Lilact/PHP Demo Project](github.com/arashkazemi/lilact-php-demo) — [Lilact/Python Demo Project](github.com/arashkazemi/lilact-python-demo)
+[Lilact/Node/Express Demo Project](https://github.com/arashkazemi/lilact-express) — [Lilact/PHP Demo Project](https://github.com/arashkazemi/lilact-php-demo) — [Lilact/Python Demo Project](https://github.com/arashkazemi/lilact-python-demo)
 
 ---
 
@@ -80,7 +80,7 @@ npx lilact-bundle --entry client/App.jsx --mode production --name bundle.js --ou
 
 ## Using Lilact Outside Node.js (Browser / Script Tag Integration)
 
-If you use `Lilact` outside Node.js, `Lilact` runs in the browser. In this mode it uses `eval` to run the transpiled scripts, so it cannot use `import`/`export` the same way as a module.
+`Lilact` runs in the browser, so if you use `Lilact` outside Node, it uses `eval` to run the transpiled scripts, so it cannot use `import`/`export` the same way as a module.
 
 Import the functions using this convention:
 
@@ -97,13 +97,13 @@ module.exports = ...
 Bundled projects can also be used statically on other backends. However, bundling is not required: JSX files can be served and transpiled live.
 
 A complete example of a `Lilact` project with an `express` request handler is available at:  
-[lilact-express](github.com/arashkazemi/lilact-express)
+[lilact-express](https://github.com/arashkazemi/lilact-express)
 
 An example using it with a PHP/MySQL data store is available at:  
-[lilact-php-demo](github.com/arashkazemi/lilact-php-demo)
+[lilact-php-demo](https://github.com/arashkazemi/lilact-php-demo)
 
 An example using it with a Python/SQLite data store is available at:  
-[lilact-python-demo](github.com/arashkazemi/lilact-python-demo)
+[lilact-python-demo](https://github.com/arashkazemi/lilact-python-demo)
 
 ---
 
@@ -122,13 +122,13 @@ To use `Lilact` in a webpage, first download the source code and extract it. The
 It is also available via unpkg CDN and can be included in HTML like:
 
 ```html
-<script src="unpkg.com/lilact/dist/lilact.development.min.js"></script>
+<script src="https://unpkg.com/lilact/dist/lilact.development.min.js"></script>
 ```
 
 or
 
 ```html
-<script src="unpkg.com/lilact/dist/lilact.production.min.js"></script>
+<script src="https://unpkg.com/lilact/dist/lilact.production.min.js"></script>
 ```
 
 Note: the production version, like the official React API, doesn’t perform PropTypes checks, but you can access PropTypes using `Lilact.PropTypes`.
@@ -183,7 +183,7 @@ render(<App/>, document.body);
 ## Learn More / Demos / Beta Status
 
 To know more about using `Lilact`, see the included examples:  
-[Lilact Demo Examples](arashkazemi.github.io/lilact/static)
+[Lilact Demo Examples](https://arashkazemi.github.io/lilact/static)
 
 For the details, see the documentation.
 
