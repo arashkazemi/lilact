@@ -15,7 +15,7 @@
 ---
 
 If you find Lilact useful, please consider sponsoring. Your support funds ongoing maintenance, performance improvements, and new features.  
-[Sponsor me on GitHub](github.com/sponsors/arashkazemi)
+[Sponsor me on GitHub](https://github.com/sponsors/arashkazemi)
 
 ---
 
@@ -82,10 +82,13 @@ npx lilact-bundle --entry client/App.jsx --mode production --name bundle.js --ou
 
 `Lilact` runs in the browser, so if you use `Lilact` outside Node, it uses `eval` to run the transpiled scripts, so it cannot use `import`/`export` the same way as a module.
 
-Import the functions using this convention:
+Import the `Lilact` functions using this convention. There is also a `require` function that you can use
+to load other JSX or JS files.
 
 ```js
-const { useState, useRef, render } = Lilact;
+const { useState, useRef, render, require } = Lilact;
+
+const App = require('./App.jsx');
 ```
 
 To export:
