@@ -1,116 +1,106 @@
 <!DOCTYPE html><html class="default" lang="en" data-base="./"><head><meta charset="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>Lilact</title><meta name="description" content="Documentation for Lilact"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script defer src="assets/main.js"></script><script async src="assets/icons.js" id="tsd-icons-script"></script><script async src="assets/search.js" id="tsd-search-script"></script><script async src="assets/navigation.js" id="tsd-nav-script"></script><script async src="assets/hierarchy.js" id="tsd-hierarchy-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => window.app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar"><div class="tsd-toolbar-contents container"><a href="index.html" class="title">Lilact</a><div id="tsd-toolbar-links"></div><button id="tsd-search-trigger" class="tsd-widget" aria-label="Search"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-search"></use></svg></button><dialog id="tsd-search" aria-label="Search"><input role="combobox" id="tsd-search-input" aria-controls="tsd-search-results" aria-autocomplete="list" aria-expanded="true" autocapitalize="off" autocomplete="off" placeholder="Search the docs" maxLength="100"/><ul role="listbox" id="tsd-search-results"></ul><div id="tsd-search-status" aria-live="polite" aria-atomic="true"><div>Preparing search index...</div></div></dialog><a href="#" class="tsd-widget menu" id="tsd-toolbar-menu-trigger" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-menu"></use></svg></a></div></header><div class="container container-main"><div class="col-content"><div class="tsd-page-title"><h1>Lilact</h1></div><div class="tsd-panel tsd-typography"><img src="media/icon.png" alt="Description" width="128" style="margin-left: -.76rem"/>
 <h1 id="lilact" class="tsd-anchor-link">Lilact<a href="#lilact" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h1>
-<h3 id="a-little-reactjsx-runtime-implementation-for-browser" class="tsd-anchor-link">A Little React/JSX Runtime Implementation for Browser<a href="#a-little-reactjsx-runtime-implementation-for-browser" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
-<p><a href="https://arashkazemi.github.io/lilact/">Docs on GitHub Pages</a> - <a href="https://arashkazemi.github.io/lilact/static">Demos on GitHub Pages</a></p>
-<p><a href="https://github.com/arashkazemi/lilact">Lilact repo on GitHub</a> - <a href="https://www.npmjs.com/package/lilact">Lilact on npm</a></p>
-<p><a href="https://github.com/arashkazemi/lilact-php-demo">Lilact/PHP Demo</a> - <a href="https://github.com/arashkazemi/lilact-python-demo">Lilact/Python Demo</a></p>
+<h3 id="a-little-reactjsx-runtime-implementation-for-the-browser" class="tsd-anchor-link">A Little React/JSX Runtime Implementation for the Browser<a href="#a-little-reactjsx-runtime-implementation-for-the-browser" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <hr>
-<p>If you find Lilact useful, please consider sponsoring. Your support funds ongoing maintenance,
-performance improvements, and new features. <a href="https://github.com/sponsors/arashkazemi">Sponsor me on GitHub</a></p>
+<p><a href="arashkazemi.github.io/lilact/">Docs on GitHub Pages</a> — <a href="arashkazemi.github.io/lilact/static">Demos on GitHub Pages</a></p>
+<p><a href="github.com/arashkazemi/lilact">Lilact repo on GitHub</a> — <a href="www.npmjs.com/package/lilact">Lilact on npm</a></p>
+<p><a href="github.com/arashkazemi/lilact-express">Lilact/Node/Express Demo Project</a> — <a href="github.com/arashkazemi/lilact-php-demo">Lilact/PHP Demo Project</a> — <a href="github.com/arashkazemi/lilact-python-demo">Lilact/Python Demo Project</a></p>
 <hr>
-<p><code>Lilact</code> is a very lightweight implementation of the React API that is
-designed to work in the browser. It can be used as a single script
-that is around <code>80kb</code> minified and around <code>27kb</code> gzipped and includes its whole api.
-<code>Lilact</code> is very fast, it uses minimal resources and handles memory very efficiently.</p>
-<p>When used in node environment, <code>Lilact</code> can be incorporated and imported similar to React,
-and it also provides a <code>webpack</code> based bundler. The bundler is in the <code>bin</code> directory, and can
-be used like</p>
-<pre><code>    npx lilact-bundle --entry client/App.jsx --mode production --name bundle.js --out public/dist
-</code></pre>
-<p>A complete example of a <code>Lilact</code> project with an <code>express</code> request handler is available on
-<a href="https://github.com/arashkazemi/lilact-express">lilact-express</a>.</p>
-<p><code>Lilact</code> essentially works in the browser, so it doesn't rely on node environment and can
-work with any kind of webserver/back-end. An example of using it with a PHP/MySQL
-data store is available on <a href="https://github.com/arashkazemi/lilact-php-demo">lilact-php-demo</a>.
-And an example of using it with a Python/SQLite data store is available on
-<a href="https://github.com/arashkazemi/lilact-python-demo">lilact-python-demo</a>.</p>
+<p>If you find Lilact useful, please consider sponsoring. Your support funds ongoing maintenance, performance improvements, and new features.<br>
+<a href="github.com/sponsors/arashkazemi">Sponsor me on GitHub</a></p>
 <hr>
-<p><code>Lilact</code> uses its own JSX transpiler (not Babel). It is a recursive-descent
-parser with lookahead, that doesn't parse the JS syntax completely and relies on the
-JS runtime to detect some errors. The transpiler weights only a few kilobytes and can
-be incorporated into other React engines too. It even generates sourcemaps without relying
-on any 3rd party library. There is a <code>transpile.js</code> helper in the bin directory to show
-how you can use it.</p>
-<p><code>Lilact</code> implements both the <strong>legacy class based</strong> and <strong>modern hook based</strong> APIs. And it
-has almost everything  necessary. In addition to the API, it also includes the official
-<code>Redux</code> and <code>PropTypes</code> libraries to be used (see the <code>redux.jsx</code> and <code>proptypes.jsx</code> demos).
-So it has redux support and has many of the functions and hooks, i.e. <code>connect</code> and
-<code>useDispatch</code>.</p>
-<p>It also includes the amazing <code>@emotion/css</code> library to ease working with styles.
-It can be accessed through <code>Lilact.emotion</code>.</p>
-<p>To ease working, it already includes <code>HashRouter</code>, <code>CSSTransition</code>, <code>ErrorBoundary</code>,
-<code>Suspense</code>, and some helper components like <code>Spinner</code> and <code>ResizablePane</code>. It also has
-a specific timeout implementation that can be paused and resumed at will. <code>Lilact</code>'s
-<code>Suspense</code> has a few more features than the standard API.</p>
-<p>You can see all the available members and methods in the documentation. And there is a list of
-demos that can all be seen alongside their code at <a href="https://arashkazemi.github.io/lilact/static">Lilact Demo Examples</a>.
-Just note that the modules are separated in the documentation to improve the doc
-structure, and in practice all the methods and members are accessible via the <code>Lilact</code> object
-itself directly.</p>
+<h2 id="overview" class="tsd-anchor-link">Overview<a href="#overview" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p><code>Lilact</code> is a very lightweight implementation of the React API designed to run in the browser. It can be used as a single script that is around <code>80kb</code> minified and around <code>27kb</code> gzipped, and includes its whole API.</p>
+<p><code>Lilact</code> is very fast, uses minimal resources, and handles memory very efficiently.</p>
+<p>In a Node.js environment, <code>Lilact</code> can be incorporated and imported similarly to React, and it can also be used as a static library in other platforms.</p>
 <hr>
-<p>If you use <code>Lilact</code> outside node environment, <code>Lilact</code> runs in the browser, so it uses <code>eval</code>
-to run the transpiled scripts, and cannot use import and exports the same way as a module. So
-you should import the functions using the following convention</p>
-<pre><code>    const { useState, useRef, render } = Lilact;
-</code></pre>
-<p>And to export you can use <code>module.exports = ...</code>.</p>
+<h2 id="jsx-transpiler" class="tsd-anchor-link">JSX Transpiler<a href="#jsx-transpiler" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p><code>Lilact</code> uses its own JSX transpiler (not Babel). It is a recursive-descent parser with lookahead. It doesn’t parse the full JavaScript syntax and instead relies on the JS runtime to detect some errors.</p>
+<p>The transpiler is only a few kilobytes and can be incorporated into other React engines as well. It even generates sourcemaps without relying on any third-party library.</p>
+<p>There is a <code>transpile.js</code> helper in the <code>bin</code> directory to demonstrate how to use it.</p>
 <hr>
-<p>To use in other node projects, install <code>Lilact</code> from npm public repository:</p>
-<pre><code>    npm i lilact  
-</code></pre>
-<p>It is also available via unpkg CDN and can be included in HTML files using</p>
-<pre><code>    &lt;script src=&quot;https://unpkg.com/lilact/dist/lilact.development.min.js&quot;&gt;&lt;/script&gt;
-</code></pre>
+<h2 id="react-apis-libraries-and-built-in-components" class="tsd-anchor-link">React APIs, Libraries, and Built-in Components<a href="#react-apis-libraries-and-built-in-components" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p><code>Lilact</code> implements both the <strong>legacy class-based</strong> API and the <strong>modern hook-based</strong> API, and it includes almost everything you need.</p>
+<p>In addition to the API itself, it bundles the official <code>Redux</code> and <code>PropTypes</code> libraries (see the <code>redux.jsx</code> and <code>proptypes.jsx</code> demos). As a result, it has Redux support and provides many functions and hooks, including <code>connect</code> and <code>useDispatch</code>.</p>
+<p>It also includes the amazing <code>@emotion/css</code> library to ease working with styles. You can access it via <code>Lilact.emotion</code>.</p>
+<p>For convenience, it already includes components such as:</p>
+<ul>
+<li><code>HashRouter</code></li>
+<li><code>CSSTransition</code></li>
+<li><code>ErrorBoundary</code></li>
+<li><code>Suspense</code></li>
+</ul>
+<p>and helper components like:</p>
+<ul>
+<li><code>Spinner</code></li>
+<li><code>ResizablePane</code></li>
+</ul>
+<p>It also includes a specific timeout implementation that can be paused and resumed at will. <code>Lilact</code>’s <code>Suspense</code> includes additional features beyond the standard API.</p>
+<p>You can see all available members and methods in the documentation. There is also a list of demos you can view alongside their code at:<br>
+<a href="arashkazemi.github.io/lilact/static">Lilact Demo Examples</a></p>
+<p>Note: modules are separated in the documentation to improve structure, but in practice all members and methods are accessible directly via the <code>Lilact</code> object.</p>
+<hr>
+<h2 id="webpack-based-bundler" class="tsd-anchor-link">Webpack-based Bundler<a href="#webpack-based-bundler" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>A <code>webpack</code> based bundler is available in the <code>bin</code> directory. It can be used like this:</p>
+<pre><code class="bash"><span class="hl-0">npx</span><span class="hl-1"> </span><span class="hl-2">lilact-bundle</span><span class="hl-1"> </span><span class="hl-3">--entry</span><span class="hl-1"> </span><span class="hl-2">client/App.jsx</span><span class="hl-1"> </span><span class="hl-3">--mode</span><span class="hl-1"> </span><span class="hl-2">production</span><span class="hl-1"> </span><span class="hl-3">--name</span><span class="hl-1"> </span><span class="hl-2">bundle.js</span><span class="hl-1"> </span><span class="hl-3">--out</span><span class="hl-1"> </span><span class="hl-2">public/dist</span>
+</code><button type="button">Copy</button></pre>
+
+<hr>
+<h2 id="using-lilact-outside-nodejs-browser-script-tag-integration" class="tsd-anchor-link">Using Lilact Outside Node.js (Browser / Script Tag Integration)<a href="#using-lilact-outside-nodejs-browser-script-tag-integration" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>If you use <code>Lilact</code> outside Node.js, <code>Lilact</code> runs in the browser. In this mode it uses <code>eval</code> to run the transpiled scripts, so it cannot use <code>import</code>/<code>export</code> the same way as a module.</p>
+<p>Import the functions using this convention:</p>
+<pre><code class="js"><span class="hl-3">const</span><span class="hl-1"> { </span><span class="hl-4">useState</span><span class="hl-1">, </span><span class="hl-4">useRef</span><span class="hl-1">, </span><span class="hl-4">render</span><span class="hl-1"> } = </span><span class="hl-5">Lilact</span><span class="hl-1">;</span>
+</code><button type="button">Copy</button></pre>
+
+<p>To export:</p>
+<pre><code class="js"><span class="hl-6">module</span><span class="hl-1">.</span><span class="hl-6">exports</span><span class="hl-1"> = ...</span>
+</code><button type="button">Copy</button></pre>
+
+<p>Bundled projects can also be used statically on other backends. However, bundling is not required: JSX files can be served and transpiled live.</p>
+<p>A complete example of a <code>Lilact</code> project with an <code>express</code> request handler is available at:<br>
+<a href="github.com/arashkazemi/lilact-express">lilact-express</a></p>
+<p>An example using it with a PHP/MySQL data store is available at:<br>
+<a href="github.com/arashkazemi/lilact-php-demo">lilact-php-demo</a></p>
+<p>An example using it with a Python/SQLite data store is available at:<br>
+<a href="github.com/arashkazemi/lilact-python-demo">lilact-python-demo</a></p>
+<hr>
+<h2 id="installation-and-delivery" class="tsd-anchor-link">Installation and Delivery<a href="#installation-and-delivery" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<h3 id="nodejs-npm" class="tsd-anchor-link">Node.js (npm)<a href="#nodejs-npm" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<p>To use <code>Lilact</code> in other Node projects, install it from the npm public repository:</p>
+<pre><code class="bash"><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">i</span><span class="hl-1"> </span><span class="hl-2">lilact</span>
+</code><button type="button">Copy</button></pre>
+
+<h3 id="browser-static-dist--cdn" class="tsd-anchor-link">Browser / Static (dist + CDN)<a href="#browser-static-dist--cdn" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<p>To use <code>Lilact</code> in a webpage, first download the source code and extract it. The minified script itself is available in the <code>/dist</code> directory, and the documentation can be found in <code>/docs</code> and also in the source files.</p>
+<p>It is also available via unpkg CDN and can be included in HTML like:</p>
+<pre><code class="html"><span class="hl-7">&lt;</span><span class="hl-8">script</span><span class="hl-9"> </span><span class="hl-10">src</span><span class="hl-9">=</span><span class="hl-11">&quot;unpkg.com/lilact/dist/lilact.development.min.js&quot;</span><span class="hl-7">&gt;&lt;/</span><span class="hl-8">script</span><span class="hl-7">&gt;</span>
+</code><button type="button">Copy</button></pre>
+
 <p>or</p>
-<pre><code>    &lt;script src=&quot;https://unpkg.com/lilact/dist/lilact.production.min.js&quot;&gt;&lt;/script&gt;
-</code></pre>
-<p>To use in a webpage, first download the source code and extract it. The minified
-script itself is available in the <code>/dist</code> directory and the documentation
-can be found in the <code>/docs</code> and also in the source files.</p>
-<p>Note that the production version, like the official React API, doesn't do the PropTypes
-checks, but you can access PropTypes using Lilact.PropTypes.</p>
-<p>After being loaded, Lilact automatically scans the document for any script elements
-with <code>type='text/jsx'</code> and it will run them. If the <code>src</code> attribute is script it will load
-the resource, and if there is inner content it will be executed. Of course this is not the
-only way and in node projects you can have your <code>jsx</code> files and import <code>Lilact</code> as a
-standard module.</p>
-<p>Lilact wraps the browser events to mimic React events, this mimicry is not perfect on
-some edge cases, as the footprint was very important, but it works without a problem overall.</p>
-<p>As a simple example <code>Lilact</code> can be used like this in <code>node</code> environment:</p>
-<pre><code>    import { render } from &quot;lilact&quot;;
+<pre><code class="html"><span class="hl-7">&lt;</span><span class="hl-8">script</span><span class="hl-9"> </span><span class="hl-10">src</span><span class="hl-9">=</span><span class="hl-11">&quot;unpkg.com/lilact/dist/lilact.production.min.js&quot;</span><span class="hl-7">&gt;&lt;/</span><span class="hl-8">script</span><span class="hl-7">&gt;</span>
+</code><button type="button">Copy</button></pre>
 
-    function App() {
-            return &lt;div&gt;Hello World&lt;/div&gt;;
-    }
-    
-    render(&lt;App/&gt;, document.body);
-</code></pre>
-<p>And outside <code>node</code>, i.e. in integration with <code>php</code> or <code>python</code>, it should be used this way:</p>
-<pre><code>    &lt;!DOCTYPE html&gt;
-    &lt;html&gt;
-    &lt;head&gt;
-            &lt;meta charset=&quot;utf-8&quot;/&gt;
-            &lt;title&gt;Lilact Demo&lt;/title&gt;
-            &lt;script src='./lilact.development.min.js' type=&quot;module&quot;&gt;&lt;/script&gt;
-    &lt;/head&gt;
-    &lt;body&gt;&lt;/body&gt;
-    &lt;script type='text/jsx'&gt;
-            const { render } = Lilact;
+<p>Note: the production version, like the official React API, doesn’t perform PropTypes checks, but you can access PropTypes using <code>Lilact.PropTypes</code>.</p>
+<p>After loading, <code>Lilact</code> automatically scans the document for any script elements with <code>type='text/jsx'</code> and runs them. If the <code>src</code> attribute is present on the script, it will load the resource; if the script contains inner content, it will be executed.</p>
+<p>This is not the only way to use it—inside Node projects you can use standard module imports and treat <code>Lilact</code> like a normal module.</p>
+<p><code>Lilact</code> wraps browser events to mimic React events. This mimicry is not perfect on some edge cases (because the footprint was important), but it works well overall.</p>
+<hr>
+<h2 id="example" class="tsd-anchor-link">Example<a href="#example" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<h3 id="nodejs-example" class="tsd-anchor-link">Node.js example<a href="#nodejs-example" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<pre><code class="js"><span class="hl-12">import</span><span class="hl-1"> { </span><span class="hl-5">render</span><span class="hl-1"> } </span><span class="hl-12">from</span><span class="hl-1"> </span><span class="hl-2">&quot;lilact&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-3">function</span><span class="hl-1"> </span><span class="hl-0">App</span><span class="hl-1">() {</span><br/><span class="hl-1">  </span><span class="hl-12">return</span><span class="hl-1"> </span><span class="hl-7">&lt;</span><span class="hl-8">div</span><span class="hl-7">&gt;</span><span class="hl-1">Hello World</span><span class="hl-7">&lt;/</span><span class="hl-8">div</span><span class="hl-7">&gt;</span><span class="hl-1">;</span><br/><span class="hl-1">}</span><br/><br/><span class="hl-0">render</span><span class="hl-1">(</span><span class="hl-7">&lt;</span><span class="hl-6">App</span><span class="hl-7">/&gt;</span><span class="hl-1">, </span><span class="hl-5">document</span><span class="hl-1">.</span><span class="hl-5">body</span><span class="hl-1">);</span>
+</code><button type="button">Copy</button></pre>
 
-            function App() {
-                    return &lt;div&gt;Hello World&lt;/div&gt;;
-            }
-            
-            render(&lt;App/&gt;, document.body);
-    &lt;/script&gt;
-    &lt;/html&gt;
-</code></pre>
-<p>To know more about using <code>Lilact</code>, see the included examples <a href="https://arashkazemi.github.io/lilact/static">Lilact Demo Examples</a>
-and for the details see the documentation.</p>
-<p><code>Lilact</code> is currently in its beta state. It is under heavy tests and improvements are
-being made. Please report any possible issues or bugs, they will be fixed
-without any hesitation!</p>
+<h3 id="outside-nodejs-eg-php-python-integration" class="tsd-anchor-link">Outside Node.js (e.g., PHP / Python integration)<a href="#outside-nodejs-eg-php-python-integration" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<pre><code class="html"><span class="hl-7">&lt;!</span><span class="hl-8">DOCTYPE</span><span class="hl-1"> </span><span class="hl-10">html</span><span class="hl-7">&gt;</span><br/><span class="hl-7">&lt;</span><span class="hl-8">html</span><span class="hl-7">&gt;</span><br/><span class="hl-7">&lt;</span><span class="hl-8">head</span><span class="hl-7">&gt;</span><br/><span class="hl-1">  </span><span class="hl-7">&lt;</span><span class="hl-8">meta</span><span class="hl-1"> </span><span class="hl-10">charset</span><span class="hl-1">=</span><span class="hl-11">&quot;utf-8&quot;</span><span class="hl-7">/&gt;</span><br/><span class="hl-1">  </span><span class="hl-7">&lt;</span><span class="hl-8">title</span><span class="hl-7">&gt;</span><span class="hl-1">Lilact Demo</span><span class="hl-7">&lt;/</span><span class="hl-8">title</span><span class="hl-7">&gt;</span><br/><span class="hl-1">  </span><span class="hl-7">&lt;</span><span class="hl-8">script</span><span class="hl-9"> </span><span class="hl-10">src</span><span class="hl-9">=</span><span class="hl-11">&#39;./lilact.development.min.js&#39;</span><span class="hl-9"> </span><span class="hl-10">type</span><span class="hl-9">=</span><span class="hl-11">&quot;module&quot;</span><span class="hl-7">&gt;&lt;/</span><span class="hl-8">script</span><span class="hl-7">&gt;</span><br/><span class="hl-7">&lt;/</span><span class="hl-8">head</span><span class="hl-7">&gt;</span><br/><span class="hl-7">&lt;</span><span class="hl-8">body</span><span class="hl-7">&gt;&lt;/</span><span class="hl-8">body</span><span class="hl-7">&gt;</span><br/><span class="hl-7">&lt;</span><span class="hl-8">script</span><span class="hl-9"> </span><span class="hl-10">type</span><span class="hl-9">=</span><span class="hl-11">&#39;text/jsx&#39;</span><span class="hl-7">&gt;</span><br/><span class="hl-9">  const { render } = Lilact;</span><br/><br/><span class="hl-9">  function App() {</span><br/><span class="hl-9">    return &lt;div&gt;Hello World&lt;/div&gt;;</span><br/><span class="hl-9">  }</span><br/><span class="hl-9">  </span><br/><span class="hl-9">  render(&lt;App/&gt;, document.body);</span><br/><span class="hl-7">&lt;/</span><span class="hl-8">script</span><span class="hl-7">&gt;</span><br/><span class="hl-7">&lt;/</span><span class="hl-8">html</span><span class="hl-7">&gt;</span>
+</code><button type="button">Copy</button></pre>
+
+<hr>
+<h2 id="learn-more-demos--beta-status" class="tsd-anchor-link">Learn More / Demos / Beta Status<a href="#learn-more-demos--beta-status" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>To know more about using <code>Lilact</code>, see the included examples:<br>
+<a href="arashkazemi.github.io/lilact/static">Lilact Demo Examples</a></p>
+<p>For the details, see the documentation.</p>
+<p><code>Lilact</code> is currently in its beta state. It is under heavy testing and improvements are being made. Please report any possible issues or bugs—They will be fixed without any hesitation!</p>
 <hr>
 <p>Copyright (C) 2024-2026 Arash Kazemi <a href="mailto:contact.arash.kazemi@gmail.com">contact.arash.kazemi@gmail.com</a>. All rights reserved.</p>
 <p>Lilact project is subject to the terms of BSD-2-Clause License. See the <code>LICENSE.TXT</code> file for more details.</p>
-<style>.tsd-page-title{display: none}</style></div></div><div class="col-sidebar"><div class="page-menu"><div class="tsd-navigation settings"><details class="tsd-accordion"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-chevronDown"></use></svg><h3>Settings</h3></summary><div class="tsd-accordion-details"><div class="tsd-filter-visibility"><span class="settings-label">Member Visibility</span><ul id="tsd-filter-options"><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-protected" name="protected"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Protected</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-external" name="external"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>External</span></label></li></ul></div><div class="tsd-theme-toggle"><label class="settings-label" for="tsd-theme">Theme</label><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div><details open class="tsd-accordion tsd-page-navigation"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-chevronDown"></use></svg><h3>On This Page</h3></summary><div class="tsd-accordion-details"><a href="#lilact"><span>Lilact</span></a><ul><li><a href="#a-little-reactjsx-runtime-implementation-for-browser"><span>A <wbr/>Little <wbr/>React/<wbr/>JSX <wbr/>Runtime <wbr/>Implementation for <wbr/>Browser</span></a></li></ul></div></details></div><div class="site-menu"><nav class="tsd-navigation"><a href="modules.html">Lilact</a><ul class="tsd-small-nested-navigation" id="tsd-nav-container"><li>Loading...</li></ul></nav></div></div></div><footer><p class="tsd-generator">Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></footer><div class="overlay"></div></body></html>
+<style>.tsd-page-title{display: none}</style></div></div><div class="col-sidebar"><div class="page-menu"><div class="tsd-navigation settings"><details class="tsd-accordion"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-chevronDown"></use></svg><h3>Settings</h3></summary><div class="tsd-accordion-details"><div class="tsd-filter-visibility"><span class="settings-label">Member Visibility</span><ul id="tsd-filter-options"><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-protected" name="protected"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Protected</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-external" name="external"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>External</span></label></li></ul></div><div class="tsd-theme-toggle"><label class="settings-label" for="tsd-theme">Theme</label><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div><details open class="tsd-accordion tsd-page-navigation"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-chevronDown"></use></svg><h3>On This Page</h3></summary><div class="tsd-accordion-details"><a href="#lilact"><span>Lilact</span></a><ul><li><ul><li><a href="#a-little-reactjsx-runtime-implementation-for-the-browser"><span>A <wbr/>Little <wbr/>React/<wbr/>JSX <wbr/>Runtime <wbr/>Implementation for the <wbr/>Browser</span></a></li></ul></li><li><a href="#overview"><span>Overview</span></a></li><li><a href="#jsx-transpiler"><span>JSX <wbr/>Transpiler</span></a></li><li><a href="#react-apis-libraries-and-built-in-components"><span>React <wbr/>AP<wbr/>Is, <wbr/>Libraries, and <wbr/>Built-<wbr/>in <wbr/>Components</span></a></li><li><a href="#webpack-based-bundler"><span>Webpack-<wbr/>based <wbr/>Bundler</span></a></li><li><a href="#using-lilact-outside-nodejs-browser-script-tag-integration"><span>Using <wbr/>Lilact <wbr/>Outside <wbr/>Node.js (<wbr/>Browser / <wbr/>Script <wbr/>Tag <wbr/>Integration)</span></a></li><li><a href="#installation-and-delivery"><span>Installation and <wbr/>Delivery</span></a></li><li><ul><li><a href="#nodejs-npm"><span>Node.js (npm)</span></a></li><li><a href="#browser-static-dist--cdn"><span>Browser / <wbr/>Static (dist + <wbr/>CDN)</span></a></li></ul></li><li><a href="#example"><span>Example</span></a></li><li><ul><li><a href="#nodejs-example"><span>Node.js example</span></a></li><li><a href="#outside-nodejs-eg-php-python-integration"><span>Outside <wbr/>Node.js (e.g., <wbr/>PHP / <wbr/>Python integration)</span></a></li></ul></li><li><a href="#learn-more-demos--beta-status"><span>Learn <wbr/>More / <wbr/>Demos / <wbr/>Beta <wbr/>Status</span></a></li></ul></div></details></div><div class="site-menu"><nav class="tsd-navigation"><a href="modules.html">Lilact</a><ul class="tsd-small-nested-navigation" id="tsd-nav-container"><li>Loading...</li></ul></nav></div></div></div><footer><p class="tsd-generator">Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></footer><div class="overlay"></div></body></html>
