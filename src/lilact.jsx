@@ -74,7 +74,7 @@ export {transpileJSX, transpilerConfig} from "./jsx";
 export const Lilact = 
 {	
 
-	VERSION: "beta.8",
+	VERSION: "beta.9",
 	
 	// Configuration
 

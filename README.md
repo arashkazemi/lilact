@@ -6,11 +6,19 @@
 
 ---
 
-[Docs on GitHub Pages](https://arashkazemi.github.io/lilact/) — [Demos on GitHub Pages](https://arashkazemi.github.io/lilact/static)
-
-[Lilact repo on GitHub](https://github.com/arashkazemi/lilact) — [Lilact on npm](https://www.npmjs.com/package/lilact)
-
-[Lilact/Node/Express Demo Project](https://github.com/arashkazemi/lilact-express) — [Lilact/PHP Demo Project](https://github.com/arashkazemi/lilact-php-demo) — [Lilact/Python Demo Project](https://github.com/arashkazemi/lilact-python-demo)
+[Docs on GitHub Pages](https://arashkazemi.github.io/lilact/) 
+|| 
+[Demos on GitHub Pages](https://arashkazemi.github.io/lilact/static) 
+|| 
+[Official Repository](https://github.com/arashkazemi/lilact) 
+|| 
+[npm Package](https://www.npmjs.com/package/lilact) 
+|| 
+[Lilact/Node/Express Demo](https://github.com/arashkazemi/lilact-express) 
+|| 
+[Lilact/PHP Demo](https://github.com/arashkazemi/lilact-php-demo) 
+|| 
+[Lilact/Python Demo](https://github.com/arashkazemi/lilact-python-demo)
 
 ---
 
@@ -75,6 +83,9 @@ A `webpack` based bundler is available in the `bin` directory. It can be used li
 ```bash
 npx lilact-bundle --entry client/App.jsx --mode production --name bundle.js --out public/dist
 ```
+
+If you add a `--watch` argument, the bundler will not exit and keep watching the input file(s),
+and update the bundle if any file is changed.
 
 ---
 

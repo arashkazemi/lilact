@@ -32,18 +32,19 @@
 const path = require("path");
 const webpack = require("webpack");
 
-
 function parseArgs(argv) {
-	// Simple args:
-	// bundler --entry ./src/index.js --out ./dist/bundle
 	const args = {};
 	for (let i = 2; i < argv.length; i++) {
 		const k = argv[i];
 		if (!k.startsWith("--")) continue;
 		const key = k.slice(2);
-		const v = argv[i + 1];
-		i++;
-		args[key] = v;
+		if(key==='watch') {
+			args[key] = true;
+		}
+		else {
+			const v = argv[++i];
+			args[key] = v;
+		}
 	}
 	return args;
 }
@@ -52,22 +53,20 @@ async function run() {
 	const args = parseArgs(process.argv);
 
 	const userProjectRoot = process.cwd(); // MUST be user's project root
-	const userEntry = args.entry
-		? path.resolve(userProjectRoot, args.entry)
-		: null;
+	const userEntry = args.entry ? path.resolve(userProjectRoot, args.entry) : null;
 
 	if (!userEntry) {
-		console.error("Usage: lilact-bundler --entry ./path/to/entry.js --mode production --out ./dist/out --name bundle.js");
+		console.error(
+			"Usage: lilact-bundler --watch --entry ./path/to/entry.js --mode production --out ./dist/out --name bundle.js"
+		);
 		process.exit(1);
 	}
 
 	const name = args.name ?? "bundle.js";
 	const mode = args.mode ?? "production";
+	const watch = args?.watch===true;
 
-	// Locate lilact root reliably (where this CLI is installed)
 	const lilactRoot = path.dirname(require.resolve("lilact/package.json"));
-
-	// Load config factory from your package
 	const configFactoryPath = path.join(lilactRoot, "webpack.config.factory.cjs");
 	const configFactory = require(configFactoryPath);
 
@@ -75,44 +74,54 @@ async function run() {
 		? path.resolve(userProjectRoot, args.out)
 		: path.resolve(userProjectRoot, "dist");
 
-	// Build config using a factory, then override resolution for user's project
 	const baseConfig = configFactory({
 		entry: userEntry,
 		outputPath: userOutDir,
 		userProjectRoot,
-		mode, name
+		mode,
+		name
 	});
 
 	// ---- Critical: ensure resolution happens from user's project ----
 	baseConfig.context = userProjectRoot;
 	baseConfig.resolve = baseConfig.resolve || {};
-	baseConfig.resolve.modules = [
-		path.join(userProjectRoot, "node_modules"),
-		"node_modules"
-	];
+	baseConfig.resolve.modules = [path.join(userProjectRoot, "node_modules"), "node_modules"];
 
 	const compiler = webpack(baseConfig);
 
-	compiler.run((err, stats) => {
-		// webpack keeps resources; close when available
-		compiler.close(() => {});
+	const watching = compiler.watch(
+		{
+			// You can tweak these; leaving as defaults usually works.
+			// aggregateTimeout: 300,
+			// poll: 1000
+		},
+		(err, stats) => {
+			if (err) {
+				console.error(err);
+				return; // keep watching
+			}
 
-		if (err) {
-			console.error(err);
-			process.exit(1);
+			if (stats?.hasErrors?.()) {
+				console.error(stats.toString("errors-only"));
+				return; // keep watching
+			}
+
+			console.log(
+				stats?.toString?.({
+					colors: true,
+					chunks: false
+				}) || "Build finished."
+			);
+
+			if(!watch) process.exit(1);
 		}
+	);
 
-		if (stats?.hasErrors?.()) {
-			console.error(stats.toString("errors-only"));
-			process.exit(1);
-		}
-
-		console.log(
-			stats?.toString?.({
-				colors: true,
-				chunks: false
-			}) || "Build finished."
-		);
+	process.on("SIGINT", () => {
+		watching.close(() => process.exit(0));
+	});
+	process.on("SIGTERM", () => {
+		watching.close(() => process.exit(0));
 	});
 }
 

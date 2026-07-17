@@ -2,9 +2,19 @@
 <h1 id="lilact" class="tsd-anchor-link">Lilact<a href="#lilact" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h1>
 <h3 id="a-little-reactjsx-runtime-implementation-for-the-browser" class="tsd-anchor-link">A Little React/JSX Runtime Implementation for the Browser<a href="#a-little-reactjsx-runtime-implementation-for-the-browser" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <hr>
-<p><a href="https://arashkazemi.github.io/lilact/">Docs on GitHub Pages</a> — <a href="https://arashkazemi.github.io/lilact/static">Demos on GitHub Pages</a></p>
-<p><a href="https://github.com/arashkazemi/lilact">Lilact repo on GitHub</a> — <a href="https://www.npmjs.com/package/lilact">Lilact on npm</a></p>
-<p><a href="https://github.com/arashkazemi/lilact-express">Lilact/Node/Express Demo Project</a> — <a href="https://github.com/arashkazemi/lilact-php-demo">Lilact/PHP Demo Project</a> — <a href="https://github.com/arashkazemi/lilact-python-demo">Lilact/Python Demo Project</a></p>
+<p><a href="https://arashkazemi.github.io/lilact/">Docs on GitHub Pages</a>
+||
+<a href="https://arashkazemi.github.io/lilact/static">Demos on GitHub Pages</a>
+||
+<a href="https://github.com/arashkazemi/lilact">Official Repository</a>
+||
+<a href="https://www.npmjs.com/package/lilact">npm Package</a>
+||
+<a href="https://github.com/arashkazemi/lilact-express">Lilact/Node/Express Demo</a>
+||
+<a href="https://github.com/arashkazemi/lilact-php-demo">Lilact/PHP Demo</a>
+||
+<a href="https://github.com/arashkazemi/lilact-python-demo">Lilact/Python Demo</a></p>
 <hr>
 <p>If you find Lilact useful, please consider sponsoring. Your support funds ongoing maintenance, performance improvements, and new features.<br>
 <a href="https://github.com/sponsors/arashkazemi">Sponsor me on GitHub</a></p>
@@ -45,6 +55,8 @@
 <pre><code class="bash"><span class="hl-0">npx</span><span class="hl-1"> </span><span class="hl-2">lilact-bundle</span><span class="hl-1"> </span><span class="hl-3">--entry</span><span class="hl-1"> </span><span class="hl-2">client/App.jsx</span><span class="hl-1"> </span><span class="hl-3">--mode</span><span class="hl-1"> </span><span class="hl-2">production</span><span class="hl-1"> </span><span class="hl-3">--name</span><span class="hl-1"> </span><span class="hl-2">bundle.js</span><span class="hl-1"> </span><span class="hl-3">--out</span><span class="hl-1"> </span><span class="hl-2">public/dist</span>
 </code><button type="button">Copy</button></pre>
 
+<p>If you add a <code>--watch</code> argument, the bundler will not exit and keep watching the input file(s),
+and update the bundle if any file is changed.</p>
 <hr>
 <h2 id="using-lilact-outside-nodejs-browser-script-tag-integration" class="tsd-anchor-link">Using Lilact Outside Node.js (Browser / Script Tag Integration)<a href="#using-lilact-outside-nodejs-browser-script-tag-integration" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
 <p><code>Lilact</code> runs in the browser, so if you use <code>Lilact</code> outside Node, it uses <code>eval</code> to run the transpiled scripts, so it cannot use <code>import</code>/<code>export</code> the same way as a module.</p>

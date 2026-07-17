@@ -8521,7 +8521,7 @@ var jsx = __webpack_require__(207);
 const lilact_Lilact = 
 {	
 
-	VERSION: "beta.8",
+	VERSION: "beta.9",
 	
 	// Configuration
 

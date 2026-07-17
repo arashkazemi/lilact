@@ -82,7 +82,7 @@ export function run(jsx, path=`InlineJSX-${++Lilact.eval_num}`, is_inline=true)
 	
 	processed += "\n//# sourceURL=eval:/" + path;
 
-	// todo: this seems to be only useful in safari, should be assessed latera
+	// todo: this seems to be only useful in safari, should be assessed later
 	Lilact.scanBlockLabels(processed, path);
 
 	try {
