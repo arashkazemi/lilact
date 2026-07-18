@@ -757,7 +757,7 @@ const generateComponentKey = (entity, props)=> {
 * Base class that mimics `React.Component` (stateful component with lifecycle hooks).
 * Extend this class to implement `render()` and (optionally) override lifecycle methods.
 * 
-* This user functions and members are supported:
+* These user functions and members are supported:
 *
 *	static defaultProps
 *

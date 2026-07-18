@@ -38,8 +38,8 @@
 // usage outside Lilact. Also make sure to check the default configuration.
 
 // There are some situations that are solved with tricks, as some aspects of
-// javascripts import a complete parser and I didn't want to get into that!
-// Works almosr perfectly so far (all observed bugs except 1 are fixed), works  
+// javascript require a complete parser and I didn't want to get into that!
+// Works almost perfectly so far (all observed bugs are fixed), works  
 // even on nasty things like the compressed version of tensorflow.js! Feel free   
 // to report any bugs, and please include a testable example. Thanks! :)
 
