@@ -28,6 +28,26 @@
 
 */
 
+
+/*
+	note: 
+
+	If you are reading the code, keep in my mind that in the development of `Lilact`, 
+	I have used a naming convention that is a little different from the standard way:
+
+	I use underscored all lowercase names for internal variables. 
+	I use all caps for constants that are used similar to C defined macros.	e.g. shared 
+	symbols.
+
+	And I use the standard convention for exposed user space variables and arguments, and 
+	functions.
+ 	
+	So if a variable name is in the format `aaa_bbb`, it means I am counting on it to be 
+	used internally. And if it is `AAA_BBB`, I'm counting on it to be constant in the whole 
+	application lifetime.
+*/
+
+
 import * as redux from "redux";
 import * as emotion from "@emotion/css";
 import PropTypes from 'prop-types';
