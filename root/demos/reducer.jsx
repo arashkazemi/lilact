@@ -15,14 +15,13 @@ function createInitialState(username) {
 }
 
 function reducer(state, action) {
-
 	switch (action.type) {
 		case 'changed_draft': {
 			return {
 				draft: action.nextDraft,
 				todos: state.todos,
 			};
-		};
+		}
 		case 'added_todo': {
 			return {
 				draft: '',
@@ -42,28 +41,35 @@ function Demo({ username })
 		reducer,
 		username,
 		createInitialState
-		);
-	return 	<>
-				<input
-					value={state.draft}
-					onChange={e => {
-						dispatch({
-							type: 'changed_draft',
-							nextDraft: e.target.value
-						})
-					}}
-				/>
-				<button onClick={() => {
+	);
+
+	return <>
+		<input
+			value={state.draft}
+			onChange={e => {
+				dispatch({
+					type: 'changed_draft',
+					nextDraft: e.target.value
+				});
+			}}
+			onKeyUp={e => {
+				if (e.key === 'Enter') {
 					dispatch({ type: 'added_todo' });
-				}}>Add</button>
-				<ul>
-					{state.todos.map(item => (
-						<li key={item.id}>
-							{item.text}
-						</li>
-						))}
-				</ul>
-			</>
+				}
+			}}
+		/>
+		<button onClick={() => {
+			dispatch({ type: 'added_todo' });
+		}}>Add</button>
+
+		<ul>
+			{state.todos.map(item => (
+				<li key={item.id}>
+					{item.text}
+				</li>
+			))}
+		</ul>
+	</>
 }
 
 module.exports = Demo;
