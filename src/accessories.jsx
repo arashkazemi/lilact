@@ -91,8 +91,6 @@ export function Spinner({
 /**
  * ErrorBoundary component that catches errors in its child component tree and renders a fallback UI.
  *
- * @component
- *
  * @param {Object} props
  * @param {any} props.children - The component subtree to render and monitor for runtime errors.
  * @param {any} props.Fallback - UI to render when an error is caught. Receives two props:
@@ -128,8 +126,6 @@ export class ErrorBoundary extends Component {
 /**
  * Suspense - boundary for asynchronous loading.
  * Shows a fallback UI while descendant thrown promises are pending, and renders real content once resolved.
- *
- * @component Suspense
  *
  * @param {Object} props
  * @param {any} props.fallback - Element shown while descendants are loading.

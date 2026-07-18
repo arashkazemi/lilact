@@ -16,7 +16,7 @@
     ".tmp/hooks.js",
     ".tmp/misc.js",
     ".tmp/run.js",
-    ".tmp/jsx.js",
+    //".tmp/jsx.js",
     ".tmp/redux.js",
     ".tmp/timers.js",
     ".tmp/transition.js",

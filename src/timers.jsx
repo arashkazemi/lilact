@@ -209,9 +209,9 @@ export function resumeTimers()
  */
 
 
-export function setTimeout(func, interval, ...args)
+export function setTimeout(callback, delay, ...args)
 {
-	return add_timer( { [CALLBACK]: func, [INTERVAL]: interval, [DUE]: Date.now()+interval, [REPEAT]: false, [ARGS]: args } );
+	return add_timer( { [CALLBACK]: callback, [INTERVAL]: delay, [DUE]: Date.now()+delay, [REPEAT]: false, [ARGS]: args } );
 }
 
 /**
@@ -222,9 +222,9 @@ export function setTimeout(func, interval, ...args)
  * @returns {any} Interval id.
  */
 
-export function setInterval(func, interval, ...args)
+export function setInterval(callback, interval, ...args)
 {
-	return add_timer( { [CALLBACK]: func, [INTERVAL]: interval, [DUE]: Date.now()+interval, [REPEAT]: true, [ARGS]: args } );
+	return add_timer( { [CALLBACK]: callback, [INTERVAL]: interval, [DUE]: Date.now()+interval, [REPEAT]: true, [ARGS]: args } );
 }
 
 /**
@@ -232,9 +232,9 @@ export function setInterval(func, interval, ...args)
  * @param {any} id - Timeout id returned by `setTimeout`.
  * @returns {void}
  */
-export function clearTimeout(t)
+export function clearTimeout(id)
 {
-	if(all_timers[t]) all_timers[t][CLEARED] = true;
+	if(all_timers[id]) all_timers[id][CLEARED] = true;
 }
 
 /**
@@ -242,9 +242,9 @@ export function clearTimeout(t)
  * @param {any} id - Interval id returned by `setInterval`.
  * @returns {void}
  */
-export function clearInterval(t)
+export function clearInterval(id)
 {
-	if(all_timers[t]) all_timers[t][CLEARED] = true;
+	if(all_timers[id]) all_timers[id][CLEARED] = true;
 }
 
 /**
@@ -277,27 +277,27 @@ export function releaseTimers()
  * @param {number} duration - Delay in milliseconds.
  * @returns {Promise} Promise that resolves after the delay.
  */
-export function timeoutPromise(duration=0, timer_source=this) 
+export function timeoutPromise(duration=0, timerSource=this) 
 {	
 	let id, resolve, reject;
 
 	const promise = new Promise((res, rej) => {
 		resolve = res;
 		reject = rej;
-		id = timer_source.setTimeout(() => {
+		id = timerSource.setTimeout(() => {
 			resolve();
 		}, duration);
 	});
 
 	// note: proceed interrupts the timer, and continues the flow if used with await.
 	promise.proceed = () => {
-		timer_source.clearTimeout(id);
+		timerSource.clearTimeout(id);
 		resolve();
 	};
 
 	// note: cancel rejects so it throws exception when using with await, this allows handling it differently.
 	promise.cancel = () => {
-		timer_source.clearTimeout(id);
+		timerSource.clearTimeout(id);
 		reject();
 	};
 

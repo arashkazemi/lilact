@@ -54,17 +54,17 @@ const typeOf = (input) => {
  * @param value - Value to inspect.
  * @returns True if the value is a class component; otherwise false.
  */
-export const isValidElement = (o) => {
-	return o[CORE]!==undefined || o[TEXT]!==undefined;
+export const isValidElement = (value) => {
+	return value[CORE]!==undefined || value[TEXT]!==undefined;
 }
 
 /**
  * Utility to find the underlying DOM node for a mounted Lilact component.
  *
- * @param element - A Lilact component instance to locate its DOM node.
+ * @param component - A Lilact component instance to locate its DOM node.
  * @returns The corresponding DOM element (or null if unavailable).
  */
-export const findDOMNode = (comp)=>{
+export const findDOMNode = (component)=>{
 
 	/*
 	When a component renders to null or false, findDOMNode returns null. 
@@ -78,8 +78,8 @@ export const findDOMNode = (comp)=>{
 
 	Unlike React, in Lilact findDOMNode can also be used on function components.
 	*/
-	if(!comp[CORE]?.element?.parentNode) throw new Error("findDOMNode only works on mounted components.");
-	return comp[CORE].element;
+	if(!component[CORE]?.element?.parentNode) throw new Error("findDOMNode only works on mounted components.");
+	return component[CORE].element;
 }
 
 /**
@@ -144,6 +144,20 @@ export const Children = {
 
 
 /**
+ * Wraps a render function so that a parent can pass a `ref` into it.
+ * The forwarded `ref` is provided as the second argument to the render function: `(props, ref)`.
+ *
+ * @param {function(props: any, ref: any)} render
+ *   The component render function that receives the props and the forwarded ref.
+ * @returns {}
+ */
+export function forwardRef(render)
+{
+	return (props)=>render({...props, ref: undefined}, props.ref);
+}
+
+
+/**
  * Debug tool to detect the component visible at a point on screen.
  *
  * @returns A promise that is resolved when the user clicks on screen and its value will be the component if any.
@@ -181,7 +195,7 @@ export function getComponentByPointer()
 /**
  * Utility for applying one or more class names to an element.
  *
- * @param classNames - One or more class name values to combine.
+ * @param classes - One or more class name values to combine.
  */
 export function classNames(classes) {
 	return Object.entries(classes)
@@ -197,8 +211,8 @@ export function classNames(classes) {
  * @param value - Value to check for emptiness.
  * @returns True if empty; otherwise false.
  */
-export function isEmpty(o)  {
-	for(let i in o) return false;
+export function isEmpty(value)  {
+	for(let i in value) return false;
 		return true;
 }
 
@@ -206,8 +220,8 @@ export function isEmpty(o)  {
 /**
  * Determines whether two values are shallowly equal.
  *
- * @param objA - First object to compare.
- * @param objB - Second object to compare.
+ * @param source - First object to compare.
+ * @param target - Second object to compare.
  * @returns True if shallowly equal; otherwise false.
  */
 export const shallowEqual = (source, target) => {
@@ -233,8 +247,8 @@ export const shallowEqual = (source, target) => {
 /**
  * Determines whether two values are deeply equal.
  *
- * @param objA - First object to compare.
- * @param objB - Second object to compare.
+ * @param source - First object to compare.
+ * @param target - Second object to compare.
  * @returns True if deeply equal; otherwise false.
  */
 export function deepEqual(source, target) {
@@ -271,13 +285,13 @@ export function deepEqual(source, target) {
  * @param value - Value to inspect.
  * @returns True if the value is a js class; otherwise false.
  */
-export function isClass(func) {
+export function isClass(value) {
 	// from https://stackoverflow.com/a/66120819
-	if(!(func && func.constructor === Function) || func.prototype === undefined)
+	if(!(value && value.constructor === Function) || value.prototype === undefined)
 		return false;
-	if(Function.prototype !== Object.getPrototypeOf(func))
+	if(Function.prototype !== Object.getPrototypeOf(value))
 		return true;
-	return Object.getOwnPropertyNames(func.prototype).length > 1;
+	return Object.getOwnPropertyNames(value.prototype).length > 1;
 }
 
 /**
@@ -286,8 +300,8 @@ export function isClass(func) {
  * @param value - Value to inspect.
  * @returns True if the value is an async function; otherwise false.
  */
-export function isAsync(fn) {
-	return typeof fn === 'function' && fn.constructor && fn.constructor.name === 'AsyncFunction';
+export function isAsync(value) {
+	return typeof value === 'function' && value.constructor && value.constructor.name === 'AsyncFunction';
 }
 
 /**
@@ -296,8 +310,8 @@ export function isAsync(fn) {
  * @param value - Value to inspect.
  * @returns True if thenable; otherwise false.
  */
-export function isThenable(x) {
-	return x && (typeof x === "object" || typeof x === "function") && typeof x.then === "function";
+export function isThenable(value) {
+	return value && (typeof value === "object" || typeof value === "function") && typeof value.then === "function";
 }
 
 /**
@@ -306,8 +320,8 @@ export function isThenable(x) {
  * @param value - Value to inspect.
  * @returns True if thenable; otherwise false.
  */
-export function isError(x) {  
-	return x instanceof Error || Object.prototype.toString.call(x) === '[object Error]';
+export function isError(value) {  
+	return value instanceof Error || Object.prototype.toString.call(value) === '[object Error]';
 }
 
 /**
@@ -316,18 +330,18 @@ export function isError(x) {
  * @param value - Value to inspect.
  * @returns boolean value
  */
-export function toBool(x) {
-	if (typeof x === "boolean") return x;
+export function toBool(value) {
+	if (typeof value === "boolean") return value;
 
-	if (typeof x === "number") return x !== 0;
+	if (typeof value === "number") return value !== 0;
 
-	if (typeof x === "string") {
-		x = x.trim().toLowerCase();
-		if (x === "true") return true;
-		if (x === "false") return false;
+	if (typeof value === "string") {
+		value = value.trim().toLowerCase();
+		if (value === "true") return true;
+		if (value === "false") return false;
 	}
 
-	return Boolean(x);
+	return Boolean(value);
 }
 
 

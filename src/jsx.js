@@ -964,18 +964,21 @@ function generateSourceMap(json, path, jsx_eols, out_eols, mappings=[])
  * @returns The transpiled javascript code.
  */
 
+/** @ignore */
 export function transpileJSX( jsx, { 
 	factory = "createComponent", 
 	fragment = "Fragment", 
 	path = "anonymous", 
 	appendSourcemap = true,
+	injectTraceLabels = false,
+	discardComments = false,
+
+	// lilact internal
 	blocks_info = {
 		labels: {},
 		counter: 0
 	},
-	mappings = [],
-	injectTraceLabels = false,
-	discardComments = false
+	mappings = []
 } = {} )
 {
 

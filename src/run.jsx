@@ -120,13 +120,13 @@ export function run(jsx, path=`InlineJSX-${++Lilact.eval_num}`, is_inline=true)
  * @param path - The path to the required file. Must be either absolute path or relative to the current 
  * document’s URL (the page/location that initiated the request).
  * 
- * @param force_update - To treat the code as inline. The main difference at the moment is that inline code doesn't include sourcemap.
+ * @param forceUpdate - To treat the code as inline. The main difference at the moment is that inline code doesn't include sourcemap.
  * 
  * @returns An array representation of the children.
  */
-export function require(path, force_update)
+export function require(path, forceUpdate)
 {
-	if(Lilact.required_scripts[path] && !force_update) return Lilact.required_scripts[path].module.exports;
+	if(Lilact.required_scripts[path] && !forceUpdate) return Lilact.required_scripts[path].module.exports;
 	
 	if(path[0]==='#') {
 
@@ -178,7 +178,7 @@ export function require(path, force_update)
  * The promise must resolve to a module whose module.exports.default is a Lilact component
  * or otherwise it will be whatever the module.exports is set to.
  * 
- * @returns A Lilact component that should be rendered inside a {@link Suspense} boundary.
+ * @returns A Lilact component that should be rendered inside a `Suspense` boundary.
  */
 export function lazy(factory) {
 	let status = "pending"; // pending | success | error

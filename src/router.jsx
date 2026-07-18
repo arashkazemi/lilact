@@ -185,6 +185,8 @@ export function NavLink({
 	className,
 	activeStyle,
 	style,
+	target,
+	download,
 	replace = false,
 	state,
 	children,
@@ -210,7 +212,7 @@ export function NavLink({
 	}
 
 	return (
-		<a href={href} onClick={handleClick} className={finalClassName} style={mergedStyle} aria-current={isActive ? "page" : undefined} {...rest}>
+		<a href={href} onClick={handleClick} target={target} download={download} className={finalClassName} style={mergedStyle} aria-current={isActive ? "page" : undefined} {...rest}>
 			{typeof children === "function" ? children({ isActive }) : children}
 		</a>
 	);

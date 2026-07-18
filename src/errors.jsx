@@ -58,6 +58,7 @@ function getErrorLocation(err) // works for both error and error-event, and also
 // Chrome/Edge:   at fn (eval:xxx:LINE:COL)
 // Firefox:       fn@eval:xxx:LINE:COL
 // Safari:        @eval:xxx:LINE:COL   (sometimes)
+/** @ignore */
 function parseEvalLocationFromStack(stack, urlPrefix = "eval:/") {
   const raw = typeof stack === "string" ? stack : String(stack || "");
   const lines = raw.split(/\r?\n/);
@@ -125,34 +126,36 @@ export function scanBlockLabels(code, path)
  * Debug tool to get the Lilact traced location of an error. It can also produce some block based stack trace 
  * if `Lilact.transpilerConfig.enableLabelStack` is set to `true` before loading the script. This is `false`
  * by default for efficiency.
+ * 
+ * @param error - The error object 
  *
  * @returns A new object that includes `path`, `row`, `col`, `msg`, `name`, and optional `stack`. 
  * The exception itself is stored as `err`.
  */
-export function traceError(err)
+export function traceError(error)
 {
-	if(err?.is_traced) {
-		return err;
+	if(error?.is_traced) {
+		return error;
 	}
 
-	const loc = parseEvalLocationFromStack(err.stack);
+	const loc = parseEvalLocationFromStack(error.stack);
 
 	const obj = {
-		fileName: loc.url?.slice(6) || err.fileName,
+		fileName: loc.url?.slice(6) || error.fileName,
 		
 		lineNumber: loc.line,
 		columnNumber: loc.col,
 
-		message: err.message,
-		name: err.name,
+		message: error.message,
+		name: error.name,
 
-		stack: err.stack,
-		_error: err,
+		stack: error.stack,
+		_error: error,
 
 		is_traced: true
 	};		
 
-	if( err.name!=='JSXParseError' ) {
+	if( error.name!=='JSXParseError' ) {
 
 		let mps;
 
@@ -165,18 +168,18 @@ export function traceError(err)
 			obj.lineNumber = mloc.line;
 			obj.columnNumber = mloc.col;
 		}
-		else if( err.lilact_trace!==undefined) {
+		else if( error.lilact_trace!==undefined) {
 
-			let loc = getErrorLocation(err);
+			let loc = getErrorLocation(error);
 
 			let mps;
 			let blk;
 
-			if(typeof(err.lilact_trace)==='object') {
-				blk = Lilact.blocks_info.labels[err.lilact_trace[0]];
+			if(typeof(error.lilact_trace)==='object') {
+				blk = Lilact.blocks_info.labels[error.lilact_trace[0]];
 			}
 			else {
-				blk = Lilact.blocks_info.labels[err.lilact_trace];
+				blk = Lilact.blocks_info.labels[error.lilact_trace];
 			}
 
 			if(blk) {
@@ -194,8 +197,8 @@ export function traceError(err)
 		
 	}
 	else {
-		const loc = getErrorLocation(err);
-		if(err.fileName) obj.fileName = err.fileName;
+		const loc = getErrorLocation(error);
+		if(error.fileName) obj.fileName = error.fileName;
 		obj.lineNumber = loc.line;
 		obj.columnNumber = loc.col;
 	}
@@ -219,14 +222,15 @@ export function traceError(err)
  *	Lilact.globalErrorHandler(e);
  * });
  * `
+ * @param error - The error object 
  * 
  */
-export function globalErrorHandler(err)
+export function globalErrorHandler(error)
 {
 	Lilact.pauseTimers();
-	if(err.error) err = err.error;
+	if(error.error) error = error.error;
 
-	err = Lilact.traceError(err);
+	error = Lilact.traceError(error);
 
 	const cls = Lilact.emotion.css(`
 			background: linear-gradient(135deg, #fff2f2d4, #ffffffd4);
@@ -254,11 +258,11 @@ export function globalErrorHandler(err)
 	//<b>⚠</b> 
 	el.innerHTML = 
 		`<h3 style=""><red>Error!</red></h3>
-		<b>${err.fileName?'At '+err.fileName:''}
-		${Number.isFinite(err.lineNumber)?": Line "+(err.lineNumber+1):""}</b><br><br>
-		<b>${err.name}</b>:&nbsp;<span>${err.message}</span><br><br>
-		${Lilact.required_scripts[err.fileName]?'<code><pre></pre><pre><red></red></pre><pre></pre></code>':''}
-		${err._error.componentStackLog?'<br>Component Stack:<br><code><pre>'+err._error.componentStackLog+'</pre></code>':''}
+		<b>${error.fileName?'At '+error.fileName:''}
+		${Number.isFinite(error.lineNumber)?": Line "+(error.lineNumber+1):""}</b><br><br>
+		<b>${error.name}</b>:&nbsp;<span>${error.message}</span><br><br>
+		${Lilact.required_scripts[error.fileName]?'<code><pre></pre><pre><red></red></pre><pre></pre></code>':''}
+		${error._error.componentStackLog?'<br>Component Stack:<br><code><pre>'+error._error.componentStackLog+'</pre></code>':''}
 		`;
 
 
@@ -266,16 +270,16 @@ export function globalErrorHandler(err)
 
 	const pres = el.querySelectorAll('pre');
 
-	if(Lilact.required_scripts[err.fileName]) {
-		const lines = Lilact.required_scripts[err.fileName].code.split("\n");
+	if(Lilact.required_scripts[error.fileName]) {
+		const lines = Lilact.required_scripts[error.fileName].code.split("\n");
 
-		if(lines?.[err.lineNumber-1])
-			pres[0].innerText = lines[err.lineNumber-1];
+		if(lines?.[error.lineNumber-1])
+			pres[0].innerText = lines[error.lineNumber-1];
 
-		if(lines?.[err.lineNumber]) el.querySelector('pre red').innerText = lines[err.lineNumber];
+		if(lines?.[error.lineNumber]) el.querySelector('pre red').innerText = lines[error.lineNumber];
 
-		if(lines?.[err.lineNumber+1])
-			pres[2].innerText = lines[err.lineNumber+1];
+		if(lines?.[error.lineNumber+1])
+			pres[2].innerText = lines[error.lineNumber+1];
 	}
 
 	el.showModal();

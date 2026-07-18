@@ -114,8 +114,8 @@ __webpack_require__.r(__webpack_exports__);
 // usage outside Lilact. Also make sure to check the default configuration.
 
 // There are some situations that are solved with tricks, as some aspects of
-// javascripts import a complete parser and I didn't want to get into that!
-// Works almosr perfectly so far (all observed bugs except 1 are fixed), works  
+// javascript require a complete parser and I didn't want to get into that!
+// Works almost perfectly so far (all observed bugs are fixed), works  
 // even on nasty things like the compressed version of tensorflow.js! Feel free   
 // to report any bugs, and please include a testable example. Thanks! :)
 
@@ -1040,18 +1040,21 @@ function generateSourceMap(json, path, jsx_eols, out_eols, mappings=[])
  * @returns The transpiled javascript code.
  */
 
+/** @ignore */
 function transpileJSX( jsx, { 
 	factory = "createComponent", 
 	fragment = "Fragment", 
 	path = "anonymous", 
 	appendSourcemap = true,
+	injectTraceLabels = false,
+	discardComments = false,
+
+	// lilact internal
 	blocks_info = {
 		labels: {},
 		counter: 0
 	},
-	mappings = [],
-	injectTraceLabels = false,
-	discardComments = false
+	mappings = []
 } = {} )
 {
 
@@ -1269,7 +1272,7 @@ function transpileJSX( jsx, {
 
 
 
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9qc3guanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIvVXNlcnMvYXJhc2gvRGVza3RvcC9Qcm9qZWN0cy9MaWxhY3Qvc3JjL2pzeC5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSxBQUFBOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Q0E4QkM7Q0FDQTtDQUNBO0NBQ0E7Q0FDQTs7Q0FFQTtDQUNBOztDQUVBO0NBQ0E7Q0FDQTtDQUNBO0NBQ0E7O0NBRUE7Ozs7Q0FJQTtpQ0FDZ0M7Ozs7O0VBSy9CO0VBQ0E7OEJBQzRCOzs7O3FDQUlPOzs7Ozs7O21CQU9sQjtDQUNsQjthQUNZO0lBQ1QsSUFBSTs7Ozs7O29CQU1ZO0NBQ25CO0VBQ0M7RUFDQTtFQUNBOztFQUVBOztFQUVBOzs7O09BSUssUUFBUTtLQUNWLGdCQUFpQjtLQUNqQixrQkFBa0I7Ozs7S0FJbEIsYUFBYzs7OztZQUlQOzs7OztPQUtMLG9CQUFvQjs7U0FFbEIsS0FBSzs7OztJQUlWO0lBQ0E7SUFDQTtRQUNJO1NBQ0MscUJBQXNCOztPQUV4QixtQ0FBbUM7OztTQUdqQyxJQUFJOzs7Ozs7OztzQkFRUztDQUNyQjtZQUNXOzs7OztJQUtSLHlDQUF5QztvQkFDekI7Ozs7Ozs7T0FPYixvQkFBb0I7OztTQUdsQixLQUFLOzs7TUFHUixzQ0FBc0M7O09BRXJDLG1DQUFtQzs7Ozs7O01BTXBDLGdCQUFnQjs7T0FFZixtQ0FBbUM7Ozs7Ozs7Ozs7WUFVOUI7Ozs7d0JBSVk7Q0FDdkI7O09BRU07R0FDSDs7RUFFRjs7Ozs7O0lBTUUsU0FBUzthQUNBOzs7Ozs7MEJBTWEsbUJBQW9CLEFBQUQ7Ozs7S0FJeEMsbUNBQW1DOzs7O09BSWpDOzs7UUFHQyxVQUFXOzs7S0FHZCxXQUFXO2NBQ0Y7Ozs7Ozt1QkFNUyxxQkFBc0IsQUFBRDs7O01BR3RDLG1DQUFtQzs7Ozs7WUFLN0I7Ozs7Q0FJWDtDQUNBOzsyQkFF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
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9qc3guanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIvVXNlcnMvYXJhc2gvRGVza3RvcC9Qcm9qZWN0cy9MaWxhY3Qvc3JjL2pzeC5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSxBQUFBOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Q0E4QkM7Q0FDQTtDQUNBO0NBQ0E7Q0FDQTs7Q0FFQTtDQUNBOztDQUVBO0NBQ0E7Q0FDQTtDQUNBO0NBQ0E7O0NBRUE7Ozs7Q0FJQTtpQ0FDZ0M7Ozs7O0VBSy9CO0VBQ0E7OEJBQzRCOzs7O3FDQUlPOzs7Ozs7O21CQU9sQjtDQUNsQjthQUNZO0lBQ1QsSUFBSTs7Ozs7O29CQU1ZO0NBQ25CO0VBQ0M7RUFDQTtFQUNBOztFQUVBOztFQUVBOzs7O09BSUssUUFBUTtLQUNWLGdCQUFpQjtLQUNqQixrQkFBa0I7Ozs7S0FJbEIsYUFBYzs7OztZQUlQOzs7OztPQUtMLG9CQUFvQjs7U0FFbEIsS0FBSzs7OztJQUlWO0lBQ0E7SUFDQTtRQUNJO1NBQ0MscUJBQXNCOztPQUV4QixtQ0FBbUM7OztTQUdqQyxJQUFJOzs7Ozs7OztzQkFRUztDQUNyQjtZQUNXOzs7OztJQUtSLHlDQUF5QztvQkFDekI7Ozs7Ozs7T0FPYixvQkFBb0I7OztTQUdsQixLQUFLOzs7TUFHUixzQ0FBc0M7O09BRXJDLG1DQUFtQzs7Ozs7O01BTXBDLGdCQUFnQjs7T0FFZixtQ0FBbUM7Ozs7Ozs7Ozs7WUFVOUI7Ozs7d0JBSVk7Q0FDdkI7O09BRU07R0FDSDs7RUFFRjs7Ozs7O0lBTUUsU0FBUzthQUNBOzs7Ozs7MEJBTWEsbUJBQW9CLEFBQUQ7Ozs7S0FJeEMsbUNBQW1DOzs7O09BSWpDOzs7UUFHQyxVQUFXOzs7S0FHZCxXQUFXO2NBQ0Y7Ozs7Ozt1QkFNUyxxQkFBc0IsQUFBRDs7O01BR3RDLG1DQUFtQzs7Ozs7WUFLN0I7Ozs7Q0FJWDtDQUNBOzsyQkFF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
 
 /***/ }),
 
@@ -1533,6 +1536,7 @@ __webpack_require__.d(misc_namespaceObject, {
   eval_num: () => (eval_num),
   events_set: () => (events_set),
   findDOMNode: () => (findDOMNode),
+  forwardRef: () => (forwardRef),
   getComponentByPointer: () => (getComponentByPointer),
   id_num: () => (id_num),
   isAsync: () => (isAsync),
@@ -1572,7 +1576,6 @@ var hooks_namespaceObject = {};
 __webpack_require__.r(hooks_namespaceObject);
 __webpack_require__.d(hooks_namespaceObject, {
   createContext: () => (createContext),
-  forwardRef: () => (forwardRef),
   useActionState: () => (useActionState),
   useCallback: () => (useCallback),
   useContext: () => (useContext),
@@ -4415,17 +4418,17 @@ const typeOf = (input) => {
  * @param value - Value to inspect.
  * @returns True if the value is a class component; otherwise false.
  */
-const isValidElement = (o) => {
-	return o[CORE]!==undefined || o[TEXT]!==undefined;
+const isValidElement = (value) => {
+	return value[CORE]!==undefined || value[TEXT]!==undefined;
 }
 
 /**
  * Utility to find the underlying DOM node for a mounted Lilact component.
  *
- * @param element - A Lilact component instance to locate its DOM node.
+ * @param component - A Lilact component instance to locate its DOM node.
  * @returns The corresponding DOM element (or null if unavailable).
  */
-const findDOMNode = (comp)=>{
+const findDOMNode = (component)=>{
 
 	/*
 	When a component renders to null or false, findDOMNode returns null. 
@@ -4439,8 +4442,8 @@ const findDOMNode = (comp)=>{
 
 	Unlike React, in Lilact findDOMNode can also be used on function components.
 	*/
-	if(!comp[CORE]?.element?.parentNode) throw new Error("findDOMNode only works on mounted components.");
-	return comp[CORE].element;
+	if(!component[CORE]?.element?.parentNode) throw new Error("findDOMNode only works on mounted components.");
+	return component[CORE].element;
 }
 
 /**
@@ -4505,6 +4508,20 @@ const Children = {
 
 
 /**
+ * Wraps a render function so that a parent can pass a `ref` into it.
+ * The forwarded `ref` is provided as the second argument to the render function: `(props, ref)`.
+ *
+ * @param {function(props: any, ref: any)} render
+ *   The component render function that receives the props and the forwarded ref.
+ * @returns {}
+ */
+function forwardRef(render)
+{
+	return (props)=>render({...props, ref: undefined}, props.ref);
+}
+
+
+/**
  * Debug tool to detect the component visible at a point on screen.
  *
  * @returns A promise that is resolved when the user clicks on screen and its value will be the component if any.
@@ -4542,7 +4559,7 @@ function getComponentByPointer()
 /**
  * Utility for applying one or more class names to an element.
  *
- * @param classNames - One or more class name values to combine.
+ * @param classes - One or more class name values to combine.
  */
 function classNames(classes) {
 	return Object.entries(classes)
@@ -4558,8 +4575,8 @@ function classNames(classes) {
  * @param value - Value to check for emptiness.
  * @returns True if empty; otherwise false.
  */
-function isEmpty(o)  {
-	for(let i in o) return false;
+function isEmpty(value)  {
+	for(let i in value) return false;
 		return true;
 }
 
@@ -4567,8 +4584,8 @@ function isEmpty(o)  {
 /**
  * Determines whether two values are shallowly equal.
  *
- * @param objA - First object to compare.
- * @param objB - Second object to compare.
+ * @param source - First object to compare.
+ * @param target - Second object to compare.
  * @returns True if shallowly equal; otherwise false.
  */
 const shallowEqual = (source, target) => {
@@ -4594,8 +4611,8 @@ const shallowEqual = (source, target) => {
 /**
  * Determines whether two values are deeply equal.
  *
- * @param objA - First object to compare.
- * @param objB - Second object to compare.
+ * @param source - First object to compare.
+ * @param target - Second object to compare.
  * @returns True if deeply equal; otherwise false.
  */
 function deepEqual(source, target) {
@@ -4632,13 +4649,13 @@ function deepEqual(source, target) {
  * @param value - Value to inspect.
  * @returns True if the value is a js class; otherwise false.
  */
-function isClass(func) {
+function isClass(value) {
 	// from https://stackoverflow.com/a/66120819
-	if(!(func && func.constructor === Function) || func.prototype === undefined)
+	if(!(value && value.constructor === Function) || value.prototype === undefined)
 		return false;
-	if(Function.prototype !== Object.getPrototypeOf(func))
+	if(Function.prototype !== Object.getPrototypeOf(value))
 		return true;
-	return Object.getOwnPropertyNames(func.prototype).length > 1;
+	return Object.getOwnPropertyNames(value.prototype).length > 1;
 }
 
 /**
@@ -4647,8 +4664,8 @@ function isClass(func) {
  * @param value - Value to inspect.
  * @returns True if the value is an async function; otherwise false.
  */
-function isAsync(fn) {
-	return typeof fn === 'function' && fn.constructor && fn.constructor.name === 'AsyncFunction';
+function isAsync(value) {
+	return typeof value === 'function' && value.constructor && value.constructor.name === 'AsyncFunction';
 }
 
 /**
@@ -4657,8 +4674,8 @@ function isAsync(fn) {
  * @param value - Value to inspect.
  * @returns True if thenable; otherwise false.
  */
-function isThenable(x) {
-	return x && (typeof x === "object" || typeof x === "function") && typeof x.then === "function";
+function isThenable(value) {
+	return value && (typeof value === "object" || typeof value === "function") && typeof value.then === "function";
 }
 
 /**
@@ -4667,8 +4684,8 @@ function isThenable(x) {
  * @param value - Value to inspect.
  * @returns True if thenable; otherwise false.
  */
-function misc_isError(x) {  
-	return x instanceof Error || Object.prototype.toString.call(x) === '[object Error]';
+function misc_isError(value) {  
+	return value instanceof Error || Object.prototype.toString.call(value) === '[object Error]';
 }
 
 /**
@@ -4677,18 +4694,18 @@ function misc_isError(x) {
  * @param value - Value to inspect.
  * @returns boolean value
  */
-function toBool(x) {
-	if (typeof x === "boolean") return x;
+function toBool(value) {
+	if (typeof value === "boolean") return value;
 
-	if (typeof x === "number") return x !== 0;
+	if (typeof value === "number") return value !== 0;
 
-	if (typeof x === "string") {
-		x = x.trim().toLowerCase();
-		if (x === "true") return true;
-		if (x === "false") return false;
+	if (typeof value === "string") {
+		value = value.trim().toLowerCase();
+		if (value === "true") return true;
+		if (value === "false") return false;
 	}
 
-	return Boolean(x);
+	return Boolean(value);
 }
 
 
@@ -4761,7 +4778,7 @@ const boolean_html_attributes_set = new
 			 "hidden","open","loop","muted","controls","playsInline","allowFullScreen"]);
 
 
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9taXNjLmpzeCIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi9Vc2Vycy9hcmFzaC9EZXNrdG9wL1Byb2plY3RzL0xpbGFjdC9zcmMvbWlzYy5qc3giXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsQUFBQTs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0NBaUNDOzs7Z0JBR2UsV0FBVztFQUN6QjtFQUNBOztrREFFZ0QsbUJBQW1CO3NCQUMvQzsrQkFDUzs7Ozs7O0NBTTlCOztDQUVBOzs7Ozs7K0JBTThCLE9BQU87Ozs7Q0FJckM7Ozs7Ozs0QkFNMkIsUUFBUTs7RUFFbEM7Ozs7Ozs7Ozs7OztJQVlFLGtEQUFrRDs7OztDQUlyRDs7Ozs7a0NBS2tDLEFBQUQsYUFBYTs7O0NBRzlDOzs7Ozs7Ozt5QkFRd0I7O0NBRXhCOzs7Ozs7TUFNSyxXQUFXOzs7UUFHVCxvQkFBb0I7TUFDdEIsMkNBQTJDO29CQUM3Qjs7O1dBR1QsZ0RBQWdEO29CQUN2Qzs7O01BR2QsTUFBTTtvQkFDUTs7OztLQUlmOzs7O0NBSUo7Ozs7OztTQU1RLFdBQVc7S0FDZixXQUFXO01BQ1Y7Ozs7Ozs7O0NBUUw7Ozs7O3NDQUtxQztDQUNyQzs7O3dCQUd1QixDQUFFLGFBQWE7Ozs7d0JBSWYsUUFBUTs7aUNBRUM7NkJBQ0o7Ozs7UUFJckIsa0NBQWtDOzs7O2VBSTNCOzs7Ozt5QkFLVTs7Ozs7O0NBTXhCOzs7OzsyQkFLMEIsVUFBVTt1QkFDZDtTQUNiLEFBQUQ7TUFDRixBQUFEO09BQ0M7Ozs7Q0FJTjs7Ozs7O3dCQU11QixLQUFLO0tBQ3hCOzs7OztDQUtKOzs7Ozs7OzZCQU80QixvQkFBb0I7S0FDNUMsTUFBTyxtQkFBbUIsV0FBVTs7OztLQUlwQyxNQUFPLHVCQUFzQjtNQUM1QixrQ0FBa0M7OztzQkFHakIsQUFBRDtZQUNWLE1BQU8sd0JBQXVCO3FCQUNyQixjQUFlLEFBQUQ7WUFDdkIsTUFBTyxzQkFBcUI7d0JBQ2hCLHFCQUFxQjs7Ozs7OztDQU81Qzs7Ozs7OzswQkFPeUIsaUJBQWlCO0tBQ3RDLE1BQU8sbUJBQW1CLFdBQVU7Ozs7S0FJcEMsTUFBTyx1QkFBc0I7TUFDNUIsa0NBQWtDOzs7O3NCQUlqQixBQUFELDJCQUE0QjtZQUN0QyxNQUFPLHdCQUF1QjtNQUNwQyxXQUFZLCtCQUErQixrQkFBaUI7Ozs7cUJBSTdDLGNBQWUsQUFBRDtZQUN0Qjs7WUFFRCxNQUFPLHNCQUFxQjt3QkFDaEIscUJBQXFCOzs7Ozs7OztDQVE1Qzs7Ozs7O3dCQU11QixPQUFPO0VBQzdCO0lBQ0UsQ0FBRTs7SUFFRiw0Q0FBNkM7O21DQUVkOzs7Q0FHbEM7Ozs7Ozt3QkFNdUIsS0FBSzs7OztDQUk1Qjs7Ozs7OzJCQU0wQixJQUFJO2NBQ2pCOzs7Q0FHYjs7Ozs7O3dCQU11QixJQUFJOzZEQUNpQzs7O0NBRzVEOzs7Ozs7dUJBTXNCLElBQUk7S0FDdEI7O0tBRUE7O0tBRUEsd0JBQXdCO2FBQ2hCLGNBQWM7TUFDckI7TUFDQTs7O2dCQUdVOzs7O0NBSWY7O0NBRUE7aUNBQ2dDOztDQUVoQzs7Q0FFQTs7Q0FFQTsrQkFDOEIsV0FBWTtDQUMxQzt5QkFDd0I7OztDQUd4QjtDQUNBOztDQUVBOztDQUVBOztDQUVBOztDQUVBOzs7Q0FHQTswQ0FDeUM7Ozs7O0NBS3pDO2tDQUNpQzs7Ozs7Ozs7Ozs7Ozs7Ozs7OztDQW1CakM7aURBQ2dEOzs7Ozs7Ozs7Q0FTaEQ7O0tBRUkifQ==
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9taXNjLmpzeCIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi9Vc2Vycy9hcmFzaC9EZXNrdG9wL1Byb2plY3RzL0xpbGFjdC9zcmMvbWlzYy5qc3giXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsQUFBQTs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0NBaUNDOzs7Z0JBR2UsV0FBVztFQUN6QjtFQUNBOztrREFFZ0QsbUJBQW1CO3NCQUMvQzsrQkFDUzs7Ozs7O0NBTTlCOztDQUVBOzs7Ozs7K0JBTThCLFdBQVc7Ozs7Q0FJekM7Ozs7Ozs0QkFNMkIsYUFBYTs7RUFFdkM7Ozs7Ozs7Ozs7OztJQVlFLHVEQUF1RDs7OztDQUkxRDs7Ozs7a0NBS2tDLEFBQUQsYUFBYTs7O0NBRzlDOzs7Ozs7Ozt5QkFRd0I7O0NBRXhCOzs7Ozs7TUFNSyxXQUFXOzs7UUFHVCxvQkFBb0I7TUFDdEIsMkNBQTJDO29CQUM3Qjs7O1dBR1QsZ0RBQWdEO29CQUN2Qzs7O01BR2QsTUFBTTtvQkFDUTs7OztLQUlmOzs7O0NBSUo7Ozs7OztTQU1RLFdBQVc7S0FDZixXQUFXO01BQ1Y7Ozs7Ozs7O0NBUUw7Ozs7Ozs7OzJCQVEwQjtDQUMxQjtTQUNRLGVBQWdCLEFBQUQ7Ozs7Q0FJdkI7Ozs7O3NDQUtxQztDQUNyQzs7O3dCQUd1QixDQUFFLGFBQWE7Ozs7d0JBSWYsUUFBUTs7aUNBRUM7NkJBQ0o7Ozs7UUFJckIsa0NBQWtDOzs7O2VBSTNCOzs7Ozt5QkFLVTs7Ozs7O0NBTXhCOzs7OzsyQkFLMEIsVUFBVTt1QkFDZDtTQUNiLEFBQUQ7TUFDRixBQUFEO09BQ0M7Ozs7Q0FJTjs7Ozs7O3dCQU11QixTQUFTO0tBQzVCOzs7OztDQUtKOzs7Ozs7OzZCQU80QixvQkFBb0I7S0FDNUMsTUFBTyxtQkFBbUIsV0FBVTs7OztLQUlwQyxNQUFPLHVCQUFzQjtNQUM1QixrQ0FBa0M7OztzQkFHakIsQUFBRDtZQUNWLE1BQU8sd0JBQXVCO3FCQUNyQixjQUFlLEFBQUQ7WUFDdkIsTUFBTyxzQkFBcUI7d0JBQ2hCLHFCQUFxQjs7Ozs7OztDQU81Qzs7Ozs7OzswQkFPeUIsaUJBQWlCO0tBQ3RDLE1BQU8sbUJBQW1CLFdBQVU7Ozs7S0FJcEMsTUFBTyx1QkFBc0I7TUFDNUIsa0NBQWtDOzs7O3NCQUlqQixBQUFELDJCQUE0QjtZQUN0QyxNQUFPLHdCQUF1QjtNQUNwQyxXQUFZLCtCQUErQixrQkFBaUI7Ozs7cUJBSTdDLGNBQWUsQUFBRDtZQUN0Qjs7WUFFRCxNQUFPLHNCQUFxQjt3QkFDaEIscUJBQXFCOzs7Ozs7OztDQVE1Qzs7Ozs7O3dCQU11QixRQUFRO0VBQzlCO0lBQ0UsQ0FBRTs7SUFFRiw0Q0FBNkM7O21DQUVkOzs7Q0FHbEM7Ozs7Ozt3QkFNdUIsUUFBUTs7OztDQUkvQjs7Ozs7OzJCQU0wQixRQUFRO2tCQUNqQjs7O0NBR2pCOzs7Ozs7d0JBTXVCLFFBQVE7aUVBQ2lDOzs7Q0FHaEU7Ozs7Ozt1QkFNc0IsUUFBUTtLQUMxQjs7S0FFQTs7S0FFQSw0QkFBNEI7cUJBQ1osY0FBYztNQUM3QjtNQUNBOzs7Z0JBR1U7Ozs7Q0FJZjs7Q0FFQTtpQ0FDZ0M7O0NBRWhDOztDQUVBOztDQUVBOytCQUM4QixXQUFZO0NBQzFDO3lCQUN3Qjs7O0NBR3hCO0NBQ0E7O0NBRUE7O0NBRUE7O0NBRUE7O0NBRUE7OztDQUdBOzBDQUN5Qzs7Ozs7Q0FLekM7a0NBQ2lDOzs7Ozs7Ozs7Ozs7Ozs7Ozs7O0NBbUJqQztpREFDZ0Q7Ozs7Ozs7OztDQVNoRDs7S0FFSSJ9
 ;// ./src/components.jsx
 /*
 
@@ -5518,7 +5535,7 @@ const generateComponentKey = (entity, props)=> {
 * Base class that mimics `React.Component` (stateful component with lifecycle hooks).
 * Extend this class to implement `render()` and (optionally) override lifecycle methods.
 * 
-* This user functions and members are supported:
+* These user functions and members are supported:
 *
 *	static defaultProps
 *
@@ -5922,17 +5939,17 @@ function useHook()
  * @param {any} initialValue - Initial state value.
  * @returns {any} Hook result `[state, setState]`.
  */
-function useState(val)
+function useState(initialValue)
 {
 	const hk = Lilact.useHook();
 
 	if( Lilact.isEmpty(hk) ) {
-		if(typeof(val)==='function') hk.value = val();
-		else hk.value = val;
+		if(typeof(initialValue)==='function') hk.value = initialValue();
+		else hk.value = initialValue;
 		
-		hk.set_func = function(core, hk, val) {
-			if(typeof(val)==='function') hk.value = val(hk.value);
-			else hk.value = val;
+		hk.set_func = function(core, hk, initialValue) {
+			if(typeof(initialValue)==='function') hk.value = initialValue(hk.value);
+			else hk.value = initialValue;
 
 			core.component.forceUpdate();
 		}.bind(undefined, Lilact.current_component[0], hk);
@@ -5979,14 +5996,14 @@ function useCallback(callback, deps=undefined)
  * @param {any} [defaultValue] - Initial context value when no Provider is present.
  * @returns {any} A context object
  */
-function createContext(val)
+function createContext(defaultValue)
 {
 	const prov = function({value, children}) {
 		return children;
 	};
 
 	return {
-		default: val,
+		default: defaultValue,
 		Provider: prov
 	}
 }
@@ -5997,20 +6014,20 @@ function createContext(val)
  * @param {any} context - Context object created by `createContext`.
  * @returns {any} Current context value.
  */
-function useContext(ctx)
+function useContext(context)
 {
 	let core = Lilact.current_component[0].parent;
 
-	while(core.entity!==ctx.Provider && core.parent) {
+	while(core.entity!==context.Provider && core.parent) {
 		core = core.parent;
 	}
 
 	if(core.parent) {
 		let v = core.props?.value;
-		return v??=ctx.default;
+		return v??=context.default;
 	}
 
-	return ctx.default;
+	return context.default;
 }
 
 /**
@@ -6217,7 +6234,7 @@ function useMemo(factory,deps=undefined)
  * @param {any} initialState - Initial state for the hook.
  * @returns {any} Hook result
  */
-function useActionState(fn, initialState)
+function useActionState(action, initialState)
 {
 	const hk = Lilact.useHook();
 	const [is_pending, tran_start_func] = Lilact.useTransition();
@@ -6232,7 +6249,7 @@ function useActionState(fn, initialState)
 			tran_start_func(
 					async ()=> {
 						const form_data = new FormData(sub.target, sub.submitter);
-						hk.state = await fn(hk.state, form_data);
+						hk.state = await action(hk.state, form_data);
 					},
 					[]
 				);
@@ -6324,21 +6341,6 @@ function useDeferredValue(value, initialValue)
 	return deferred;
 }
 
-
-/**
- * Wraps a render function so that a parent can pass a `ref` into it.
- * The forwarded `ref` is provided as the second argument to the render function: `(props, ref)`.
- *
- * @param {function(props: any, ref: any)} render
- *   The component render function that receives the props and the forwarded ref.
- * @returns {}
- */
-function forwardRef(render)
-{
-	return (props)=>render({...props, ref: undefined}, props.ref);
-}
-
-
 /**
  * Customizes the value that is exposed to the parent when it uses a `ref` on a component created with `forwardRef`.
  * The object returned by `factory` becomes the value of `ref.current` for object refs.
@@ -6368,7 +6370,7 @@ function useImperativeHandle(ref, factory, deps=undefined)
 
 
 
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9ob29rcy5qc3giLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIvVXNlcnMvYXJhc2gvRGVza3RvcC9Qcm9qZWN0cy9MaWxhY3Qvc3JjL2hvb2tzLmpzeCJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSxBQUFBOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Q0E4QkM7OztDQUdBOzs7Ozs7O3dCQU91QjtDQUN2Qjs7O0lBR0csMENBQTBDO2tCQUMzQixBQUFEOzs7Ozs7Q0FNakI7Ozs7Ozt5QkFNd0I7Q0FDeEI7MkJBQzBCOztJQUV2QixlQUFnQixRQUFPO0tBQ3RCLE1BQU8sbUNBQWtDOzs7eUJBR3JCLGdCQUFnQjtNQUNuQyxNQUFPLG1DQUFrQzs7OzhCQUdqQjtTQUNyQjs7Ozs7OztDQU9SOzs7Ozs7OzRCQU8yQjtDQUMzQjtJQUNHLHFCQUFzQixNQUFPLDBEQUF3RDtrQkFDdkU7OzsyQkFHUzs7SUFFdkIsZUFBZ0IsUUFBTzs7O09BR3BCO0tBQ0YsK0RBQWdFOzs7SUFHakUsY0FBYzthQUNMOzs7Ozs7OztDQVFaOzs7Ozs7OEJBTTZCO0NBQzdCO3VCQUN1QixBQUFELG9CQUFvQjs7OztTQUlsQzs7Ozs7O0NBTVI7Ozs7OzsyQkFNMEI7Q0FDMUI7OztPQUdNLDRDQUE0Qzs7OztJQUkvQyxjQUFjOzs7Ozs7OztDQVFqQjs7Ozs7O3NCQU1xQjtDQUNyQjsyQkFDMEI7O0lBRXZCLGVBQWdCLFFBQU87Ozs7Ozs7Q0FPMUI7Ozs7OzhCQUs2QjtDQUM3QjsyQkFDMEI7O0lBRXZCLGVBQWdCLFFBQU87Ozs7O0dBS3hCLGNBQWUsZUFBZTs7OztLQUkzQixlQUFlOzhCQUNVOzs7V0FHbkI7Ozs7S0FJTixlQUFlOzhCQUNVOzs7O1NBSXRCOzs7Ozs7Q0FNUjs7Ozs7OztnQ0FPK0I7Q0FDL0I7OzJCQUUwQjs7O01BR3JCO21CQUNhOztPQUVaLElBQUk7OztJQUdQLGtCQUFrQjtLQUNqQixNQUFPLHlEQUF3RDs7cUNBRS9COzs7SUFHakMsZUFBZ0IsUUFBTzs7eUJBRUYsZ0JBQWdCOztNQUVuQyxNQUFPLDhCQUE2Qjs7TUFFcEM7O3NDQUVnQzs7OzhCQUdSOztTQUVyQjs7Ozs7O0NBTVI7Ozs7Ozs7dUJBT3NCO0NBQ3RCOzJCQUMwQjs7SUFFdkIsZUFBZ0IsUUFBTzs7Ozs7OztDQU8xQjs7Ozs7OztnQ0FPK0I7Q0FDL0I7SUFDRyxxQkFBc0IsTUFBTywwREFBd0Q7a0JBQ3ZFOzs7MkJBR1M7O0lBRXZCLGdCQUFpQixRQUFPO0tBQ3ZCLCtEQUFnRTs7O0lBR2pFLGNBQWM7YUFDTDs7OzsyQkFJYyxDQUFFLElBQUkscUJBQXFCO21EQUNIOzs7Q0FHbEQ7Ozs7Ozs7MEJBT3lCO0NBQ3pCO0lBQ0cscUJBQXNCLE1BQU8sMERBQXdEO2tCQUN2RTs7OzJCQUdTOztJQUV2QixnQkFBaUIsUUFBTztLQUN2QiwrREFBZ0U7OztJQUdqRSxjQUFjO2FBQ0w7Ozs7bUJBSU0sQ0FBRSxJQUFJLHFCQUFxQjs7OztDQUk3Qzs7Ozs7Ozt3QkFPdUI7Q0FDdkI7SUFDRyxxQkFBc0IsTUFBTywwREFBd0Q7a0JBQ3ZFOzs7MkJBR1M7O0lBRXZCLGdCQUFpQixRQUFPO0tBQ3ZCLCtEQUFnRTs7OztvQkFJakQ7Ozs7O0NBS25COzs7Ozs7OytCQU84QjtDQUM5QjsyQkFDMEI7NERBQ2lDOztJQUV4RCxlQUFnQixRQUFPOzs7O29CQUlQLE9BQU87d0JBQ0g7O21CQUVMO1dBQ1AsS0FBSztvQ0FDb0I7eUJBQ1g7Ozs7Ozs7Ozs7OztDQVl6Qjs7Ozs7Ozs7MkJBUTBCO0NBQzFCOzJCQUMwQjs7SUFFdkIsZUFBZ0IsUUFBTzs7dUJBRUo7eUJBQ0UsbUJBQW1COzRCQUNoQjtNQUN0QixzQkFBdUIsbUJBQWtCOzsrQkFFaEI7OztTQUd0Qjs7Ozs7Ozs7Q0FRUjs7Q0FFQTs7Ozs7O2lDQU1nQztDQUNoQztRQUNPOzswQ0FFa0M7Ozs2QkFHYjsyQkFDRjs7V0FFZixBQUFELE1BQU87S0FDWjs7O0VBR0g7S0FDRyw2QkFBNkI7Ozs7O0VBS2hDO2NBQ1k7OztpQkFHRyxPQUFRLEFBQUQsTUFBTztLQUN6QjtFQUNIO2FBQ1c7Ozs7U0FJTCxNQUFNO01BQ1QscUJBQXFCOzs7Ozs7Ozs7OztDQVczQjs7Ozs7Ozs7MkJBUTBCO0NBQzFCO1NBQ1EsZUFBZ0IsQUFBRDs7OztDQUl2Qjs7Ozs7Ozs7Ozs7OztvQ0FhbUM7Q0FDbkM7SUFDRyxnRUFBaUU7Ozs7bUJBSWxELENBQUUsSUFBSTtJQUNwQixtQ0FBbUM7aUJBQ3RCOztlQUVGLHFCQUFzQiJ9
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9ob29rcy5qc3giLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIvVXNlcnMvYXJhc2gvRGVza3RvcC9Qcm9qZWN0cy9MaWxhY3Qvc3JjL2hvb2tzLmpzeCJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSxBQUFBOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Q0E4QkM7OztDQUdBOzs7Ozs7O3dCQU91QjtDQUN2Qjs7O0lBR0csMENBQTBDO2tCQUMzQixBQUFEOzs7Ozs7Q0FNakI7Ozs7Ozt5QkFNd0I7Q0FDeEI7MkJBQzBCOztJQUV2QixlQUFnQixRQUFPO0tBQ3RCLE1BQU8scURBQW9EOzs7eUJBR3ZDLHlCQUF5QjtNQUM1QyxNQUFPLHFEQUFvRDs7OzhCQUduQztTQUNyQjs7Ozs7OztDQU9SOzs7Ozs7OzRCQU8yQjtDQUMzQjtJQUNHLHFCQUFzQixNQUFPLDBEQUF3RDtrQkFDdkU7OzsyQkFHUzs7SUFFdkIsZUFBZ0IsUUFBTzs7O09BR3BCO0tBQ0YsK0RBQWdFOzs7SUFHakUsY0FBYzthQUNMOzs7Ozs7OztDQVFaOzs7Ozs7OEJBTTZCO0NBQzdCO3VCQUN1QixBQUFELG9CQUFvQjs7OztTQUlsQzs7Ozs7O0NBTVI7Ozs7OzsyQkFNMEI7Q0FDMUI7OztPQUdNLGdEQUFnRDs7OztJQUluRCxjQUFjOzs7Ozs7OztDQVFqQjs7Ozs7O3NCQU1xQjtDQUNyQjsyQkFDMEI7O0lBRXZCLGVBQWdCLFFBQU87Ozs7Ozs7Q0FPMUI7Ozs7OzhCQUs2QjtDQUM3QjsyQkFDMEI7O0lBRXZCLGVBQWdCLFFBQU87Ozs7O0dBS3hCLGNBQWUsZUFBZTs7OztLQUkzQixlQUFlOzhCQUNVOzs7V0FHbkI7Ozs7S0FJTixlQUFlOzhCQUNVOzs7O1NBSXRCOzs7Ozs7Q0FNUjs7Ozs7OztnQ0FPK0I7Q0FDL0I7OzJCQUUwQjs7O01BR3JCO21CQUNhOztPQUVaLElBQUk7OztJQUdQLGtCQUFrQjtLQUNqQixNQUFPLHlEQUF3RDs7cUNBRS9COzs7SUFHakMsZUFBZ0IsUUFBTzs7eUJBRUYsZ0JBQWdCOztNQUVuQyxNQUFPLDhCQUE2Qjs7TUFFcEM7O3NDQUVnQzs7OzhCQUdSOztTQUVyQjs7Ozs7O0NBTVI7Ozs7Ozs7dUJBT3NCO0NBQ3RCOzJCQUMwQjs7SUFFdkIsZUFBZ0IsUUFBTzs7Ozs7OztDQU8xQjs7Ozs7OztnQ0FPK0I7Q0FDL0I7SUFDRyxxQkFBc0IsTUFBTywwREFBd0Q7a0JBQ3ZFOzs7MkJBR1M7O0lBRXZCLGdCQUFpQixRQUFPO0tBQ3ZCLCtEQUFnRTs7O0lBR2pFLGNBQWM7YUFDTDs7OzsyQkFJYyxDQUFFLElBQUkscUJBQXFCO21EQUNIOzs7Q0FHbEQ7Ozs7Ozs7MEJBT3lCO0NBQ3pCO0lBQ0cscUJBQXNCLE1BQU8sMERBQXdEO2tCQUN2RTs7OzJCQUdTOztJQUV2QixnQkFBaUIsUUFBTztLQUN2QiwrREFBZ0U7OztJQUdqRSxjQUFjO2FBQ0w7Ozs7bUJBSU0sQ0FBRSxJQUFJLHFCQUFxQjs7OztDQUk3Qzs7Ozs7Ozt3QkFPdUI7Q0FDdkI7SUFDRyxxQkFBc0IsTUFBTywwREFBd0Q7a0JBQ3ZFOzs7MkJBR1M7O0lBRXZCLGdCQUFpQixRQUFPO0tBQ3ZCLCtEQUFnRTs7OztvQkFJakQ7Ozs7O0NBS25COzs7Ozs7OytCQU84QjtDQUM5QjsyQkFDMEI7NERBQ2lDOztJQUV4RCxlQUFnQixRQUFPOzs7O29CQUlQLE9BQU87d0JBQ0g7O21CQUVMO1dBQ1AsS0FBSztvQ0FDb0I7NkJBQ1A7Ozs7Ozs7Ozs7OztDQVk3Qjs7Ozs7Ozs7MkJBUTBCO0NBQzFCOzJCQUMwQjs7SUFFdkIsZUFBZ0IsUUFBTzs7dUJBRUo7eUJBQ0UsbUJBQW1COzRCQUNoQjtNQUN0QixzQkFBdUIsbUJBQWtCOzsrQkFFaEI7OztTQUd0Qjs7Ozs7Ozs7Q0FRUjs7Q0FFQTs7Ozs7O2lDQU1nQztDQUNoQztRQUNPOzswQ0FFa0M7Ozs2QkFHYjsyQkFDRjs7V0FFZixBQUFELE1BQU87S0FDWjs7O0VBR0g7S0FDRyw2QkFBNkI7Ozs7O0VBS2hDO2NBQ1k7OztpQkFHRyxPQUFRLEFBQUQsTUFBTztLQUN6QjtFQUNIO2FBQ1c7Ozs7U0FJTCxNQUFNO01BQ1QscUJBQXFCOzs7Ozs7Ozs7O0NBVTNCOzs7Ozs7Ozs7Ozs7O29DQWFtQztDQUNuQztJQUNHLGdFQUFpRTs7OzttQkFJbEQsQ0FBRSxJQUFJO0lBQ3BCLG1DQUFtQztpQkFDdEI7O2VBRUYscUJBQXNCIn0=
 // EXTERNAL MODULE: ./src/run.jsx
 var run = __webpack_require__(861);
 ;// ./src/timers.jsx
@@ -6583,9 +6585,9 @@ function resumeTimers()
  */
 
 
-function timers_setTimeout(func, interval, ...args)
+function timers_setTimeout(callback, delay, ...args)
 {
-	return add_timer( { [CALLBACK]: func, [INTERVAL]: interval, [DUE]: Date.now()+interval, [REPEAT]: false, [ARGS]: args } );
+	return add_timer( { [CALLBACK]: callback, [INTERVAL]: delay, [DUE]: Date.now()+delay, [REPEAT]: false, [ARGS]: args } );
 }
 
 /**
@@ -6596,9 +6598,9 @@ function timers_setTimeout(func, interval, ...args)
  * @returns {any} Interval id.
  */
 
-function timers_setInterval(func, interval, ...args)
+function timers_setInterval(callback, interval, ...args)
 {
-	return add_timer( { [CALLBACK]: func, [INTERVAL]: interval, [DUE]: Date.now()+interval, [REPEAT]: true, [ARGS]: args } );
+	return add_timer( { [CALLBACK]: callback, [INTERVAL]: interval, [DUE]: Date.now()+interval, [REPEAT]: true, [ARGS]: args } );
 }
 
 /**
@@ -6606,9 +6608,9 @@ function timers_setInterval(func, interval, ...args)
  * @param {any} id - Timeout id returned by `setTimeout`.
  * @returns {void}
  */
-function timers_clearTimeout(t)
+function timers_clearTimeout(id)
 {
-	if(all_timers[t]) all_timers[t][CLEARED] = true;
+	if(all_timers[id]) all_timers[id][CLEARED] = true;
 }
 
 /**
@@ -6616,9 +6618,9 @@ function timers_clearTimeout(t)
  * @param {any} id - Interval id returned by `setInterval`.
  * @returns {void}
  */
-function timers_clearInterval(t)
+function timers_clearInterval(id)
 {
-	if(all_timers[t]) all_timers[t][CLEARED] = true;
+	if(all_timers[id]) all_timers[id][CLEARED] = true;
 }
 
 /**
@@ -6651,27 +6653,27 @@ function releaseTimers()
  * @param {number} duration - Delay in milliseconds.
  * @returns {Promise} Promise that resolves after the delay.
  */
-function timeoutPromise(duration=0, timer_source=this) 
+function timeoutPromise(duration=0, timerSource=this) 
 {	
 	let id, resolve, reject;
 
 	const promise = new Promise((res, rej) => {
 		resolve = res;
 		reject = rej;
-		id = timer_source.setTimeout(() => {
+		id = timerSource.setTimeout(() => {
 			resolve();
 		}, duration);
 	});
 
 	// note: proceed interrupts the timer, and continues the flow if used with await.
 	promise.proceed = () => {
-		timer_source.clearTimeout(id);
+		timerSource.clearTimeout(id);
 		resolve();
 	};
 
 	// note: cancel rejects so it throws exception when using with await, this allows handling it differently.
 	promise.cancel = () => {
-		timer_source.clearTimeout(id);
+		timerSource.clearTimeout(id);
 		reject();
 	};
 
@@ -6692,7 +6694,7 @@ function animationFramePromise() {
 
 
 
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy90aW1lcnMuanN4Iiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy90aW1lcnMuanN4Il0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLEFBQUE7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztDQThCQztDQUNBO0NBQ0E7OztDQUdBOztDQUVBOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7a0JBcUJpQjs7O0NBR2pCOzs7Ozs7O29CQU9tQjtDQUNuQjs7OztRQUlPLGdCQUFnQjt5QkFDRSxBQUFEOzs7TUFHbkIscUJBQXFCOzs7V0FHaEIsbUJBQW1COzs7UUFHdEI7Ozs7Ozs7O21CQVFXOzs7O21CQUlBO0NBQ2xCOytCQUM4Qjs7SUFFM0IsYUFBYTs7Ozs7O2FBTUo7O0lBRVQsdUJBQXVCO2dCQUNYOzhCQUNjOzs7Ozs7bUJBTVg7Q0FDbEI7c0JBQ3FCOzs7OztPQUtmLCtCQUErQjtNQUNoQyxrQkFBa0I7O01BRWxCLGNBQWM7Z0JBQ0o7T0FDVCxZQUFZO3VCQUNJO2VBQ1I7O1VBRUw7Ozs7U0FJRDs7Ozs7Ozs7bUJBUVU7O0lBRWYsc0JBQXNCO2dCQUNWOzhCQUNjOzs7OztDQUs3Qjs7Q0FFQTs7Ozs2QkFJNEI7Q0FDNUI7ZUFDYzs7Ozs7ZUFLQTs7O0NBR2Q7Ozs7NkJBSTRCO0NBQzVCO2VBQ2M7NkJBQ2M7OztDQUc1Qjs7Ozs2QkFJNEI7Q0FDNUI7SUFDRzs7SUFFQSxzQkFBc0I7dUJBQ0g7Ozs7TUFJakIsMEJBQTBCOzs7OzhCQUlGOzs7Ozs7O0NBTzdCOzs7Ozs7Ozs7MkJBUzBCO0NBQzFCO2tCQUNpQixDQUFFLHlEQUF5RDs7O0NBRzVFOzs7Ozs7Ozs0QkFRMkI7Q0FDM0I7a0JBQ2lCLENBQUUseURBQXlEOzs7Q0FHNUU7Ozs7OzZCQUs0QjtDQUM1QjtJQUNHOzs7Q0FHSDs7Ozs7OEJBSzZCO0NBQzdCO0lBQ0c7OztDQUdIOzs7OzsyQkFLMEI7Q0FDMUI7Ozs7Ozs7Q0FPQTs7Ozs4QkFJNkI7Q0FDN0I7Ozs7Ozs7Q0FPQTs7Ozs7K0JBSzhCO0NBQzlCOzs7NkJBRzZCLEFBQUQsY0FBZTs7OzhCQUdaLEFBQUQsTUFBTztTQUMzQjs7OztFQUlUO29CQUNrQixNQUFNOzRCQUNFO1VBQ2xCOzs7RUFHUjttQkFDaUIsTUFBTTs0QkFDRztTQUNuQjs7Ozs7O0NBTVI7Ozs7c0NBSXFDLEdBQUc7dUJBQ2pCLEFBQUQsYUFBYzs2QkFDTixBQUFELE1BQU87a0JBQ2pCIn0=
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy90aW1lcnMuanN4Iiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy90aW1lcnMuanN4Il0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLEFBQUE7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztDQThCQztDQUNBO0NBQ0E7OztDQUdBOztDQUVBOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7a0JBcUJpQjs7O0NBR2pCOzs7Ozs7O29CQU9tQjtDQUNuQjs7OztRQUlPLGdCQUFnQjt5QkFDRSxBQUFEOzs7TUFHbkIscUJBQXFCOzs7V0FHaEIsbUJBQW1COzs7UUFHdEI7Ozs7Ozs7O21CQVFXOzs7O21CQUlBO0NBQ2xCOytCQUM4Qjs7SUFFM0IsYUFBYTs7Ozs7O2FBTUo7O0lBRVQsdUJBQXVCO2dCQUNYOzhCQUNjOzs7Ozs7bUJBTVg7Q0FDbEI7c0JBQ3FCOzs7OztPQUtmLCtCQUErQjtNQUNoQyxrQkFBa0I7O01BRWxCLGNBQWM7Z0JBQ0o7T0FDVCxZQUFZO3VCQUNJO2VBQ1I7O1VBRUw7Ozs7U0FJRDs7Ozs7Ozs7bUJBUVU7O0lBRWYsc0JBQXNCO2dCQUNWOzhCQUNjOzs7OztDQUs3Qjs7Q0FFQTs7Ozs2QkFJNEI7Q0FDNUI7ZUFDYzs7Ozs7ZUFLQTs7O0NBR2Q7Ozs7NkJBSTRCO0NBQzVCO2VBQ2M7NkJBQ2M7OztDQUc1Qjs7Ozs2QkFJNEI7Q0FDNUI7SUFDRzs7SUFFQSxzQkFBc0I7dUJBQ0g7Ozs7TUFJakIsMEJBQTBCOzs7OzhCQUlGOzs7Ozs7O0NBTzdCOzs7Ozs7Ozs7MkJBUzBCO0NBQzFCO2tCQUNpQixDQUFFLDBEQUEwRDs7O0NBRzdFOzs7Ozs7Ozs0QkFRMkI7Q0FDM0I7a0JBQ2lCLENBQUUsNkRBQTZEOzs7Q0FHaEY7Ozs7OzZCQUs0QjtDQUM1QjtJQUNHOzs7Q0FHSDs7Ozs7OEJBSzZCO0NBQzdCO0lBQ0c7OztDQUdIOzs7OzsyQkFLMEI7Q0FDMUI7Ozs7Ozs7Q0FPQTs7Ozs4QkFJNkI7Q0FDN0I7Ozs7Ozs7Q0FPQTs7Ozs7K0JBSzhCO0NBQzlCOzs7NkJBRzZCLEFBQUQsY0FBZTs7OzZCQUdiLEFBQUQsTUFBTztTQUMxQjs7OztFQUlUO29CQUNrQixNQUFNOzJCQUNDO1VBQ2pCOzs7RUFHUjttQkFDaUIsTUFBTTsyQkFDRTtTQUNsQjs7Ozs7O0NBTVI7Ozs7c0NBSXFDLEdBQUc7dUJBQ2pCLEFBQUQsYUFBYzs2QkFDTixBQUFELE1BQU87a0JBQ2pCIn0=
 ;// ./src/transition.jsx
 /*
 
@@ -7374,6 +7376,7 @@ function getErrorLocation(err) // works for both error and error-event, and also
 // Chrome/Edge:   at fn (eval:xxx:LINE:COL)
 // Firefox:       fn@eval:xxx:LINE:COL
 // Safari:        @eval:xxx:LINE:COL   (sometimes)
+/** @ignore */
 function parseEvalLocationFromStack(stack, urlPrefix = "eval:/") {
   const raw = typeof stack === "string" ? stack : String(stack || "");
   const lines = raw.split(/\r?\n/);
@@ -7441,34 +7444,36 @@ function scanBlockLabels(code, path)
  * Debug tool to get the Lilact traced location of an error. It can also produce some block based stack trace 
  * if `Lilact.transpilerConfig.enableLabelStack` is set to `true` before loading the script. This is `false`
  * by default for efficiency.
+ * 
+ * @param error - The error object 
  *
  * @returns A new object that includes `path`, `row`, `col`, `msg`, `name`, and optional `stack`. 
  * The exception itself is stored as `err`.
  */
-function traceError(err)
+function traceError(error)
 {
-	if(err?.is_traced) {
-		return err;
+	if(error?.is_traced) {
+		return error;
 	}
 
-	const loc = parseEvalLocationFromStack(err.stack);
+	const loc = parseEvalLocationFromStack(error.stack);
 
 	const obj = {
-		fileName: loc.url?.slice(6) || err.fileName,
+		fileName: loc.url?.slice(6) || error.fileName,
 		
 		lineNumber: loc.line,
 		columnNumber: loc.col,
 
-		message: err.message,
-		name: err.name,
+		message: error.message,
+		name: error.name,
 
-		stack: err.stack,
-		_error: err,
+		stack: error.stack,
+		_error: error,
 
 		is_traced: true
 	};		
 
-	if( err.name!=='JSXParseError' ) {
+	if( error.name!=='JSXParseError' ) {
 
 		let mps;
 
@@ -7481,18 +7486,18 @@ function traceError(err)
 			obj.lineNumber = mloc.line;
 			obj.columnNumber = mloc.col;
 		}
-		else if( err.lilact_trace!==undefined) {
+		else if( error.lilact_trace!==undefined) {
 
-			let loc = getErrorLocation(err);
+			let loc = getErrorLocation(error);
 
 			let mps;
 			let blk;
 
-			if(typeof(err.lilact_trace)==='object') {
-				blk = Lilact.blocks_info.labels[err.lilact_trace[0]];
+			if(typeof(error.lilact_trace)==='object') {
+				blk = Lilact.blocks_info.labels[error.lilact_trace[0]];
 			}
 			else {
-				blk = Lilact.blocks_info.labels[err.lilact_trace];
+				blk = Lilact.blocks_info.labels[error.lilact_trace];
 			}
 
 			if(blk) {
@@ -7510,8 +7515,8 @@ function traceError(err)
 		
 	}
 	else {
-		const loc = getErrorLocation(err);
-		if(err.fileName) obj.fileName = err.fileName;
+		const loc = getErrorLocation(error);
+		if(error.fileName) obj.fileName = error.fileName;
 		obj.lineNumber = loc.line;
 		obj.columnNumber = loc.col;
 	}
@@ -7535,14 +7540,15 @@ function traceError(err)
  *	Lilact.globalErrorHandler(e);
  * });
  * `
+ * @param error - The error object 
  * 
  */
-function globalErrorHandler(err)
+function globalErrorHandler(error)
 {
 	Lilact.pauseTimers();
-	if(err.error) err = err.error;
+	if(error.error) error = error.error;
 
-	err = Lilact.traceError(err);
+	error = Lilact.traceError(error);
 
 	const cls = Lilact.emotion.css(`
 			background: linear-gradient(135deg, #fff2f2d4, #ffffffd4);
@@ -7570,11 +7576,11 @@ function globalErrorHandler(err)
 	//<b>⚠</b> 
 	el.innerHTML = 
 		`<h3 style=""><red>Error!</red></h3>
-		<b>${err.fileName?'At '+err.fileName:''}
-		${Number.isFinite(err.lineNumber)?": Line "+(err.lineNumber+1):""}</b><br><br>
-		<b>${err.name}</b>:&nbsp;<span>${err.message}</span><br><br>
-		${Lilact.required_scripts[err.fileName]?'<code><pre></pre><pre><red></red></pre><pre></pre></code>':''}
-		${err._error.componentStackLog?'<br>Component Stack:<br><code><pre>'+err._error.componentStackLog+'</pre></code>':''}
+		<b>${error.fileName?'At '+error.fileName:''}
+		${Number.isFinite(error.lineNumber)?": Line "+(error.lineNumber+1):""}</b><br><br>
+		<b>${error.name}</b>:&nbsp;<span>${error.message}</span><br><br>
+		${Lilact.required_scripts[error.fileName]?'<code><pre></pre><pre><red></red></pre><pre></pre></code>':''}
+		${error._error.componentStackLog?'<br>Component Stack:<br><code><pre>'+error._error.componentStackLog+'</pre></code>':''}
 		`;
 
 
@@ -7582,16 +7588,16 @@ function globalErrorHandler(err)
 
 	const pres = el.querySelectorAll('pre');
 
-	if(Lilact.required_scripts[err.fileName]) {
-		const lines = Lilact.required_scripts[err.fileName].code.split("\n");
+	if(Lilact.required_scripts[error.fileName]) {
+		const lines = Lilact.required_scripts[error.fileName].code.split("\n");
 
-		if(lines?.[err.lineNumber-1])
-			pres[0].innerText = lines[err.lineNumber-1];
+		if(lines?.[error.lineNumber-1])
+			pres[0].innerText = lines[error.lineNumber-1];
 
-		if(lines?.[err.lineNumber]) el.querySelector('pre red').innerText = lines[err.lineNumber];
+		if(lines?.[error.lineNumber]) el.querySelector('pre red').innerText = lines[error.lineNumber];
 
-		if(lines?.[err.lineNumber+1])
-			pres[2].innerText = lines[err.lineNumber+1];
+		if(lines?.[error.lineNumber+1])
+			pres[2].innerText = lines[error.lineNumber+1];
 	}
 
 	el.showModal();
@@ -7604,7 +7610,7 @@ const blocks_info = { counter: 0, labels: {} };
 let error = null; // this is only to ease debuggin,
 
 
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9lcnJvcnMuanN4Iiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9lcnJvcnMuanN4Il0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLEFBQUE7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0NBZ0NDOzswQkFFeUIsTUFBTTtDQUMvQjtJQUNHLCtFQUErRTs7OztVQUl6RTs7O2NBR0ksMEJBQTBCO0lBQ3BDLGVBQWU7V0FDUiw4QkFBOEI7OztJQUdyQyxRQUFRO1VBQ0YsZUFBZSx5QkFBeUI7Ozs7OztDQU1qRDtDQUNBO0NBQ0E7Q0FDQTtDQUNBO29DQUNtQyw4QkFBOEI7eURBQ1Q7MEJBQzlCLEFBQUQ7O0dBRXZCO0dBQ0E7d0JBQ3FCOztPQUVqQixtQkFBbUI7d0JBQ0Y7UUFDaEIsY0FBZTs7eUJBRUU7UUFDakI7Ozs4QkFHc0I7bURBQ3FCOztRQUUzQyxlQUFnQixnQkFBZ0IscUNBQXNDLGdCQUFjO2NBQzlFOzs7O1VBSUosNEVBQTRFLFdBQVc7OztzQkFHM0UsSUFBSTtnQkFDVixXQUFZLEFBQUQ7OztxQkFHTjtDQUNwQjs7O0tBR0ksaUJBQWlCO0tBQ2pCO0tBQ0EsZUFBZ0Isa0NBQWlDOzs7OztJQUtsRDtTQUNLLDZCQUE4QixBQUFEOzs7O0NBSXJDO2dDQUMrQjtDQUMvQjt1QkFDc0IsY0FBZ0IsQUFBRDs7RUFFcEM7WUFDVTtFQUNULE9BQU87cUNBQzRCOzs7Ozs7OztDQVFyQzs7Ozs7Ozs7MkJBUTBCO0NBQzFCO0lBQ0csaUJBQWlCOzs7O3dDQUltQjs7Y0FFMUI7MkJBQ2E7Ozs7Ozs7Ozs7Ozs7O0lBY3ZCLCtCQUErQjs7OztLQUk5QixVQUFVOzs7OzRCQUlhOzs7OztVQUtsQixnQ0FBZ0M7OzhCQUVaOzs7OztNQUt4QixNQUFPLGdDQUErQjs7O1NBR25DOzs7O01BSUgsTUFBTTs7Ozs7O3NCQU1VOzs7Ozs7OztPQVFmOytCQUN3QjtLQUMxQjs7Ozs7Ozs7OztDQVVKOzs7Ozs7Ozs7Ozs7Ozs7O21DQWdCa0M7Q0FDbEM7b0JBQ21CO0lBQ2hCOzt5QkFFcUI7O2dDQUVPOzs7Ozs7Ozs7Ozs7Ozs7Ozs7OzttQ0FvQkc7OztFQUdqQzs7Ozs7Ozs7Ozs7MkJBV3lCOztrQ0FFTzs7SUFFOUIsd0NBQXdDO2lFQUNxQjs7S0FFNUQ7OztLQUdBLDBDQUEwQzs7S0FFMUM7Ozs7Y0FJUzs7O0NBR2I7NEJBQzJCLHNCQUFzQjs7Q0FFakQ7MEJBQ3lCIn0=
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9lcnJvcnMuanN4Iiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9lcnJvcnMuanN4Il0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLEFBQUE7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0NBZ0NDOzswQkFFeUIsTUFBTTtDQUMvQjtJQUNHLCtFQUErRTs7OztVQUl6RTs7O2NBR0ksMEJBQTBCO0lBQ3BDLGVBQWU7V0FDUiw4QkFBOEI7OztJQUdyQyxRQUFRO1VBQ0YsZUFBZSx5QkFBeUI7Ozs7OztDQU1qRDtDQUNBO0NBQ0E7Q0FDQTtDQUNBO0NBQ0E7b0NBQ21DLDhCQUE4Qjt5REFDVDswQkFDOUIsQUFBRDs7R0FFdkI7R0FDQTt3QkFDcUI7O09BRWpCLG1CQUFtQjt3QkFDRjtRQUNoQixjQUFlOzt5QkFFRTtRQUNqQjs7OzhCQUdzQjttREFDcUI7O1FBRTNDLGVBQWdCLGdCQUFnQixxQ0FBc0MsZ0JBQWM7Y0FDOUU7Ozs7VUFJSiw0RUFBNEUsV0FBVzs7O3NCQUczRSxJQUFJO2dCQUNWLFdBQVksQUFBRDs7O3FCQUdOO0NBQ3BCOzs7S0FHSSxpQkFBaUI7S0FDakI7S0FDQSxlQUFnQixrQ0FBaUM7Ozs7O0lBS2xEO1NBQ0ssNkJBQThCLEFBQUQ7Ozs7Q0FJckM7Z0NBQytCO0NBQy9CO3VCQUNzQixjQUFnQixBQUFEOztFQUVwQztZQUNVO0VBQ1QsT0FBTztxQ0FDNEI7Ozs7Ozs7O0NBUXJDOzs7Ozs7Ozs7OzJCQVUwQjtDQUMxQjtJQUNHLG1CQUFtQjs7Ozt3Q0FJaUI7O2NBRTFCOzJCQUNhOzs7Ozs7Ozs7Ozs7OztJQWN2QixpQ0FBaUM7Ozs7S0FJaEMsVUFBVTs7Ozs0QkFJYTs7Ozs7VUFLbEIsa0NBQWtDOzs4QkFFZDs7Ozs7TUFLeEIsTUFBTyxrQ0FBaUM7OztTQUdyQzs7OztNQUlILE1BQU07Ozs7OztzQkFNVTs7Ozs7Ozs7T0FRZjsrQkFDd0I7S0FDMUI7Ozs7Ozs7Ozs7Q0FVSjs7Ozs7Ozs7Ozs7Ozs7Ozs7bUNBaUJrQztDQUNsQztvQkFDbUI7SUFDaEI7OzJCQUV1Qjs7Z0NBRUs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O21DQW9CRzs7O0VBR2pDOzs7Ozs7Ozs7OzsyQkFXeUI7O2tDQUVPOztJQUU5QiwwQ0FBMEM7bUVBQ3FCOztLQUU5RDs7O0tBR0EsNENBQTRDOztLQUU1Qzs7OztjQUlTOzs7Q0FHYjs0QkFDMkIsc0JBQXNCOztDQUVqRDswQkFDeUIifQ==
 ;// ./src/router.jsx
 /*
 
@@ -7791,6 +7797,8 @@ function NavLink({
 	className,
 	activeStyle,
 	style,
+	target,
+	download,
 	replace = false,
 	state,
 	children,
@@ -7816,7 +7824,7 @@ function NavLink({
 	}
 
 	return (
-		 createComponent( "a", { ...rest, "href": href, "onClick": handleClick, "className": finalClassName, "style": mergedStyle, "aria-current": isActive ? "page" : undefined }, typeof children === "function" ? children({ isActive }) : children )
+		 createComponent( "a", { ...rest, "href": href, "onClick": handleClick, "target": target, "download": download, "className": finalClassName, "style": mergedStyle, "aria-current": isActive ? "page" : undefined }, typeof children === "function" ? children({ isActive }) : children )
 	);
 }
 
@@ -7902,7 +7910,7 @@ function Routes({ children }) {
 
 
 
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9yb3V0ZXIuanN4Iiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9yb3V0ZXIuanN4Il0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLEFBQUE7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztDQThCQzs7UUFFTztRQUNBOztvQ0FFNEI7bUNBQ0EsQUFBRCxVQUFXOztDQUU3QzttQkFDa0IsUUFBUSw4QkFBK0Isc0JBQXNCLG9CQUFvQjs7Q0FFbkc7Ozs7Ozs7MkJBTzJCLEFBQUQsOEJBQThCO3VCQUNsQyxNQUFNOzt5QkFFSjttQ0FDVSxVQUFXO3NEQUNRO2tEQUNKO1VBQ3hDOzs7Ozs7OzswQ0FRZ0M7V0FDOUIsQUFBRCxNQUFPO21CQUNFLGlCQUFpQixZQUFhOzt5QkFFeEI7eUJBQ0E7O0VBRXZCO1VBQ1E7O1NBRUQsTUFBTTs2QkFDYzs2QkFDQTs7Ozs4QkFJQyxBQUFELElBQU0sNkJBQTZCLFFBQU87S0FDbEUseUJBQXlCO2FBQ2pCOzs7O3VCQUlVO3FCQUNGOztLQUVoQiw4QkFBK0IsQUFBRDt3QkFDVixBQUFEOzthQUVYLFlBQWE7OztTQUdsQiwyQ0FBaUU7OztDQUd6RTs7Ozs7NEJBSzJCLEdBQUc7d0JBQ1A7S0FDbkIsc0JBQXNCOzs7O0NBSTFCOzs7Ozs0QkFLMkIsR0FBRzt3QkFDUDtLQUNuQixzQkFBc0I7OzttQkFHUixHQUFHO3dCQUNFO3VCQUNEOzs7Q0FHdEI7Ozs7Ozs7Ozs7Ozs7OztxQkFlcUIsQUFBRCxpR0FBaUc7OEJBQ3hGOzhCQUNBO3NCQUNSLElBQUk7TUFDcEIsaUJBQWlCO01BQ2pCOzs7R0FHRjs7O21CQUdlO1dBQ1IsSUFBSzs7U0FFUDtFQUNOLCtIQUNDOzs7O3VCQUttQixJQUFJO0tBQ3RCO2tCQUNjLEFBQUQ7Ozs7Q0FJakI7Ozs7Ozs7Ozs7Ozs7Ozt3QkFld0IsQUFBRDs7Ozs7Ozs7Ozs7O0lBWXBCOzhCQUMwQjs4QkFDQTtzREFDd0IsY0FBYyxXQUFXOztzQ0FFekMsK0JBQStCLDRCQUE0Qix3QkFBd0IsYUFBYzt1RUFDL0QsQUFBRDtzRkFDZSxjQUFjOzJEQUN4QyxBQUFEO2lDQUMxQixLQUFLLGlCQUFrQixTQUFRLGVBQWdCOzhCQUNsRDs7c0JBRVIsSUFBSTtNQUNwQixpQkFBaUI7TUFDakI7bUJBQ2E7V0FDUixJQUFLOzs7U0FHUDtFQUNOLGlKQUNDLHlDQUEyQyxBQUFEOzs7O0NBSzdDO0NBQ0E7cUJBQ29CLFVBQVU7O0VBRTdCO3lDQUN3QyxBQUFELG1CQUFvQixBQUFEO1dBQ2hELEFBQUQsd0JBQXlCLGFBQWE7a0JBQzlCOzs7V0FHUCxBQUFELHNCQUFzQjs7MEJBRVA7U0FDakI7OzttQkFHVSxvQkFBb0I7S0FDbEMseUJBQXlCLHlCQUF5QixNQUFNO1FBQ3JELG1DQUFtQztzQkFDckI7S0FDakIsWUFBWTtpQkFDQTtvQkFDSSxBQUFELFVBQVcsOEJBQStCO0VBQzVEO0tBQ0csbUNBQW1DOzhEQUNzQjs7U0FFckQ7OztDQUdSO0NBQ0E7Ozs7Ozs7O3NCQVFzQixBQUFELHFDQUFxQztFQUN6RDs7O0NBR0Q7Ozs7Ozt1QkFNdUIsQUFBRCxlQUFlOzhCQUNSOztFQUU1QjtpQ0FDK0I7O01BRTNCLG9DQUFvQzs7R0FFdkM7Ozs7O1NBS00sK0JBQStCO01BQ2xDLFVBQVU7SUFDWjtPQUNHLFVBQVU7WUFDTCxxQkFBMEM7Y0FDeEMsY0FBYztLQUN2QjtZQUNPLHFCQUEwQyxFQUFRO1dBQ25EO1lBQ0MscUJBQTBDOzs7OztFQUtwRCJ9
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9yb3V0ZXIuanN4Iiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9yb3V0ZXIuanN4Il0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLEFBQUE7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztDQThCQzs7UUFFTztRQUNBOztvQ0FFNEI7bUNBQ0EsQUFBRCxVQUFXOztDQUU3QzttQkFDa0IsUUFBUSw4QkFBK0Isc0JBQXNCLG9CQUFvQjs7Q0FFbkc7Ozs7Ozs7MkJBTzJCLEFBQUQsOEJBQThCO3VCQUNsQyxNQUFNOzt5QkFFSjttQ0FDVSxVQUFXO3NEQUNRO2tEQUNKO1VBQ3hDOzs7Ozs7OzswQ0FRZ0M7V0FDOUIsQUFBRCxNQUFPO21CQUNFLGlCQUFpQixZQUFhOzt5QkFFeEI7eUJBQ0E7O0VBRXZCO1VBQ1E7O1NBRUQsTUFBTTs2QkFDYzs2QkFDQTs7Ozs4QkFJQyxBQUFELElBQU0sNkJBQTZCLFFBQU87S0FDbEUseUJBQXlCO2FBQ2pCOzs7O3VCQUlVO3FCQUNGOztLQUVoQiw4QkFBK0IsQUFBRDt3QkFDVixBQUFEOzthQUVYLFlBQWE7OztTQUdsQiwyQ0FBaUU7OztDQUd6RTs7Ozs7NEJBSzJCLEdBQUc7d0JBQ1A7S0FDbkIsc0JBQXNCOzs7O0NBSTFCOzs7Ozs0QkFLMkIsR0FBRzt3QkFDUDtLQUNuQixzQkFBc0I7OzttQkFHUixHQUFHO3dCQUNFO3VCQUNEOzs7Q0FHdEI7Ozs7Ozs7Ozs7Ozs7OztxQkFlcUIsQUFBRCxpR0FBaUc7OEJBQ3hGOzhCQUNBO3NCQUNSLElBQUk7TUFDcEIsaUJBQWlCO01BQ2pCOzs7R0FHRjs7O21CQUdlO1dBQ1IsSUFBSzs7U0FFUDtFQUNOLCtIQUNDOzs7O3VCQUttQixJQUFJO0tBQ3RCO2tCQUNjLEFBQUQ7Ozs7Q0FJakI7Ozs7Ozs7Ozs7Ozs7Ozt3QkFld0IsQUFBRDs7Ozs7Ozs7Ozs7Ozs7SUFjcEI7OEJBQzBCOzhCQUNBO3NEQUN3QixjQUFjLFdBQVc7O3NDQUV6QywrQkFBK0IsNEJBQTRCLHdCQUF3QixhQUFjO3VFQUMvRCxBQUFEO3NGQUNlLGNBQWM7MkRBQ3hDLEFBQUQ7aUNBQzFCLEtBQUssaUJBQWtCLFNBQVEsZUFBZ0I7OEJBQ2xEOztzQkFFUixJQUFJO01BQ3BCLGlCQUFpQjtNQUNqQjttQkFDYTtXQUNSLElBQUs7OztTQUdQO0VBQ04seUxBQ0MseUNBQTJDLEFBQUQ7Ozs7Q0FLN0M7Q0FDQTtxQkFDb0IsVUFBVTs7RUFFN0I7eUNBQ3dDLEFBQUQsbUJBQW9CLEFBQUQ7V0FDaEQsQUFBRCx3QkFBeUIsYUFBYTtrQkFDOUI7OztXQUdQLEFBQUQsc0JBQXNCOzswQkFFUDtTQUNqQjs7O21CQUdVLG9CQUFvQjtLQUNsQyx5QkFBeUIseUJBQXlCLE1BQU07UUFDckQsbUNBQW1DO3NCQUNyQjtLQUNqQixZQUFZO2lCQUNBO29CQUNJLEFBQUQsVUFBVyw4QkFBK0I7RUFDNUQ7S0FDRyxtQ0FBbUM7OERBQ3NCOztTQUVyRDs7O0NBR1I7Q0FDQTs7Ozs7Ozs7c0JBUXNCLEFBQUQscUNBQXFDO0VBQ3pEOzs7Q0FHRDs7Ozs7O3VCQU11QixBQUFELGVBQWU7OEJBQ1I7O0VBRTVCO2lDQUMrQjs7TUFFM0Isb0NBQW9DOztHQUV2Qzs7Ozs7U0FLTSwrQkFBK0I7TUFDbEMsVUFBVTtJQUNaO09BQ0csVUFBVTtZQUNMLHFCQUEwQztjQUN4QyxjQUFjO0tBQ3ZCO1lBQ08scUJBQTBDLEVBQVE7V0FDbkQ7WUFDQyxxQkFBMEM7Ozs7O0VBS3BEIn0=
 ;// ./src/accessories.jsx
 /*
 
@@ -7987,8 +7995,6 @@ function Spinner({
 /**
  * ErrorBoundary component that catches errors in its child component tree and renders a fallback UI.
  *
- * @component
- *
  * @param {Object} props
  * @param {any} props.children - The component subtree to render and monitor for runtime errors.
  * @param {any} props.Fallback - UI to render when an error is caught. Receives two props:
@@ -8024,8 +8030,6 @@ class ErrorBoundary extends Component {
 /**
  * Suspense - boundary for asynchronous loading.
  * Shows a fallback UI while descendant thrown promises are pending, and renders real content once resolved.
- *
- * @component Suspense
  *
  * @param {Object} props
  * @param {any} props.fallback - Element shown while descendants are loading.
@@ -8186,7 +8190,7 @@ class Suspense extends Component
 
 
 
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9hY2Nlc3Nvcmllcy5qc3giLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIvVXNlcnMvYXJhc2gvRGVza3RvcC9Qcm9qZWN0cy9MaWxhY3Qvc3JjL2FjY2Vzc29yaWVzLmpzeCJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSxBQUFBOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7UUE4QlE7UUFDQTtRQUNBOztDQUVQOzs7Ozs7Ozs7Ozs7O3dCQWF3QixBQUFEOzs7Ozs7O0lBT3BCO3FCQUNpQjs7VUFFWDtJQUNMOzs7Ozs7eUJBWUU7Ozs7Ozs7cUJBV0EsRUFBTzs7Ozs7Ozs7O0NBU2I7Ozs7Ozs7Ozs7Ozs7OENBYTZDOzs7VUFHcEM7O2lDQUV1QixRQUFRO1VBQy9COzs7bUJBR1MsY0FBYztTQUN4QjtPQUNGLEtBQUssaUJBQWlCLHVCQUF1QixJQUFJLGVBQWU7OztVQUc3RCxtQkFBb0IsQUFBRDs7UUFFckIsR0FBRztTQUNGO01BQ0gsNkJBQTZCOzs7Ozs7Q0FNbEM7Ozs7Ozs7Ozs7Ozs7O0NBY0E7Ozt3QkFHdUI7O2FBRVgsUUFBUTs7UUFFYjtDQUNQO2dCQUNlOztDQUVmOzBCQUN5Qjs7Q0FFekI7O0NBRUE7O0NBRUE7Ozs7Q0FJQTtpQ0FDZ0MsUUFBUTtNQUNuQyxpQkFBa0IsVUFBUztJQUM3Qjs7O0dBR0Q7Ozs7Q0FJRjttQkFDa0IsUUFBUTtNQUNyQixrQkFBbUI7Ozs7TUFJbkIsaUJBQWtCOztHQUVyQjtvQkFDaUI7O0dBRWpCO01BQ0csMkJBQTJCOzBCQUNQO0lBQ3RCO09BQ0csbUJBQW1CO3dCQUNGOzs7d0NBR2lCLEFBQUQsTUFBTzs7b0NBRVY7aUJBQ2xCLEFBQUQ7Ozs7O0NBS2pCO3NCQUNxQixHQUFHO29CQUNMO3NCQUNFOzs7Q0FHckI7Y0FDYSxHQUFHO01BQ1gsbUJBQW1CO3VCQUNGOzs7TUFHakIscUJBQXFCO3VCQUNKOzs7OztDQUt0QjtnQkFDZSxVQUFVO01BQ3BCLGlCQUFrQjtvQkFDSjs7TUFFZCwyQkFBMkI7MEJBQ1A7T0FDbkIsbUJBQW1CO3dCQUNGOzs7d0NBR2lCLEFBQUQsTUFBTzs7b0NBRVY7aUJBQ2xCLEFBQUQ7Ozs7R0FJZjtxQkFDa0IsTUFBTTtPQUNwQixpQkFBa0IsWUFBVzt5QkFDWDs7SUFFckI7T0FDRywyQkFBMkI7S0FDN0I7UUFDRyxtQkFBbUI7eUJBQ0Y7O01BRW5CO21CQUNjLEFBQUQ7Ozs7S0FJZDs2QkFDd0IsS0FBSzsrQkFDSDs7UUFFdkIsa0JBQWtCO21CQUNOLEFBQUQ7WUFDUDtTQUNILHFCQUFxQjswQkFDSjs7OzRDQUdtQixBQUFELE1BQU87O21CQUU5QixBQUFEOzs7Ozs7R0FNakI7ZUFDWTs7O0NBR2Q7bUJBQ2tCLGNBQWM7TUFDM0Isa0JBQW1CO3NCQUNIOzs7Q0FHckI7UUFDTyxHQUFHO01BQ0wsNkJBQTZCO1dBQ3hCLEVBQUU7O1VBRUgsRUFBRSJ9
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9hY2Nlc3Nvcmllcy5qc3giLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIvVXNlcnMvYXJhc2gvRGVza3RvcC9Qcm9qZWN0cy9MaWxhY3Qvc3JjL2FjY2Vzc29yaWVzLmpzeCJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSxBQUFBOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7UUE4QlE7UUFDQTtRQUNBOztDQUVQOzs7Ozs7Ozs7Ozs7O3dCQWF3QixBQUFEOzs7Ozs7O0lBT3BCO3FCQUNpQjs7VUFFWDtJQUNMOzs7Ozs7eUJBWUU7Ozs7Ozs7cUJBV0EsRUFBTzs7Ozs7Ozs7O0NBU2I7Ozs7Ozs7Ozs7OzhDQVc2Qzs7O1VBR3BDOztpQ0FFdUIsUUFBUTtVQUMvQjs7O21CQUdTLGNBQWM7U0FDeEI7T0FDRixLQUFLLGlCQUFpQix1QkFBdUIsSUFBSSxlQUFlOzs7VUFHN0QsbUJBQW9CLEFBQUQ7O1FBRXJCLEdBQUc7U0FDRjtNQUNILDZCQUE2Qjs7Ozs7O0NBTWxDOzs7Ozs7Ozs7Ozs7Q0FZQTs7O3dCQUd1Qjs7YUFFWCxRQUFROztRQUViO0NBQ1A7Z0JBQ2U7O0NBRWY7MEJBQ3lCOztDQUV6Qjs7Q0FFQTs7Q0FFQTs7OztDQUlBO2lDQUNnQyxRQUFRO01BQ25DLGlCQUFrQixVQUFTO0lBQzdCOzs7R0FHRDs7OztDQUlGO21CQUNrQixRQUFRO01BQ3JCLGtCQUFtQjs7OztNQUluQixpQkFBa0I7O0dBRXJCO29CQUNpQjs7R0FFakI7TUFDRywyQkFBMkI7MEJBQ1A7SUFDdEI7T0FDRyxtQkFBbUI7d0JBQ0Y7Ozt3Q0FHaUIsQUFBRCxNQUFPOztvQ0FFVjtpQkFDbEIsQUFBRDs7Ozs7Q0FLakI7c0JBQ3FCLEdBQUc7b0JBQ0w7c0JBQ0U7OztDQUdyQjtjQUNhLEdBQUc7TUFDWCxtQkFBbUI7dUJBQ0Y7OztNQUdqQixxQkFBcUI7dUJBQ0o7Ozs7O0NBS3RCO2dCQUNlLFVBQVU7TUFDcEIsaUJBQWtCO29CQUNKOztNQUVkLDJCQUEyQjswQkFDUDtPQUNuQixtQkFBbUI7d0JBQ0Y7Ozt3Q0FHaUIsQUFBRCxNQUFPOztvQ0FFVjtpQkFDbEIsQUFBRDs7OztHQUlmO3FCQUNrQixNQUFNO09BQ3BCLGlCQUFrQixZQUFXO3lCQUNYOztJQUVyQjtPQUNHLDJCQUEyQjtLQUM3QjtRQUNHLG1CQUFtQjt5QkFDRjs7TUFFbkI7bUJBQ2MsQUFBRDs7OztLQUlkOzZCQUN3QixLQUFLOytCQUNIOztRQUV2QixrQkFBa0I7bUJBQ04sQUFBRDtZQUNQO1NBQ0gscUJBQXFCOzBCQUNKOzs7NENBR21CLEFBQUQsTUFBTzs7bUJBRTlCLEFBQUQ7Ozs7OztHQU1qQjtlQUNZOzs7Q0FHZDttQkFDa0IsY0FBYztNQUMzQixrQkFBbUI7c0JBQ0g7OztDQUdyQjtRQUNPLEdBQUc7TUFDTCw2QkFBNkI7V0FDeEIsRUFBRTs7VUFFSCxFQUFFIn0=
 ;// ./src/pane.jsx
 
 
@@ -9652,7 +9656,7 @@ function run(jsx, path=`InlineJSX-${++_lilact_jsx__WEBPACK_IMPORTED_MODULE_0__["
 	
 	processed += "\n//# sourceURL=eval:/" + path;
 
-	// todo: this seems to be only useful in safari, should be assessed latera
+	// todo: this seems to be only useful in safari, should be assessed later
 	_lilact_jsx__WEBPACK_IMPORTED_MODULE_0__["default"].scanBlockLabels(processed, path);
 
 	try {
@@ -9690,13 +9694,13 @@ function run(jsx, path=`InlineJSX-${++_lilact_jsx__WEBPACK_IMPORTED_MODULE_0__["
  * @param path - The path to the required file. Must be either absolute path or relative to the current 
  * document’s URL (the page/location that initiated the request).
  * 
- * @param force_update - To treat the code as inline. The main difference at the moment is that inline code doesn't include sourcemap.
+ * @param forceUpdate - To treat the code as inline. The main difference at the moment is that inline code doesn't include sourcemap.
  * 
  * @returns An array representation of the children.
  */
-function require(path, force_update)
+function require(path, forceUpdate)
 {
-	if(_lilact_jsx__WEBPACK_IMPORTED_MODULE_0__["default"].required_scripts[path] && !force_update) return _lilact_jsx__WEBPACK_IMPORTED_MODULE_0__["default"].required_scripts[path].module.exports;
+	if(_lilact_jsx__WEBPACK_IMPORTED_MODULE_0__["default"].required_scripts[path] && !forceUpdate) return _lilact_jsx__WEBPACK_IMPORTED_MODULE_0__["default"].required_scripts[path].module.exports;
 	
 	if(path[0]==='#') {
 
@@ -9748,7 +9752,7 @@ function require(path, force_update)
  * The promise must resolve to a module whose module.exports.default is a Lilact component
  * or otherwise it will be whatever the module.exports is set to.
  * 
- * @returns A Lilact component that should be rendered inside a {@link Suspense} boundary.
+ * @returns A Lilact component that should be rendered inside a `Suspense` boundary.
  */
 function lazy(factory) {
 	let status = "pending"; // pending | success | error

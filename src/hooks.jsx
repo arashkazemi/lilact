@@ -55,17 +55,17 @@ export function useHook()
  * @param {any} initialValue - Initial state value.
  * @returns {any} Hook result `[state, setState]`.
  */
-export function useState(val)
+export function useState(initialValue)
 {
 	const hk = Lilact.useHook();
 
 	if( Lilact.isEmpty(hk) ) {
-		if(typeof(val)==='function') hk.value = val();
-		else hk.value = val;
+		if(typeof(initialValue)==='function') hk.value = initialValue();
+		else hk.value = initialValue;
 		
-		hk.set_func = function(core, hk, val) {
-			if(typeof(val)==='function') hk.value = val(hk.value);
-			else hk.value = val;
+		hk.set_func = function(core, hk, initialValue) {
+			if(typeof(initialValue)==='function') hk.value = initialValue(hk.value);
+			else hk.value = initialValue;
 
 			core.component.forceUpdate();
 		}.bind(undefined, Lilact.current_component[0], hk);
@@ -112,14 +112,14 @@ export function useCallback(callback, deps=undefined)
  * @param {any} [defaultValue] - Initial context value when no Provider is present.
  * @returns {any} A context object
  */
-export function createContext(val)
+export function createContext(defaultValue)
 {
 	const prov = function({value, children}) {
 		return children;
 	};
 
 	return {
-		default: val,
+		default: defaultValue,
 		Provider: prov
 	}
 }
@@ -130,20 +130,20 @@ export function createContext(val)
  * @param {any} context - Context object created by `createContext`.
  * @returns {any} Current context value.
  */
-export function useContext(ctx)
+export function useContext(context)
 {
 	let core = Lilact.current_component[0].parent;
 
-	while(core.entity!==ctx.Provider && core.parent) {
+	while(core.entity!==context.Provider && core.parent) {
 		core = core.parent;
 	}
 
 	if(core.parent) {
 		let v = core.props?.value;
-		return v??=ctx.default;
+		return v??=context.default;
 	}
 
-	return ctx.default;
+	return context.default;
 }
 
 /**
@@ -350,7 +350,7 @@ export function useMemo(factory,deps=undefined)
  * @param {any} initialState - Initial state for the hook.
  * @returns {any} Hook result
  */
-export function useActionState(fn, initialState)
+export function useActionState(action, initialState)
 {
 	const hk = Lilact.useHook();
 	const [is_pending, tran_start_func] = Lilact.useTransition();
@@ -365,7 +365,7 @@ export function useActionState(fn, initialState)
 			tran_start_func(
 					async ()=> {
 						const form_data = new FormData(sub.target, sub.submitter);
-						hk.state = await fn(hk.state, form_data);
+						hk.state = await action(hk.state, form_data);
 					},
 					[]
 				);
@@ -456,21 +456,6 @@ export function useDeferredValue(value, initialValue)
 
 	return deferred;
 }
-
-
-/**
- * Wraps a render function so that a parent can pass a `ref` into it.
- * The forwarded `ref` is provided as the second argument to the render function: `(props, ref)`.
- *
- * @param {function(props: any, ref: any)} render
- *   The component render function that receives the props and the forwarded ref.
- * @returns {}
- */
-export function forwardRef(render)
-{
-	return (props)=>render({...props, ref: undefined}, props.ref);
-}
-
 
 /**
  * Customizes the value that is exposed to the parent when it uses a `ref` on a component created with `forwardRef`.
