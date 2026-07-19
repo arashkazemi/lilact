@@ -7000,78 +7000,206 @@ if (typeof Event !== 'undefined' && !Event.prototype.composedPath) {
 // Event pool for reuse
 const _pool = [];
 const MAX_POOL_SIZE = 10;
+const POINTER_TYPES = ["mouse", "pen", "touch"];
 
 function createSyntheticEvent(nativeEvent, currentTarget) {
-	// Reuse object from pool if available
-	const e = _pool.length ? _pool.pop() : {};
+  const e = _pool.length ? _pool.pop() : {};
 
-	e.nativeEvent = nativeEvent;
-	e.type = nativeEvent.type;
-	e.target = nativeEvent.target || nativeEvent.srcElement || null;
-	e.currentTarget = currentTarget || nativeEvent.currentTarget || null;
-	e.timeStamp = nativeEvent.timeStamp || Date.now();
-	e.defaultPrevented = !!(nativeEvent.defaultPrevented);
-	e.isPropagationStopped = false;
-	e.isPersistent = false;
+  e.nativeEvent = nativeEvent;
+  e.type = nativeEvent.type;
+  e.target = nativeEvent.target || nativeEvent.srcElement || null;
+  e.currentTarget = currentTarget || nativeEvent.currentTarget || null;
+  e.timeStamp = nativeEvent.timeStamp || Date.now();
 
-	e.isDefaultPrevented = () => e.defaultPrevented;
-	e.preventDefault = () => {
-		if (nativeEvent.preventDefault) nativeEvent.preventDefault();
-		e.defaultPrevented = true;
-	};
-	e.stopPropagation = () => {
-		if (nativeEvent.stopPropagation) nativeEvent.stopPropagation();
-		e.isPropagationStopped = true;
-	};
-	e.persist = () => { e.isPersistent = true; };
+  // Standard flags
+  e.defaultPrevented = !!nativeEvent.defaultPrevented;
+  e.isPropagationStopped = false;
+  e.isPersistent = false;
 
-	// Convenience: normalized values for common props (touch, key, target value)
-	e.nativeEvent = nativeEvent;
-	e.key = nativeEvent.key || null;
-	e.code = nativeEvent.code || null;
-	e.which = nativeEvent.which || nativeEvent.keyCode || null;
+  // Common DOM meta when present
+  e.bubbles = !!nativeEvent.bubbles;
+  e.cancelable = !!nativeEvent.cancelable;
+  e.composed = !!nativeEvent.composed;
+  e.detail = nativeEvent.detail;
 
-	// For input-like events normalize value and checked
-	try {
-		const tgt = e.target;
-		e.value = tgt && ('value' in tgt) ? tgt.value : undefined;
-		e.checked = tgt && ('checked' in tgt) ? tgt.checked : undefined;
-	} catch (err) {
-		e.value = undefined;
-		e.checked = undefined;
-	}
+  e.relatedTarget =
+    nativeEvent.relatedTarget ||
+    (nativeEvent.fromElement ? nativeEvent.fromElement : null) ||
+    (nativeEvent.toElement ? nativeEvent.toElement : null) ||
+    null;
 
-	// composedPath helper
-	e.path = typeof nativeEvent.composedPath === 'function' ? nativeEvent.composedPath() : [e.target];
+  // Modifier keys
+  e.altKey = !!nativeEvent.altKey;
+  e.ctrlKey = !!nativeEvent.ctrlKey;
+  e.metaKey = !!nativeEvent.metaKey;
+  e.shiftKey = !!nativeEvent.shiftKey;
 
-	return e;
+  // preventDefault / stopPropagation
+  e.isDefaultPrevented = () => e.defaultPrevented;
+  e.preventDefault = () => {
+    if (nativeEvent.preventDefault) nativeEvent.preventDefault();
+    e.defaultPrevented = true;
+  };
+
+  e.stopPropagation = () => {
+    if (nativeEvent.stopPropagation) nativeEvent.stopPropagation();
+    e.isPropagationStopped = true;
+  };
+
+  e.persist = () => { e.isPersistent = true; };
+
+  // Key/mouse/pointer related
+  e.key = nativeEvent.key || null;
+  e.code = nativeEvent.code || null;
+  e.which = nativeEvent.which ?? nativeEvent.keyCode ?? null;
+
+  // Mouse / Pointer button state normalization
+  // - "button" often is 0/1/2 for mouse; for pointer events it's also present.
+  // - "buttons" is a bitmask of which buttons are down (often important for drag).
+  e.button = nativeEvent.button ?? null;
+  e.buttons = nativeEvent.buttons ?? null;
+
+  // Pointer identity + type (critical for multi-touch / pointer capture)
+  e.pointerId = nativeEvent.pointerId ?? null;
+  e.pointerType = nativeEvent.pointerType ?? null;
+  e.isPrimary = nativeEvent.isPrimary ?? null;
+
+  // Coordinates: React/SyntheticEvent uses these directly (React provides them too)
+  e.clientX = nativeEvent.clientX ?? 0;
+  e.clientY = nativeEvent.clientY ?? 0;
+  e.screenX = nativeEvent.screenX ?? 0;
+  e.screenY = nativeEvent.screenY ?? 0;
+
+  // pageX/pageY might be derived; keep if present
+  // (Using pageX/pageY only if you need it; most drag uses clientX/Y.)
+  e.pageX = nativeEvent.pageX ?? null;
+  e.pageY = nativeEvent.pageY ?? null;
+
+  // movementX/movementY exist on some mouse events; harmless if absent
+  e.movementX = nativeEvent.movementX ?? 0;
+  e.movementY = nativeEvent.movementY ?? 0;
+
+  // Pressure/tilt (Pointer Events)
+  e.pressure = nativeEvent.pressure ?? null;
+  e.tiltX = nativeEvent.tiltX ?? null;
+  e.tiltY = nativeEvent.tiltY ?? null;
+  e.width = nativeEvent.width ?? null;
+  e.height = nativeEvent.height ?? null;
+
+  // If the native event has a pointer capture API, you can forward bind/capture calls.
+  // (These are methods on the EventTarget, not on the event, but keeping fields is enough.)
+  e.pointerEventsSupported = POINTER_TYPES.includes(e.pointerType);
+
+  // For input-like events normalize value and checked
+  try {
+    const tgt = e.target;
+    e.value = tgt && ("value" in tgt) ? tgt.value : undefined;
+    e.checked = tgt && ("checked" in tgt) ? tgt.checked : undefined;
+
+    // Some input events have selectionStart/selectionEnd etc.
+    e.selectionStart = tgt && ("selectionStart" in tgt) ? tgt.selectionStart : undefined;
+    e.selectionEnd = tgt && ("selectionEnd" in tgt) ? tgt.selectionEnd : undefined;
+  } catch (err) {
+    e.value = undefined;
+    e.checked = undefined;
+    e.selectionStart = undefined;
+    e.selectionEnd = undefined;
+  }
+
+  // Touch lists (useful for touch events; sometimes pointerType === "touch" uses pointer events instead)
+  // Keep references only if they exist.
+  e.touches = nativeEvent.touches || null;
+  e.targetTouches = nativeEvent.targetTouches || null;
+  e.changedTouches = nativeEvent.changedTouches || null;
+
+  // composedPath helper
+  e.path = typeof nativeEvent.composedPath === "function"
+    ? nativeEvent.composedPath()
+    : [e.target];
+
+  // Additional keyboard extras when present
+  e.repeat = nativeEvent.repeat ?? false;
+  e.location = nativeEvent.location ?? 0;
+
+  return e;
 }
 
 function releaseSyntheticEvent(e) {
-	if (e && !e.isPersistent) {
-		// Clean up references to avoid leaks
-		e.nativeEvent = null;
-		e.type = null;
-		e.target = null;
-		e.currentTarget = null;
-		e.timeStamp = 0;
-		e.defaultPrevented = false;
-		e.isPropagationStopped = false;
-		e.isPersistent = false;
-		e.isDefaultPrevented = null;
-		e.preventDefault = null;
-		e.stopPropagation = null;
-		e.persist = null;
-		e.key = null;
-		e.code = null;
-		e.which = null;
-		e.value = undefined;
-		e.checked = undefined;
-		e.path = null;
+  if (e && !e.isPersistent) {
+    e.nativeEvent = null;
+    e.type = null;
+    e.target = null;
+    e.currentTarget = null;
+    e.timeStamp = 0;
 
-		if (_pool.length < MAX_POOL_SIZE) _pool.push(e);
-	}
+    e.defaultPrevented = false;
+    e.isPropagationStopped = false;
+
+    e.isPersistent = false;
+
+    e.isDefaultPrevented = null;
+    e.preventDefault = null;
+    e.stopPropagation = null;
+    e.persist = null;
+
+    e.bubbles = false;
+    e.cancelable = false;
+    e.composed = false;
+    e.detail = undefined;
+    e.relatedTarget = null;
+
+    // modifier keys
+    e.altKey = false;
+    e.ctrlKey = false;
+    e.metaKey = false;
+    e.shiftKey = false;
+
+    // pointer/mouse fields
+    e.key = null;
+    e.code = null;
+    e.which = null;
+
+    e.button = null;
+    e.buttons = null;
+    e.pointerId = null;
+    e.pointerType = null;
+    e.isPrimary = null;
+
+    e.clientX = 0;
+    e.clientY = 0;
+    e.screenX = 0;
+    e.screenY = 0;
+    e.pageX = null;
+    e.pageY = null;
+
+    e.movementX = 0;
+    e.movementY = 0;
+
+    e.pressure = null;
+    e.tiltX = null;
+    e.tiltY = null;
+    e.width = null;
+    e.height = null;
+
+    // input-like
+    e.value = undefined;
+    e.checked = undefined;
+    e.selectionStart = undefined;
+    e.selectionEnd = undefined;
+
+    // touch lists
+    e.touches = null;
+    e.targetTouches = null;
+    e.changedTouches = null;
+
+    e.path = null;
+    e.repeat = false;
+    e.location = 0;
+
+    if (_pool.length < MAX_POOL_SIZE) _pool.push(e);
+  }
 }
+
 
 // Main wrapper factory
 // fn: function(syntheticEvent) { ... }
@@ -7108,7 +7236,7 @@ function addWrappedEventListener(target, type, fn, options = {}) {
 }
 
 
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9ldmVudHMuanN4Iiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9ldmVudHMuanN4Il0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLEFBQUE7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Q0ErQkM7SUFDRywrREFBK0Q7Ozt3QkFHM0MsSUFBSTsrQkFDRyxzREFBc0Q7O3VCQUU5RCx3QkFBeUIsZUFBYzs7Ozs7SUFLMUQsZ0VBQWdFO3lDQUMzQixHQUFHOzs7U0FHbkMsS0FBSzthQUNEOzs7WUFHRDs7Ozs7Q0FLWDs7OztxQ0FJb0MsNkJBQTZCO0VBQ2hFO29DQUNrQyxLQUFLOzs7Ozs7aURBTVE7eUJBQ3hCOzs7O3lCQUlBO3FCQUNKLE1BQU07TUFDckIsdURBQXVEOzs7c0JBR3ZDLE1BQU07TUFDdEIseURBQXlEOzs7Y0FHakQsTUFBTTs7RUFFbEI7Ozs7OztFQU1BO01BQ0k7O29CQUVjO3NCQUNFO1VBQ1osTUFBTTs7Ozs7RUFLZDtvRkFDa0Y7Ozs7O3NDQUs5QyxJQUFJO0tBQ3JDLHVCQUF1QjtHQUN6Qjs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7TUFvQkcseUNBQXlDOzs7O0NBSTlDO0NBQ0E7Q0FDQTs2QkFDNEIsV0FBWSxLQUFJO1FBQ3JDOzt5QkFFaUIsY0FBYzs7O3NDQUdEOztPQUUvQjtxQkFDYzs7SUFFakI7T0FDRyxpREFBaUQ7MkJBQzdCOzthQUVkO0lBQ1Q7eUJBQ3FCOzs7OztDQUt4Qjt3Q0FDdUMsNEJBQTZCLEtBQUk7OEJBQzNDOzt5QkFFTDtFQUN2QjtTQUNPLGdDQUFnQyJ9
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9ldmVudHMuanN4Iiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9ldmVudHMuanN4Il0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLEFBQUE7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Q0ErQkM7SUFDRywrREFBK0Q7Ozt3QkFHM0MsSUFBSTsrQkFDRyxzREFBc0Q7O3VCQUU5RCx3QkFBeUIsZUFBYzs7Ozs7SUFLMUQsZ0VBQWdFO3lDQUMzQixHQUFHOzs7U0FHbkMsS0FBSzthQUNEOzs7WUFHRDs7Ozs7Q0FLWDs7Ozs7cUNBS29DLDZCQUE2QjtxQ0FDN0IsS0FBSzs7Ozs7O2tEQU1ROztHQUUvQzs7Ozs7R0FLQTs7Ozs7Ozs7S0FRRTtLQUNBOzs7R0FHRjs7Ozs7O0dBTUE7MEJBQ3VCO3NCQUNKLE1BQU07UUFDcEIsdURBQXVEOzs7O3VCQUl4QyxNQUFNO1FBQ3JCLHlEQUF5RDs7OztlQUlsRCxNQUFNOztHQUVsQjs7Ozs7R0FLQTtHQUNBO0dBQ0E7Ozs7R0FJQTs7Ozs7R0FLQTs7Ozs7O0dBTUE7R0FDQTs7OztHQUlBOzs7O0dBSUE7Ozs7Ozs7R0FPQTtHQUNBO29EQUNpRDs7R0FFakQ7T0FDSTs7c0JBRWU7d0JBQ0U7O0tBRW5COytCQUMwQjs2QkFDRjtXQUNsQixNQUFNOzs7Ozs7O0dBT2Q7R0FDQTs7Ozs7R0FLQTs7K0JBRTRCOzs7R0FHNUI7Ozs7Ozs7c0NBT21DLElBQUk7TUFDcEMsdUJBQXVCOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztLQXVCeEI7Ozs7OztLQU1BOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7S0EyQkE7Ozs7OztLQU1BOzs7Ozs7Ozs7UUFTRyx5Q0FBeUM7Ozs7O0NBS2hEO0NBQ0E7Q0FDQTs2QkFDNEIsV0FBWSxLQUFJO1FBQ3JDOzt5QkFFaUIsY0FBYzs7O3NDQUdEOztPQUUvQjtxQkFDYzs7SUFFakI7T0FDRyxpREFBaUQ7MkJBQzdCOzthQUVkO0lBQ1Q7eUJBQ3FCOzs7OztDQUt4Qjt3Q0FDdUMsNEJBQTZCLEtBQUk7OEJBQzNDOzt5QkFFTDtFQUN2QjtTQUNPLGdDQUFnQyJ9
 ;// ./src/redux.jsx
 /*
 
@@ -8480,6 +8608,26 @@ var jsx = __webpack_require__(207);
 */
 
 
+/*
+	note: 
+
+	If you are reading the code, keep in my mind that in the development of `Lilact`, 
+	I have used a naming convention that is a little different from the standard way:
+
+	I use underscored all lowercase names for internal variables. 
+	I use all caps for constants that are used similar to C defined macros.	e.g. shared 
+	symbols.
+
+	And I use the standard convention for exposed user space variables and arguments, and 
+	functions.
+ 	
+	So if a variable name is in the format `aaa_bbb`, it means I am counting on it to be 
+	used internally. And if it is `AAA_BBB`, I'm counting on it to be constant in the whole 
+	application lifetime.
+*/
+
+
+
 
 
 
@@ -8525,7 +8673,7 @@ var jsx = __webpack_require__(207);
 const lilact_Lilact = 
 {	
 
-	VERSION: "beta.9",
+	VERSION: "beta.10",
 	
 	// Configuration
 
@@ -8559,7 +8707,6 @@ const lilact_Lilact =
 	emotion: emotion_css_development_esm_namespaceObject,
 
 }
-
 globalThis.Lilact = lilact_Lilact;
 globalThis.createComponent = lilact_Lilact.createComponent;
 globalThis.Fragment = lilact_Lilact.Fragment;
@@ -8579,7 +8726,7 @@ window.addEventListener('error', (e) => {
 
 
 
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9saWxhY3QuanN4Iiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9saWxhY3QuanN4Il0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLEFBQUE7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztRQTZDUTtRQUNBOzs7UUFHQTs7Ozs7Ozs7Ozs7OztRQWFBO1FBQ0E7OztDQUdQOzs7Ozs7OztDQVFBOzs7O0VBSUM7Ozs2QkFHMkI7aUJBQ1o7O0VBRWY7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0VBb0JBOzs7Ozs7Ozs7OzswQkFXd0Isb0JBQXFCLE1BQU07bUJBQ2pDOzs7d0JBSUksU0FBVSxPQUFPOzBCQUNkOzs7YUFLZDthQUNBIn0=
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9saWxhY3QuanN4Iiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9saWxhY3QuanN4Il0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLEFBQUE7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Q0ErQkM7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7UUFrQ087UUFDQTs7O1FBR0E7Ozs7Ozs7Ozs7Ozs7UUFhQTtRQUNBOzs7Q0FHUDs7Ozs7Ozs7Q0FRQTs7OztFQUlDOzs7NkJBRzJCO2lCQUNaOztFQUVmOzs7Ozs7Ozs7Ozs7Ozs7Ozs7OztFQW9CQTs7Ozs7Ozs7OzswQkFVd0Isb0JBQXFCLE1BQU07bUJBQ2pDOzs7d0JBSUksU0FBVSxPQUFPOzBCQUNkOzs7YUFLZDthQUNBIn0=
 
 /***/ }),
 

@@ -94,7 +94,7 @@ export {transpileJSX, transpilerConfig} from "./jsx";
 export const Lilact = 
 {	
 
-	VERSION: "beta.9",
+	VERSION: "beta.10",
 	
 	// Configuration
 
@@ -128,7 +128,6 @@ export const Lilact =
 	emotion,
 
 }
-
 globalThis.Lilact = Lilact;
 globalThis.createComponent = Lilact.createComponent;
 globalThis.Fragment = Lilact.Fragment;
