@@ -70,7 +70,9 @@ injectGlobal({
 			overflowWrap: "anywhere" 
 		},
 		p: {padding: "10px"},
-		body: {padding: "20px"}
+		body: { padding: "20px", background: "#262d36", color: "#e7e7e7" },
+		":visited": {color: "#c16480"}
+
 	});
 
 const outer = css({
@@ -78,15 +80,20 @@ const outer = css({
 	flexDirection: "row",
 	gap: 2,
 	alignItems: "stretch",
-	width: "100%",
+	width: "calc(100% - 8px)",
+	margin: "2px 4px;",
+	borderRadius: "10px",
+  	overflow: "hidden"
 });
 
 const collapsible = css({
-	width: "100%",
+	width: "calc(100% - 8px)",
 	display: "block",
 	fontSize: "16px",
-	border: "1px solid #888",
-	padding: "5px"
+	padding: "10px",
+    borderRadius: "10px",
+    border: "none",
+    margin: "4px"
 });
 
 const responsiveOuter = css({
@@ -96,15 +103,17 @@ const responsiveOuter = css({
 });
 
 const pane = css({ flex: "1 1 0",
-										border: "1px solid",
 										height: "400px",
 										minHeight: "400px",
 										overflowY: "auto",
-										padding: "10px" 
+										padding: "10px",
+										background:"#fff",
+										color: "#222"
 									});
 
 const left = css({ float: "left" });
 const right = css({ float: "right" });
+const demobox = css({ background: "#fff3", borderRadius: "12px", padding: "2px", margin: "4px"});
 
 
 
@@ -150,7 +159,7 @@ function DemoView({ file })
 
 function DemoBlock({file}) 
 {
-	return <div key={file[0]}>
+	return <div key={file[0]} className={demobox}>
 							<Suspense fallback={<Spinner/>}>
 								<DemoView file={file} />
 							</Suspense>
