@@ -95,8 +95,12 @@ const collapsible = css({
     border: "none",
     margin: "4px",
 	background:"#ece9ea",
+	color: "#222",
 	":hover": {
 		background:"#ffa7c2"
+	},
+	":active": {
+		background:"#e14e7a",
 	}
 });
 
@@ -119,9 +123,16 @@ const pane = css({ flex: "1 1 0",
 							border: "none",
 							borderRadius: "7px",
 							margin: "5px",
-
+							color: "#222",
+							":visited": {
+								color: "#000"
+							},
 							":hover": {
-								background:"#ffa7c2"
+								background:"#ffa7c2",
+								color: "#000"
+							},
+							":active": {
+								background:"#e14e7a",
 							}
 						}
 					});
@@ -132,19 +143,19 @@ const demobox = css({ background: "#fff3", borderRadius: "12px", padding: "2px",
 
 
 
-function DemoView({ file }) 
+function DemoView({ entry }) 
 {
 	const [isOpen, setOpen] = useState(false);
 
 	const viewRef = useRef();
 	const codeRef = useRef();
 
-	const resource = createResource("demos/"+file[0]);
+	const resource = createResource("demos/"+entry[0]);
 	const code = resource.read(); // Suspense will handle the promise
 
 	if(isOpen) {
 		useEffect(() => {
-			const Comp = run(code, "demos/"+file[0]);
+			const Comp = run(code, "demos/"+entry[0]);
 			Lilact.render(<Comp/>, viewRef.current);
 		});
 
@@ -155,8 +166,8 @@ function DemoView({ file })
 	
 	return 	<>
 						<button onClick={()=>setOpen(!isOpen)} className={collapsible} type="button">
-							<span className={left}>{ (isOpen?'- ':'+ ') + file[0] + ' '}</span>
-							<b className={right}>{file[1]}</b>
+							<span className={left}>{ (isOpen?'- ':'+ ') + entry[0] + ' '}</span>
+							<b className={right}>{entry[1]}</b>
 						</button>
 						{isOpen &&
 						<div style={{width:"100%"}}>
@@ -172,11 +183,12 @@ function DemoView({ file })
 }
 
 
-function DemoBlock({file}) 
+function DemoBlock({entry}) 
 {
-	return <div key={file[0]} className={demobox}>
+	if(typeof(entry)==='string') return <h3><br/><center>{entry}</center></h3>;
+	return <div key={entry[0]} className={demobox}>
 							<Suspense fallback={<Spinner/>}>
-								<DemoView file={file} />
+								<DemoView entry={entry} />
 							</Suspense>
 					</div>
 }
@@ -184,24 +196,28 @@ function DemoBlock({file})
 
 function App()
 {
-	const demos =[	
+	const demos =[
+		"Hooks",
 		['stopwatch.jsx',				'( useState, useRef )'],
-		['pane.jsx',						'( useRef, useState, ResizablePane )'],
-		['modal.jsx',						'( useEffect, useRef, useState )'],
 		['actionstate.jsx',			'( useActionState, useState )'],
-		['context.jsx',					'( createContext, useContext, useState ), emotion:( css, cx )'],
-		['proptypes.jsx',				'( PropTypes )'],
-		['router.jsx',					'( HashRouter, NavLink, Routes, Route, useNavigate, useLocation )'],
-		['use-deffered.jsx',		'( useState, useDeferredValue )'],
-		['css-transition.jsx',		'( CSSTransition, useState, useRef )'],
-		<!-- ['switch-transition.jsx',	'( SwitchTransition, useState )'], -->
+		['usedeffered.jsx',		'( useState, useDeferredValue )'],
 		['usetransition.jsx',		'( useTransition, useState, useCallback, useId ), emotion:( css, cx )'],
-		['transition.jsx',			'( useState, Transition )'],
 		['reducer.jsx',					'( useReducer )'],
-		['redux.jsx',						'( Provider, useSelector, useDispatch, connect ), redux:( createStore )'],
-		['suspense.jsx',				'( Suspense, Spinner )'],
+		['context.jsx',					'( createContext, useContext, useState ), emotion:( css, cx )'],
+		"API",
 		['lazy.jsx',						'( lazy, require, Suspene, Spinner )'],
+		['proptypes.jsx',				'( PropTypes )'],
+		['redux.jsx',						'( Provider, useSelector, useDispatch, connect ), redux:( createStore )'],
+		['transition.jsx',			'( useState, Transition )'],
+		"Components",
+		<!-- ['switch-transition.jsx',	'( SwitchTransition, useState )'], -->
+		['router.jsx',					'( HashRouter, NavLink, Routes, Route, useNavigate, useLocation )'],
+		['modal.jsx',						'( useEffect, useRef, useState )'],
+		['pane.jsx',						'( useRef, useState, ResizablePane )'],
+		['css-transition.jsx',		'( CSSTransition, useState, useRef )'],
+		['suspense.jsx',				'( Suspense, Spinner )'],
 		['form-elements.jsx',		'()'],
+		"Error Report and Handling",
 		['error-boundary.jsx',						'( ErrorBoundary, useState )'],
 		['error-parser.jsx',							'-- JSX Parser Error --'],
 		['error-init.jsx',								'-- Error in Component initialization --'],
@@ -216,10 +232,6 @@ function App()
 
 						<p>These scripts are transpiled and run directly in your browser. You have already loaded Lilact completely!</p>
 
-						<p>These examples are not meant to be pretty.
-
-							These are bare minimum examples of the React API implemented in Lilact.</p>
-
 						<p>Note that we are using the development version here to have PropTypes warnings.
 							If you switch to production mode PropTypes won't check anything.</p>
 
@@ -230,7 +242,7 @@ function App()
 						
 						<p>See the{" "}<a href="../">Lilact Documentation</a>{" "}for more info.</p>
 						</center>
-						{demos.map((x)=><DemoBlock file={x}/>)}
+						{demos.map((x)=><DemoBlock entry={x}/>)}
 
 						<hr/>
 						<p>

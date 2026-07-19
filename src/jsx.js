@@ -1023,7 +1023,7 @@ export function transpileJSX( jsx, {
 					if(node.type==='xml') s = s.trim();
 					if(s.length) {
 						if(node.type==='xml') {
-							node.children.splice(chi, 0, '"'+s.replaceAll("\n", "\\\n")+'"');
+							node.children.splice(chi, 0, '"'+s.replaceAll("\n", "\\\n").replaceAll("\"", "\\\"")+'"');
 						}
 						else {
 							node.children.splice(chi, 0, ...s.split(tokenize_re)); 

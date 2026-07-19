@@ -23,8 +23,8 @@ function createResource(delay, value) {
   };
 }
 
-const r1 = createResource(500, "First ready (500ms)");
-const r2 = createResource(1200, "Second ready (1200ms)");
+const r1 = createResource(1500, "First ready (1500ms)");
+const r2 = createResource(3000, "Second ready (3000ms)");
 
 function Child1() {
   const v = r1.read();

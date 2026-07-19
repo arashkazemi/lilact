@@ -33,7 +33,7 @@ function Demo()
 
   return (
     <div>
-
+      <p> Notice that Lilact CSSTransition accepts multiple children too. </p>
       <CSSTransition in={inProp} classNames='test'
       
       onEnter={function(){console.log('onEnter', arguments)}}

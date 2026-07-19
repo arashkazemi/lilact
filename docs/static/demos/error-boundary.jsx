@@ -5,7 +5,14 @@ function Demo() {
 
   return (
     <div>
-      Check the console for component stack!
+      <p>
+        In this example an ErrorBoundary shows a fallback on error that contains the error message.
+        <br/><br/>
+        The "Try Again" button resets the error. But the erronous state persists, 
+        unless you get to a safe state by pressing the "Safe" button and then try again.
+        <br/><br/>
+        Check the console for component stack.
+      </p>
       <div style={{ marginBottom: 12 }}>
         <button onClick={() => setMode("safe")}>Safe</button>{" "}
         <button onClick={() => setMode("direct")}>Direct-child throws</button>{" "}

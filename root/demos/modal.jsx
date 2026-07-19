@@ -16,7 +16,7 @@ function ModalDialog({ isOpen, children }) {
 		};
 	}, [isOpen]);
 
-	return <dialog ref={ref} style={{padding: 20, borderRadius: 10, border: "none", boxShadow: "0 5px 20px #000"}}>{children}</dialog>;
+	return <dialog ref={ref} style={{padding: 20, borderRadius: 10, border: "none", boxShadow: "0 5px 40px #0006"}}>{children}</dialog>;
 }
 
 function Demo() {
