@@ -16,7 +16,7 @@ function ModalDialog({ isOpen, children }) {
 		};
 	}, [isOpen]);
 
-	return <dialog ref={ref}>{children}</dialog>;
+	return <dialog ref={ref} style={{padding: 20, borderRadius: 10, border: "none", boxShadow: "0 5px 20px #000"}}>{children}</dialog>;
 }
 
 function Demo() {
@@ -28,6 +28,7 @@ function Demo() {
 				</button>
 				<ModalDialog isOpen={show}>
 					Hello there!
+					<br />
 					<br />
 					<button onClick={() => {
 						setShow(false);

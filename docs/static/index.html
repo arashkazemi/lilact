@@ -71,7 +71,7 @@ injectGlobal({
 		},
 		p: {padding: "10px"},
 		body: { padding: "20px", background: "#262d36", color: "#e7e7e7" },
-		":visited": {color: "#c16480"}
+		":visited": {color: "#c16480"},
 
 	});
 
@@ -93,7 +93,11 @@ const collapsible = css({
 	padding: "10px",
     borderRadius: "10px",
     border: "none",
-    margin: "4px"
+    margin: "4px",
+	background:"#ece9ea",
+	":hover": {
+		background:"#ffa7c2"
+	}
 });
 
 const responsiveOuter = css({
@@ -103,13 +107,24 @@ const responsiveOuter = css({
 });
 
 const pane = css({ flex: "1 1 0",
-										height: "400px",
-										minHeight: "400px",
-										overflowY: "auto",
-										padding: "10px",
-										background:"#fff",
-										color: "#222"
-									});
+						height: "400px",
+						minHeight: "400px",
+						overflowY: "auto",
+						padding: "10px",
+						background:"#fff",
+						color: "#222",
+						button: {
+							background:"#ece9ea",
+							padding: "10px",
+							border: "none",
+							borderRadius: "7px",
+							margin: "5px",
+
+							":hover": {
+								background:"#ffa7c2"
+							}
+						}
+					});
 
 const left = css({ float: "left" });
 const right = css({ float: "right" });

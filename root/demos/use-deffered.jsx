@@ -13,17 +13,20 @@ function ExpensiveList({ query }) {
 
 function Demo() {
   const [q, setQ] = useState("");
-  const deferredQ = useDeferredValue(q, "loading...");
+  const deferredQ = useDeferredValue(q, "Item");
 
-  return (
-    <div>
-      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Type to search..." />
-      <p>Live: {q}</p>
-      <p>Deferred: {deferredQ}</p>
-      <div style={{ height: 300, overflow: "auto", border: "1px solid #ccc" }}>
-        <ExpensiveList query={deferredQ} />
-      </div>
-    </div>
+  return (<>
+            <p>This is only a showcase of useDeferredValue. No search actually takes place, just 
+              a long list of items are loaded when you type.</p>
+            <div>
+              <input value={q} onKeyUp={(e) => setQ(e.target.value)} placeholder="Type to search..." />
+              <p>Live: {q}</p>
+              <p>Deferred: {deferredQ}</p>
+              <div style={{ height: 300, overflow: "auto", border: "1px solid #ccc" }}>
+                <ExpensiveList query={deferredQ} />
+              </div>
+            </div>
+    </>
   );
 }
 

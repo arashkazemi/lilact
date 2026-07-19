@@ -44,6 +44,7 @@ function Demo({ username })
 	);
 
 	return <>
+		<p>This is a simple to-do list using `useReducer`. Enter new entries and they will be added.</p>
 		<input
 			value={state.draft}
 			onChange={e => {
