@@ -1,6 +1,6 @@
 {
   "name": "lilact",
-  "version": "0.10.2",
+  "version": "0.11.0",
   "description": "A Little React/JSX Runtime Implementation for Browser",
   "repository": "github:arashkazemi/lilact",
   "homepage": "https://arashkazemi.github.io/lilact/",
@@ -11,6 +11,7 @@
     "legacy",
     "hook",
     "component",
+    "transition",
     "lightweight",
     "bundle",
     "runtime"

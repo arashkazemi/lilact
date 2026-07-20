@@ -1404,6 +1404,7 @@ __webpack_require__.d(__webpack_exports__, {
   Routes: () => (/* reexport */ Routes),
   Spinner: () => (/* reexport */ Spinner),
   Suspense: () => (/* reexport */ Suspense),
+  SwitchTransition: () => (/* reexport */ SwitchTransition),
   Transition: () => (/* reexport */ Transition),
   TransitionGroup: () => (/* reexport */ TransitionGroup),
   addWrappedEventListener: () => (/* reexport */ addWrappedEventListener),
@@ -1616,6 +1617,7 @@ var transition_namespaceObject = {};
 __webpack_require__.r(transition_namespaceObject);
 __webpack_require__.d(transition_namespaceObject, {
   CSSTransition: () => (CSSTransition),
+  SwitchTransition: () => (SwitchTransition),
   Transition: () => (Transition),
   TransitionGroup: () => (TransitionGroup)
 });
@@ -6899,7 +6901,7 @@ function Transition({
  */
 function CSSTransition({
 	in: inProp,
-	timeout = defaultTransitionTimeout,
+	timeout = Lilact.defaultTransitionTimeout,
 	classNames = "fade",
 	mountOnEnter = false,
 	unmountOnExit = false,
@@ -6928,6 +6930,184 @@ function CSSTransition({
 }
 
 
+
+/**
+ * SwitchTransition (CSS class based) — coordinated switch that preserves each child's state.
+ *
+ * Wraps multiple direct children so that, when `activeKey` changes, it transitions between
+ * the “active” child and the previously active child while supporting `mode`.
+ *
+ * Key idea: each child is rendered inside its own `<CSSTransition />` so switching does not
+ * remount the child component tree (when `unmountOnExit={false}`).
+ *
+ * @param {object} props
+ * @param {Array} props.children
+ * Children to switch between. Each child should have a stable `key`.
+ * If a child has no `key`, its index is used as the fallback key.
+ *
+ * @param {string|number} props.activeKey
+ * The key of the child that should be treated as the “in” (active) element.
+ *
+ * @param {'out-in'|'in-out'} [props.mode='out-in']
+ * Transition sequencing:
+ * - 'out-in': exit the previous child first, then enter the new one.
+ * - 'in-out': enter the new child first, then exit the previous one.
+ *
+ * @param {number|{enter:number,exit:number}} [props.timeout=Lilact.defaultTransitionTimeout]
+ * Duration(s) for the transitions, forwarded to `<CSSTransition timeout={...} />`.
+ *
+ * @param {string} [props.classNames='switch']
+ * Base classNames passed to `<CSSTransition />`.
+ * For example, if `classNames="switch"`, CSSTransition will use:
+ * `switch-enter`, `switch-enter-active`, `switch-exit`, `switch-exit-active`.
+ *
+ * @param {boolean} [props.mountOnEnter=false]
+ * If true, children are not mounted until they enter.
+ * Note: for preserving state across switches, keep this `false`.
+ *
+ * @param {boolean} [props.unmountOnExit=false]
+ * If true, children are unmounted when they exit (state may reset).
+ * For preserving state across switches, keep this `false`.
+ *
+ * @param {boolean} [props.appear=false]
+ * If true, animations apply on initial mount as well.
+ *
+ * @param {(isAppearing: boolean) => void} [props.onEnter]
+ * Called when an element enters.
+ *
+ * @param {(isAppearing: boolean) => void} [props.onExiting]
+ * Called when an element begins exiting.
+ *
+ * @param {(isAppearing: boolean) => void} [props.onExited]
+ * Called when an element has finished exiting.
+ * Note: in 'out-in' mode, when the exiting child finishes, the component allows the
+ * entering child to proceed.
+ *
+ * @param {any} [props.onExited]
+ * Some editors/tools may include duplicate prop names; this alias is ignored by behavior.
+ *
+ * @param {...any} props.csstProps
+ * All remaining props are forwarded to each `<CSSTransition />`.
+ *
+ * @returns {Lilact Component}
+ */
+
+function SwitchTransition({
+  children,
+  activeKey,
+  mode = "out-in", // "out-in" | "in-out"
+
+  timeout = Lilact.defaultTransitionTimeout,
+  classNames = "switch",
+
+  mountOnEnter = false,
+  unmountOnExit = false,
+  appear = false,
+
+  // callbacks (optional)
+  onExited,
+  onEnter,
+  onExiting,
+  onEntered,
+
+  ...csstProps
+}) {
+  const childArray = useMemo(() => Children.toArray(children), [children]);
+
+  // Outgoing key (the one that should exit) and phase flags
+  const [exitingKey, setExitingKey] = useState(null);
+  const [exitStarted, setExitStarted] = useState(false);
+
+  // Controls whether the incoming (activeKey) is currently "in"
+  const [enterAllowed, setEnterAllowed] = useState(true);
+
+  // Refs to avoid stale closures in callbacks
+  const prevKeyRef = useRef(activeKey);
+  const activeKeyRef = useRef(activeKey);
+  const exitingKeyRef = useRef(exitingKey);
+
+  useLayoutEffect(() => {
+    activeKeyRef.current = activeKey;
+  }, [activeKey]);
+
+  useLayoutEffect(() => {
+    exitingKeyRef.current = exitingKey;
+  }, [exitingKey]);
+
+  useLayoutEffect(() => {
+    const prevKey = prevKeyRef.current;
+    if (prevKey === activeKey) return;
+
+    prevKeyRef.current = activeKey;
+
+    // Start a new switch
+    setExitingKey(prevKey);
+
+    if (mode === "out-in") {
+      // Incoming blocked; outgoing should exit immediately.
+      setEnterAllowed(false);
+      setExitStarted(true); // outgoing in: true -> false => triggers exit
+    } else {
+      // Incoming allowed immediately; outgoing should exit only after incoming has entered.
+      setEnterAllowed(true);
+      setExitStarted(false); // outgoing stays in:true until we flip it later
+    }
+  }, [activeKey, mode]);
+
+  const handleExited = (key) => (node, isAppearing) => {
+    if (typeof onExited === "function") onExited(node, isAppearing);
+
+    if (key === exitingKeyRef.current) {
+      setExitingKey(null);
+
+      // out-in: once outgoing is fully exited, allow incoming to start
+      if (mode === "out-in") {
+        setExitStarted(false);
+        setEnterAllowed(true);
+      }
+      // in-out: incoming already entered; just clean up outgoing
+      if (mode === "in-out") {
+        setExitStarted(false);
+      }
+    }
+  };
+
+  const handleEntered = (key) => (node, isAppearing) => {
+    if (typeof onEntered === "function") onEntered(node, isAppearing);
+
+    if (mode === "in-out") {
+      // Only start outgoing exit when the CURRENT incoming (activeKey) finishes entering.
+      if (key === activeKeyRef.current && exitingKeyRef.current != null) {
+        setExitStarted(true); // outgoing in:true -> false => triggers exit
+      }
+    }
+  };
+
+  return (
+     createComponent( "div", { "style": { position: "relative" } }, childArray.map((child, index) => {
+        const key = child?.props?.key || index;
+
+        const isIncoming = key === activeKey;
+        const isOutgoing = key === exitingKey;
+
+        // Core rule:
+        // - Incoming: in = enterAllowed
+        // - Outgoing: in = !exitStarted
+        // - Others: in = false
+        const inProp = isIncoming
+          ? enterAllowed
+          : isOutgoing
+            ? !exitStarted
+            : false;
+
+        return (
+           createComponent( CSSTransition, { ...csstProps, "key": key, "in": inProp, "timeout": timeout, "classNames": classNames, "mountOnEnter": mountOnEnter, "unmountOnExit": unmountOnExit, "appear": appear, "onEnter": onEnter, "onExiting": onExiting, "onEntered": handleEntered(key), "onExited": handleExited(key) },  createComponent( "div", { "style": { position: "absolute", inset: 0 } }, child ) )
+        );
+      }) )
+  );
+}
+
+
 /**
  * Lilact doesn't need TransitionGroup, so it is the same as a fragment.
  * In Lilact all the transitions and timeouts are automatically grouped.
@@ -6940,7 +7120,7 @@ function TransitionGroup({ children }) {
 }
 
 
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy90cmFuc2l0aW9uLmpzeCIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi9Vc2Vycy9hcmFzaC9EZXNrdG9wL1Byb2plY3RzL0xpbGFjdC9zcmMvdHJhbnNpdGlvbi5qc3giXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsQUFBQTs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0NBOEJDOztDQUVBOzs7Ozs7O1FBT087UUFDQTtRQUNBOztDQUVQOzs7Ozs7Ozs7Ozs7Ozs7OzsyQkFpQjJCLEFBQUQ7Ozs7Ozs7Ozs7Ozs7O0NBY3pCO0NBQ0E7Q0FDQTs7SUFFRTs7Ozs7b0NBS2dDLFFBQVE7Y0FDOUI7OztJQUdWLDBCQUEwQjtNQUN4QjtNQUNBLFNBQVM7Ozs7OztXQU1ILEFBQUQsTUFBTztTQUNSLGtCQUFrQjs7O1dBR2hCLEFBQUQsTUFBTztLQUNaLHFGQUFxRjtZQUM5RTt3QkFDYSxBQUFELE1BQU87ZUFDZjtlQUNBO2dDQUNrQixBQUFELE1BQU87O21CQUVuQjs7Y0FFTDs7Ozs7O1dBTUwsQUFBRCxNQUFPO0tBQ1osU0FBUzs7R0FFWDtNQUNHOztZQUVNOzttQkFFUSxBQUFELE1BQU87ZUFDVjtlQUNBOztnQ0FFa0IsQUFBRCxNQUFPOzttQkFFbkI7O2NBRUw7Ozs7T0FJVDtNQUNEOztXQUVLOzttQkFFUSxDQUFFLE1BQU07Y0FDWjtlQUNDO2dDQUNrQixBQUFELE1BQU87O21CQUVuQjthQUNOO01BQ1AsZ0JBQWdCOzs7b0JBR0Y7Ozs7Ozs7S0FPbEI7O0lBRUQsYUFBYTtNQUNYLHNDQUFzQztNQUN0Qzs7Ozs7V0FLSyxxQ0FBcUM7TUFDMUM7Ozs7O1dBS0s7V0FDQTs7Ozs7O0NBTVY7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs4QkFxQjhCLEFBQUQ7Ozs7Ozs7Ozs7SUFVMUI7O0lBRUEsTUFBTywwQkFBeUI7Z0JBQ3BCOzs7Ozs7Ozs7Ozs7U0FZUDtFQUNOLG1SQWNDOzs7OztDQU1IOzs7Ozs7O2dDQU9nQyxBQUFELGVBQWUifQ==
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy90cmFuc2l0aW9uLmpzeCIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi9Vc2Vycy9hcmFzaC9EZXNrdG9wL1Byb2plY3RzL0xpbGFjdC9zcmMvdHJhbnNpdGlvbi5qc3giXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsQUFBQTs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0NBOEJDOztDQUVBOzs7Ozs7O1FBT087UUFDQTtRQUNBOztDQUVQOzs7Ozs7Ozs7Ozs7Ozs7OzsyQkFpQjJCLEFBQUQ7Ozs7Ozs7Ozs7Ozs7O0NBY3pCO0NBQ0E7Q0FDQTs7SUFFRTs7Ozs7b0NBS2dDLFFBQVE7Y0FDOUI7OztJQUdWLDBCQUEwQjtNQUN4QjtNQUNBLFNBQVM7Ozs7OztXQU1ILEFBQUQsTUFBTztTQUNSLGtCQUFrQjs7O1dBR2hCLEFBQUQsTUFBTztLQUNaLHFGQUFxRjtZQUM5RTt3QkFDYSxBQUFELE1BQU87ZUFDZjtlQUNBO2dDQUNrQixBQUFELE1BQU87O21CQUVuQjs7Y0FFTDs7Ozs7O1dBTUwsQUFBRCxNQUFPO0tBQ1osU0FBUzs7R0FFWDtNQUNHOztZQUVNOzttQkFFUSxBQUFELE1BQU87ZUFDVjtlQUNBOztnQ0FFa0IsQUFBRCxNQUFPOzttQkFFbkI7O2NBRUw7Ozs7T0FJVDtNQUNEOztXQUVLOzttQkFFUSxDQUFFLE1BQU07Y0FDWjtlQUNDO2dDQUNrQixBQUFELE1BQU87O21CQUVuQjthQUNOO01BQ1AsZ0JBQWdCOzs7b0JBR0Y7Ozs7Ozs7S0FPbEI7O0lBRUQsYUFBYTtNQUNYLHNDQUFzQztNQUN0Qzs7Ozs7V0FLSyxxQ0FBcUM7TUFDMUM7Ozs7O1dBS0s7V0FDQTs7Ozs7O0NBTVY7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs4QkFxQjhCLEFBQUQ7Ozs7Ozs7Ozs7SUFVMUI7O0lBRUEsTUFBTywwQkFBeUI7Z0JBQ3BCOzs7Ozs7Ozs7Ozs7U0FZUDtFQUNOLG1SQWNDOzs7Ozs7Q0FPSDs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztpQ0E2RGlDLEFBQUQ7OzttQkFHYjs7Ozs7Ozs7O0VBU2pCOzs7Ozs7O0lBT0M7NkJBQzBCLEFBQUQsc0JBQXVCOztHQUVqRDsrQ0FDNEM7aURBQ0U7O0dBRTlDO21EQUNnRDs7R0FFaEQ7NEJBQ3lCOzhCQUNFOytCQUNDOztrQkFFWixBQUFELE1BQU87Ozs7a0JBSU4sQUFBRCxNQUFPOzs7O2tCQUlOLEFBQUQsTUFBTzs7T0FFakI7Ozs7SUFJSDtpQkFDYTs7T0FFVixvQkFBb0I7TUFDckI7cUJBQ2U7b0JBQ0QsUUFBUTtXQUNqQjtNQUNMO3FCQUNlO29CQUNELFNBQVM7Ozs7d0JBSU4sU0FBUyx1QkFBdUI7UUFDaEQseUNBQXlDOztRQUV6QyxnQ0FBZ0M7b0JBQ3BCOztPQUViO1VBQ0csb0JBQW9CO3VCQUNQO3dCQUNDOztPQUVqQjtVQUNHLG9CQUFvQjt1QkFDUDs7Ozs7eUJBS0UsU0FBUyx1QkFBdUI7UUFDakQsMkNBQTJDOztRQUUzQyxvQkFBb0I7T0FDckI7VUFDRyxnRUFBZ0U7dUJBQ25ELFFBQVE7Ozs7O1VBS3JCO0lBQ0wsbUNBQ0UsY0FBZ0IsQUFBRCxrQkFBbUI7Ozs7MEJBTWhDO0NBQ0E7O21CQUNBO21CQUNBOzs7Ozs7T0FPTyxXQUNMOzs7NlBBY0UsNkNBQ0U7Ozs7Ozs7Q0FVZDs7Ozs7OztnQ0FPZ0MsQUFBRCxlQUFlIn0=
 ;// ./src/events.jsx
 /*
 
@@ -8674,7 +8854,7 @@ var jsx = __webpack_require__(207);
 const lilact_Lilact = 
 {	
 
-	VERSION: "beta.10",
+	VERSION: "beta.11",
 	
 	// Configuration
 
@@ -10289,6 +10469,7 @@ module.exports = ReactPropTypesSecret;
 /******/ const __webpack_exports__Routes = __webpack_exports__.Routes;
 /******/ const __webpack_exports__Spinner = __webpack_exports__.Spinner;
 /******/ const __webpack_exports__Suspense = __webpack_exports__.Suspense;
+/******/ const __webpack_exports__SwitchTransition = __webpack_exports__.SwitchTransition;
 /******/ const __webpack_exports__Transition = __webpack_exports__.Transition;
 /******/ const __webpack_exports__TransitionGroup = __webpack_exports__.TransitionGroup;
 /******/ const __webpack_exports__addWrappedEventListener = __webpack_exports__.addWrappedEventListener;
@@ -10374,7 +10555,7 @@ module.exports = ReactPropTypesSecret;
 /******/ const __webpack_exports__useStore = __webpack_exports__.useStore;
 /******/ const __webpack_exports__useTransition = __webpack_exports__.useTransition;
 /******/ const __webpack_exports__wrapListener = __webpack_exports__.wrapListener;
-/******/ export { __webpack_exports__CSSTransition as CSSTransition, __webpack_exports__Children as Children, __webpack_exports__Component as Component, __webpack_exports__ErrorBoundary as ErrorBoundary, __webpack_exports__Fragment as Fragment, __webpack_exports__HTMLComponent as HTMLComponent, __webpack_exports__HashRouter as HashRouter, __webpack_exports__Lilact as Lilact, __webpack_exports__Link as Link, __webpack_exports__NavLink as NavLink, __webpack_exports__PropTypes as PropTypes, __webpack_exports__Provider as Provider, __webpack_exports__ResizablePane as ResizablePane, __webpack_exports__RootComponent as RootComponent, __webpack_exports__Route as Route, __webpack_exports__Routes as Routes, __webpack_exports__Spinner as Spinner, __webpack_exports__Suspense as Suspense, __webpack_exports__Transition as Transition, __webpack_exports__TransitionGroup as TransitionGroup, __webpack_exports__addWrappedEventListener as addWrappedEventListener, __webpack_exports__animationFramePromise as animationFramePromise, __webpack_exports__blocks_info as blocks_info, __webpack_exports__boolean_html_attributes_set as boolean_html_attributes_set, __webpack_exports__classNames as classNames, __webpack_exports__clearInterval as clearInterval, __webpack_exports__clearTimeout as clearTimeout, __webpack_exports__combineReducers as combineReducers, __webpack_exports__connect as connect, __webpack_exports__createComponent as createComponent, __webpack_exports__createContext as createContext, __webpack_exports__createElement as createElement, __webpack_exports__createRoot as createRoot, __webpack_exports__createSyntheticEvent as createSyntheticEvent, __webpack_exports__current_component as current_component, __webpack_exports__deepEqual as deepEqual, __webpack_exports__default as default, __webpack_exports__emotion as emotion, __webpack_exports__error as error, __webpack_exports__eval_num as eval_num, __webpack_exports__events_set as events_set, __webpack_exports__findDOMNode as findDOMNode, __webpack_exports__forwardRef as forwardRef, __webpack_exports__getComponentByPointer as getComponentByPointer, __webpack_exports__globalErrorHandler as globalErrorHandler, __webpack_exports__grabTimers as grabTimers, __webpack_exports__id_num as id_num, __webpack_exports__isAsync as isAsync, __webpack_exports__isClass as isClass, __webpack_exports__isEmpty as isEmpty, __webpack_exports__isError as isError, __webpack_exports__isThenable as isThenable, __webpack_exports__isValidElement as isValidElement, __webpack_exports__layout_effects as layout_effects, __webpack_exports__lazy as lazy, __webpack_exports__length_css_attributes_set as length_css_attributes_set, __webpack_exports__pauseTimers as pauseTimers, __webpack_exports__redux as redux, __webpack_exports__releaseSyntheticEvent as releaseSyntheticEvent, __webpack_exports__releaseTimers as releaseTimers, __webpack_exports__render as render, __webpack_exports__require as require, __webpack_exports__required_scripts as required_scripts, __webpack_exports__resetTimers as resetTimers, __webpack_exports__resumeTimers as resumeTimers, __webpack_exports__roots as roots, __webpack_exports__run as run, __webpack_exports__runScripts as runScripts, __webpack_exports__scanBlockLabels as scanBlockLabels, __webpack_exports__setInterval as setInterval, __webpack_exports__setTimeout as setTimeout, __webpack_exports__shallowEqual as shallowEqual, __webpack_exports__special_attributes as special_attributes, __webpack_exports__timeoutPromise as timeoutPromise, __webpack_exports__toBool as toBool, __webpack_exports__traceError as traceError, __webpack_exports__transpileJSX as transpileJSX, __webpack_exports__transpilerConfig as transpilerConfig, __webpack_exports__update_cbs as update_cbs, __webpack_exports__update_interval_margin as update_interval_margin, __webpack_exports__update_set as update_set, __webpack_exports__update_timeout as update_timeout, __webpack_exports__useActionState as useActionState, __webpack_exports__useCallback as useCallback, __webpack_exports__useContext as useContext, __webpack_exports__useDeferredValue as useDeferredValue, __webpack_exports__useDispatch as useDispatch, __webpack_exports__useEffect as useEffect, __webpack_exports__useHook as useHook, __webpack_exports__useId as useId, __webpack_exports__useImperativeHandle as useImperativeHandle, __webpack_exports__useLayoutEffect as useLayoutEffect, __webpack_exports__useLocalStorage as useLocalStorage, __webpack_exports__useLocation as useLocation, __webpack_exports__useMemo as useMemo, __webpack_exports__useNavigate as useNavigate, __webpack_exports__useReducer as useReducer, __webpack_exports__useRef as useRef, __webpack_exports__useSelector as useSelector, __webpack_exports__useState as useState, __webpack_exports__useStore as useStore, __webpack_exports__useTransition as useTransition, __webpack_exports__wrapListener as wrapListener };
+/******/ export { __webpack_exports__CSSTransition as CSSTransition, __webpack_exports__Children as Children, __webpack_exports__Component as Component, __webpack_exports__ErrorBoundary as ErrorBoundary, __webpack_exports__Fragment as Fragment, __webpack_exports__HTMLComponent as HTMLComponent, __webpack_exports__HashRouter as HashRouter, __webpack_exports__Lilact as Lilact, __webpack_exports__Link as Link, __webpack_exports__NavLink as NavLink, __webpack_exports__PropTypes as PropTypes, __webpack_exports__Provider as Provider, __webpack_exports__ResizablePane as ResizablePane, __webpack_exports__RootComponent as RootComponent, __webpack_exports__Route as Route, __webpack_exports__Routes as Routes, __webpack_exports__Spinner as Spinner, __webpack_exports__Suspense as Suspense, __webpack_exports__SwitchTransition as SwitchTransition, __webpack_exports__Transition as Transition, __webpack_exports__TransitionGroup as TransitionGroup, __webpack_exports__addWrappedEventListener as addWrappedEventListener, __webpack_exports__animationFramePromise as animationFramePromise, __webpack_exports__blocks_info as blocks_info, __webpack_exports__boolean_html_attributes_set as boolean_html_attributes_set, __webpack_exports__classNames as classNames, __webpack_exports__clearInterval as clearInterval, __webpack_exports__clearTimeout as clearTimeout, __webpack_exports__combineReducers as combineReducers, __webpack_exports__connect as connect, __webpack_exports__createComponent as createComponent, __webpack_exports__createContext as createContext, __webpack_exports__createElement as createElement, __webpack_exports__createRoot as createRoot, __webpack_exports__createSyntheticEvent as createSyntheticEvent, __webpack_exports__current_component as current_component, __webpack_exports__deepEqual as deepEqual, __webpack_exports__default as default, __webpack_exports__emotion as emotion, __webpack_exports__error as error, __webpack_exports__eval_num as eval_num, __webpack_exports__events_set as events_set, __webpack_exports__findDOMNode as findDOMNode, __webpack_exports__forwardRef as forwardRef, __webpack_exports__getComponentByPointer as getComponentByPointer, __webpack_exports__globalErrorHandler as globalErrorHandler, __webpack_exports__grabTimers as grabTimers, __webpack_exports__id_num as id_num, __webpack_exports__isAsync as isAsync, __webpack_exports__isClass as isClass, __webpack_exports__isEmpty as isEmpty, __webpack_exports__isError as isError, __webpack_exports__isThenable as isThenable, __webpack_exports__isValidElement as isValidElement, __webpack_exports__layout_effects as layout_effects, __webpack_exports__lazy as lazy, __webpack_exports__length_css_attributes_set as length_css_attributes_set, __webpack_exports__pauseTimers as pauseTimers, __webpack_exports__redux as redux, __webpack_exports__releaseSyntheticEvent as releaseSyntheticEvent, __webpack_exports__releaseTimers as releaseTimers, __webpack_exports__render as render, __webpack_exports__require as require, __webpack_exports__required_scripts as required_scripts, __webpack_exports__resetTimers as resetTimers, __webpack_exports__resumeTimers as resumeTimers, __webpack_exports__roots as roots, __webpack_exports__run as run, __webpack_exports__runScripts as runScripts, __webpack_exports__scanBlockLabels as scanBlockLabels, __webpack_exports__setInterval as setInterval, __webpack_exports__setTimeout as setTimeout, __webpack_exports__shallowEqual as shallowEqual, __webpack_exports__special_attributes as special_attributes, __webpack_exports__timeoutPromise as timeoutPromise, __webpack_exports__toBool as toBool, __webpack_exports__traceError as traceError, __webpack_exports__transpileJSX as transpileJSX, __webpack_exports__transpilerConfig as transpilerConfig, __webpack_exports__update_cbs as update_cbs, __webpack_exports__update_interval_margin as update_interval_margin, __webpack_exports__update_set as update_set, __webpack_exports__update_timeout as update_timeout, __webpack_exports__useActionState as useActionState, __webpack_exports__useCallback as useCallback, __webpack_exports__useContext as useContext, __webpack_exports__useDeferredValue as useDeferredValue, __webpack_exports__useDispatch as useDispatch, __webpack_exports__useEffect as useEffect, __webpack_exports__useHook as useHook, __webpack_exports__useId as useId, __webpack_exports__useImperativeHandle as useImperativeHandle, __webpack_exports__useLayoutEffect as useLayoutEffect, __webpack_exports__useLocalStorage as useLocalStorage, __webpack_exports__useLocation as useLocation, __webpack_exports__useMemo as useMemo, __webpack_exports__useNavigate as useNavigate, __webpack_exports__useReducer as useReducer, __webpack_exports__useRef as useRef, __webpack_exports__useSelector as useSelector, __webpack_exports__useState as useState, __webpack_exports__useStore as useStore, __webpack_exports__useTransition as useTransition, __webpack_exports__wrapListener as wrapListener };
 /******/ 
 
 //# sourceMappingURL=lilact.development.js.map

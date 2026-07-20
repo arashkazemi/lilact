@@ -58,9 +58,10 @@ It also includes the amazing `@emotion/css` library to ease working with styles.
 For convenience, it already includes components such as:
 
 - `HashRouter`
-- `CSSTransition`
 - `ErrorBoundary`
 - `Suspense`
+- `CSSTransition`
+- `SwitchTransition`
 
 and helper components like:
 

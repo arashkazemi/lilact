@@ -9,7 +9,7 @@ function Demo() {
 
   return <>
           <p>This example doesn't actually change the visibility, but emits the events and
-            updated a text according the transition state. See the console for logs.</p>
+            updates a text according the transition state. See the console for logs.</p>
           <div>
             <button onClick={toggleVisibility}>
               {inProp ? 'Hide Component' : 'Show Component'}
