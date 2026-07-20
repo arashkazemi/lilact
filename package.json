@@ -1,16 +1,19 @@
 {
   "name": "lilact",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "description": "A Little React/JSX Runtime Implementation for Browser",
   "repository": "github:arashkazemi/lilact",
   "homepage": "https://arashkazemi.github.io/lilact/",
   "keywords": [
-    "react",
     "jsx",
     "transpiler",
+    "react",
+    "legacy",
     "hook",
     "component",
-    "bundle"
+    "lightweight",
+    "bundle",
+    "runtime"
   ],
   "main": "src/lilact.jsx",
   "type": "module",

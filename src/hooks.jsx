@@ -63,9 +63,9 @@ export function useState(initialValue)
 		if(typeof(initialValue)==='function') hk.value = initialValue();
 		else hk.value = initialValue;
 		
-		hk.set_func = function(core, hk, initialValue) {
-			if(typeof(initialValue)==='function') hk.value = initialValue(hk.value);
-			else hk.value = initialValue;
+		hk.set_func = function(core, hk, value) {
+			if(typeof(value)==='function') hk.value = value(hk.value);
+			else hk.value = value;
 
 			core.component.forceUpdate();
 		}.bind(undefined, Lilact.current_component[0], hk);

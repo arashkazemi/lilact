@@ -3,8 +3,8 @@ const { CSSTransition, useState, useRef } = Lilact;
 
 Lilact.emotion.injectGlobal(`
 .test {
-  -position: absolute;
   transition: opacity 1000ms, transform 1000ms;
+  height: 2rem;
 }
 
 .test-appear  {
@@ -12,11 +12,11 @@ Lilact.emotion.injectGlobal(`
 }
 .test-enter-active, .test-enter-done  {
   opacity: 1;
-  -transform: scale(1);
+  transform: scale(2);
 }
 .test-exit-active, .test-exit-done {
   opacity: 0.2;
-  -transform: scale(0.9);
+  transform: scale(1);
 }
 
 `);
@@ -32,7 +32,7 @@ function Demo()
   for(let i=0; i<10;i++) chs.push( <div className='test'>{i}</div> );
 
   return (
-    <div>
+    <div style={{overflow:"hidden", textAlign: "center"}}>
       <p> Notice that Lilact CSSTransition accepts multiple children too. </p>
       <CSSTransition in={inProp} classNames='test'
       

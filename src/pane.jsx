@@ -225,8 +225,8 @@ export const ResizablePane = forwardRef(function ResizablePane(
 
   const splitterComputed =
     internalMode === "horizontal"
-      ? { width: `${splitterSize}px`, height: '100%', flex: `0 0 ${splitterSize}px`, background: "rgba(0,0,0,0.08)", cursor: "col-resize", ...(splitterStyle || {}) }
-      : { height: `${splitterSize}px`, width: '100%', flex: `0 0 ${splitterSize}px`, background: "rgba(0,0,0,0.08)", cursor: "row-resize", ...(splitterStyle || {}) };
+      ? { width: `${splitterSize}px`, transform: "translateX(-50%)", height: '100%', flex: `0 0 ${splitterSize}px`, background: "rgba(0,0,0,0.08)", cursor: "col-resize", ...(splitterStyle || {}) }
+      : { height: `${splitterSize}px`, transform: "translateY(-50%)", width: '100%', flex: `0 0 ${splitterSize}px`, background: "rgba(0,0,0,0.08)", cursor: "row-resize", ...(splitterStyle || {}) };
 
   const dividerVisualStyle =
     internalMode === "horizontal"
