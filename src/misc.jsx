@@ -193,19 +193,6 @@ export function getComponentByPointer()
 
 
 /**
- * Utility for applying one or more class names to an element.
- *
- * @param classes - One or more class name values to combine.
- */
-export function classNames(classes) {
-	return Object.entries(classes)
-	.filter(([key, value]) => value)
-	.map(([key, value]) => key)
-	.join(' ');
-}
-
-
-/**
  * Checks whether a collection/set/array is empty.
  *
  * @param value - Value to check for emptiness.

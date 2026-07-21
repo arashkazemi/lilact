@@ -1411,7 +1411,6 @@ __webpack_require__.d(__webpack_exports__, {
   animationFramePromise: () => (/* reexport */ animationFramePromise),
   blocks_info: () => (/* reexport */ blocks_info),
   boolean_html_attributes_set: () => (/* reexport */ boolean_html_attributes_set),
-  classNames: () => (/* reexport */ classNames),
   clearInterval: () => (/* reexport */ timers_clearInterval),
   clearTimeout: () => (/* reexport */ timers_clearTimeout),
   combineReducers: () => (/* reexport */ redux_combineReducers),
@@ -1532,7 +1531,6 @@ __webpack_require__.d(misc_namespaceObject, {
   Children: () => (Children),
   Fragment: () => (misc_Fragment),
   boolean_html_attributes_set: () => (boolean_html_attributes_set),
-  classNames: () => (classNames),
   current_component: () => (current_component),
   deepEqual: () => (deepEqual),
   eval_num: () => (eval_num),
@@ -4560,19 +4558,6 @@ function getComponentByPointer()
 
 
 /**
- * Utility for applying one or more class names to an element.
- *
- * @param classes - One or more class name values to combine.
- */
-function classNames(classes) {
-	return Object.entries(classes)
-	.filter(([key, value]) => value)
-	.map(([key, value]) => key)
-	.join(' ');
-}
-
-
-/**
  * Checks whether a collection/set/array is empty.
  *
  * @param value - Value to check for emptiness.
@@ -4781,7 +4766,7 @@ const boolean_html_attributes_set = new
 			 "hidden","open","loop","muted","controls","playsInline","allowFullScreen"]);
 
 
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9taXNjLmpzeCIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi9Vc2Vycy9hcmFzaC9EZXNrdG9wL1Byb2plY3RzL0xpbGFjdC9zcmMvbWlzYy5qc3giXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsQUFBQTs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0NBaUNDOzs7Z0JBR2UsV0FBVztFQUN6QjtFQUNBOztrREFFZ0QsbUJBQW1CO3NCQUMvQzsrQkFDUzs7Ozs7O0NBTTlCOztDQUVBOzs7Ozs7K0JBTThCLFdBQVc7Ozs7Q0FJekM7Ozs7Ozs0QkFNMkIsYUFBYTs7RUFFdkM7Ozs7Ozs7Ozs7OztJQVlFLHVEQUF1RDs7OztDQUkxRDs7Ozs7a0NBS2tDLEFBQUQsYUFBYTs7O0NBRzlDOzs7Ozs7Ozt5QkFRd0I7O0NBRXhCOzs7Ozs7TUFNSyxXQUFXOzs7UUFHVCxvQkFBb0I7TUFDdEIsMkNBQTJDO29CQUM3Qjs7O1dBR1QsZ0RBQWdEO29CQUN2Qzs7O01BR2QsTUFBTTtvQkFDUTs7OztLQUlmOzs7O0NBSUo7Ozs7OztTQU1RLFdBQVc7S0FDZixXQUFXO01BQ1Y7Ozs7Ozs7O0NBUUw7Ozs7Ozs7OzJCQVEwQjtDQUMxQjtTQUNRLGVBQWdCLEFBQUQ7Ozs7Q0FJdkI7Ozs7O3NDQUtxQztDQUNyQzs7O3dCQUd1QixDQUFFLGFBQWE7Ozs7d0JBSWYsUUFBUTs7aUNBRUM7NkJBQ0o7Ozs7UUFJckIsa0NBQWtDOzs7O2VBSTNCOzs7Ozt5QkFLVTs7Ozs7O0NBTXhCOzs7OzsyQkFLMEIsVUFBVTt1QkFDZDtTQUNiLEFBQUQ7TUFDRixBQUFEO09BQ0M7Ozs7Q0FJTjs7Ozs7O3dCQU11QixTQUFTO0tBQzVCOzs7OztDQUtKOzs7Ozs7OzZCQU80QixvQkFBb0I7S0FDNUMsTUFBTyxtQkFBbUIsV0FBVTs7OztLQUlwQyxNQUFPLHVCQUFzQjtNQUM1QixrQ0FBa0M7OztzQkFHakIsQUFBRDtZQUNWLE1BQU8sd0JBQXVCO3FCQUNyQixjQUFlLEFBQUQ7WUFDdkIsTUFBTyxzQkFBcUI7d0JBQ2hCLHFCQUFxQjs7Ozs7OztDQU81Qzs7Ozs7OzswQkFPeUIsaUJBQWlCO0tBQ3RDLE1BQU8sbUJBQW1CLFdBQVU7Ozs7S0FJcEMsTUFBTyx1QkFBc0I7TUFDNUIsa0NBQWtDOzs7O3NCQUlqQixBQUFELDJCQUE0QjtZQUN0QyxNQUFPLHdCQUF1QjtNQUNwQyxXQUFZLCtCQUErQixrQkFBaUI7Ozs7cUJBSTdDLGNBQWUsQUFBRDtZQUN0Qjs7WUFFRCxNQUFPLHNCQUFxQjt3QkFDaEIscUJBQXFCOzs7Ozs7OztDQVE1Qzs7Ozs7O3dCQU11QixRQUFRO0VBQzlCO0lBQ0UsQ0FBRTs7SUFFRiw0Q0FBNkM7O21DQUVkOzs7Q0FHbEM7Ozs7Ozt3QkFNdUIsUUFBUTs7OztDQUkvQjs7Ozs7OzJCQU0wQixRQUFRO2tCQUNqQjs7O0NBR2pCOzs7Ozs7d0JBTXVCLFFBQVE7aUVBQ2lDOzs7Q0FHaEU7Ozs7Ozt1QkFNc0IsUUFBUTtLQUMxQjs7S0FFQTs7S0FFQSw0QkFBNEI7cUJBQ1osY0FBYztNQUM3QjtNQUNBOzs7Z0JBR1U7Ozs7Q0FJZjs7Q0FFQTtpQ0FDZ0M7O0NBRWhDOztDQUVBOztDQUVBOytCQUM4QixXQUFZO0NBQzFDO3lCQUN3Qjs7O0NBR3hCO0NBQ0E7O0NBRUE7O0NBRUE7O0NBRUE7O0NBRUE7OztDQUdBOzBDQUN5Qzs7Ozs7Q0FLekM7a0NBQ2lDOzs7Ozs7Ozs7Ozs7Ozs7Ozs7O0NBbUJqQztpREFDZ0Q7Ozs7Ozs7OztDQVNoRDs7S0FFSSJ9
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9taXNjLmpzeCIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi9Vc2Vycy9hcmFzaC9EZXNrdG9wL1Byb2plY3RzL0xpbGFjdC9zcmMvbWlzYy5qc3giXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsQUFBQTs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0NBaUNDOzs7Z0JBR2UsV0FBVztFQUN6QjtFQUNBOztrREFFZ0QsbUJBQW1CO3NCQUMvQzsrQkFDUzs7Ozs7O0NBTTlCOztDQUVBOzs7Ozs7K0JBTThCLFdBQVc7Ozs7Q0FJekM7Ozs7Ozs0QkFNMkIsYUFBYTs7RUFFdkM7Ozs7Ozs7Ozs7OztJQVlFLHVEQUF1RDs7OztDQUkxRDs7Ozs7a0NBS2tDLEFBQUQsYUFBYTs7O0NBRzlDOzs7Ozs7Ozt5QkFRd0I7O0NBRXhCOzs7Ozs7TUFNSyxXQUFXOzs7UUFHVCxvQkFBb0I7TUFDdEIsMkNBQTJDO29CQUM3Qjs7O1dBR1QsZ0RBQWdEO29CQUN2Qzs7O01BR2QsTUFBTTtvQkFDUTs7OztLQUlmOzs7O0NBSUo7Ozs7OztTQU1RLFdBQVc7S0FDZixXQUFXO01BQ1Y7Ozs7Ozs7O0NBUUw7Ozs7Ozs7OzJCQVEwQjtDQUMxQjtTQUNRLGVBQWdCLEFBQUQ7Ozs7Q0FJdkI7Ozs7O3NDQUtxQztDQUNyQzs7O3dCQUd1QixDQUFFLGFBQWE7Ozs7d0JBSWYsUUFBUTs7aUNBRUM7NkJBQ0o7Ozs7UUFJckIsa0NBQWtDOzs7O2VBSTNCOzs7Ozt5QkFLVTs7Ozs7O0NBTXhCOzs7Ozs7d0JBTXVCLFNBQVM7S0FDNUI7Ozs7O0NBS0o7Ozs7Ozs7NkJBTzRCLG9CQUFvQjtLQUM1QyxNQUFPLG1CQUFtQixXQUFVOzs7O0tBSXBDLE1BQU8sdUJBQXNCO01BQzVCLGtDQUFrQzs7O3NCQUdqQixBQUFEO1lBQ1YsTUFBTyx3QkFBdUI7cUJBQ3JCLGNBQWUsQUFBRDtZQUN2QixNQUFPLHNCQUFxQjt3QkFDaEIscUJBQXFCOzs7Ozs7O0NBTzVDOzs7Ozs7OzBCQU95QixpQkFBaUI7S0FDdEMsTUFBTyxtQkFBbUIsV0FBVTs7OztLQUlwQyxNQUFPLHVCQUFzQjtNQUM1QixrQ0FBa0M7Ozs7c0JBSWpCLEFBQUQsMkJBQTRCO1lBQ3RDLE1BQU8sd0JBQXVCO01BQ3BDLFdBQVksK0JBQStCLGtCQUFpQjs7OztxQkFJN0MsY0FBZSxBQUFEO1lBQ3RCOztZQUVELE1BQU8sc0JBQXFCO3dCQUNoQixxQkFBcUI7Ozs7Ozs7O0NBUTVDOzs7Ozs7d0JBTXVCLFFBQVE7RUFDOUI7SUFDRSxDQUFFOztJQUVGLDRDQUE2Qzs7bUNBRWQ7OztDQUdsQzs7Ozs7O3dCQU11QixRQUFROzs7O0NBSS9COzs7Ozs7MkJBTTBCLFFBQVE7a0JBQ2pCOzs7Q0FHakI7Ozs7Ozt3QkFNdUIsUUFBUTtpRUFDaUM7OztDQUdoRTs7Ozs7O3VCQU1zQixRQUFRO0tBQzFCOztLQUVBOztLQUVBLDRCQUE0QjtxQkFDWixjQUFjO01BQzdCO01BQ0E7OztnQkFHVTs7OztDQUlmOztDQUVBO2lDQUNnQzs7Q0FFaEM7O0NBRUE7O0NBRUE7K0JBQzhCLFdBQVk7Q0FDMUM7eUJBQ3dCOzs7Q0FHeEI7Q0FDQTs7Q0FFQTs7Q0FFQTs7Q0FFQTs7Q0FFQTs7O0NBR0E7MENBQ3lDOzs7OztDQUt6QztrQ0FDaUM7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Q0FtQmpDO2lEQUNnRDs7Ozs7Ozs7O0NBU2hEOztLQUVJIn0=
 ;// ./src/components.jsx
 /*
 
@@ -6932,65 +6917,44 @@ function CSSTransition({
 
 
 /**
- * SwitchTransition (CSS class based) — coordinated switch that preserves each child's state.
- *
- * Wraps multiple direct children so that, when `activeKey` changes, it transitions between
- * the “active” child and the previously active child while supporting `mode`.
- *
- * Key idea: each child is rendered inside its own `<CSSTransition />` so switching does not
- * remount the child component tree (when `unmountOnExit={false}`).
+ * Switches between keyed children with `CSSTransition`.
+ * Ensures each child key gets its own `CSSTransition` instance to avoid state loss.
  *
  * @param {object} props
  * @param {Array} props.children
- * Children to switch between. Each child should have a stable `key`.
- * If a child has no `key`, its index is used as the fallback key.
- *
- * @param {string|number} props.activeKey
- * The key of the child that should be treated as the “in” (active) element.
- *
- * @param {'out-in'|'in-out'} [props.mode='out-in']
- * Transition sequencing:
- * - 'out-in': exit the previous child first, then enter the new one.
- * - 'in-out': enter the new child first, then exit the previous one.
- *
- * @param {number|{enter:number,exit:number}} [props.timeout=Lilact.defaultTransitionTimeout]
- * Duration(s) for the transitions, forwarded to `<CSSTransition timeout={...} />`.
- *
- * @param {string} [props.classNames='switch']
- * Base classNames passed to `<CSSTransition />`.
- * For example, if `classNames="switch"`, CSSTransition will use:
- * `switch-enter`, `switch-enter-active`, `switch-exit`, `switch-exit-active`.
- *
+ *   The set of children to switch between. Each child should have a stable `key`
+ *   (or your `key` will fall back to its index).
+ * @param {*} props.activeKey
+ *   The key of the currently active child.
+ * @param {"out-in" | "in-out"} [props.mode="out-in"]
+ *   Controls sequencing when `activeKey` changes:
+ *   - `"out-in"`: outgoing transitions out first, incoming transitions in after exit completes.
+ *   - `"in-out"`: incoming transitions in first, outgoing transitions out after the incoming finishes entering
+ *     (relies on `onEntered`).
+ * @param {number} [props.timeout=Lilact.defaultTransitionTimeout]
+ *   Transition timeout passed to each `CSSTransition`.
+ * @param {string} [props.classNames="switch"]
+ *   Base className(s) used by `CSSTransition` to apply enter/exit classes.
  * @param {boolean} [props.mountOnEnter=false]
- * If true, children are not mounted until they enter.
- * Note: for preserving state across switches, keep this `false`.
- *
+ *   Whether to mount the transitioning child only when it begins entering.
  * @param {boolean} [props.unmountOnExit=false]
- * If true, children are unmounted when they exit (state may reset).
- * For preserving state across switches, keep this `false`.
- *
+ *   Whether to unmount the child after it finishes exiting.
  * @param {boolean} [props.appear=false]
- * If true, animations apply on initial mount as well.
- *
- * @param {(isAppearing: boolean) => void} [props.onEnter]
- * Called when an element enters.
- *
- * @param {(isAppearing: boolean) => void} [props.onExiting]
- * Called when an element begins exiting.
+ *   Whether to run the initial transition on first mount.
  *
  * @param {(isAppearing: boolean) => void} [props.onExited]
- * Called when an element has finished exiting.
- * Note: in 'out-in' mode, when the exiting child finishes, the component allows the
- * entering child to proceed.
+ *   Called when the outgoing child finishes exiting.
+ * @param {(isAppearing: boolean) => void} [props.onEnter]
+ *   Called when a child begins entering.
+ * @param {(isAppearing: boolean) => void} [props.onExiting]
+ *   Called when a child begins exiting.
+ * @param {(isAppearing: boolean) => void} [props.onEntered]
+ *   Called when a child finishes entering. Used to implement `"in-out"` sequencing.
  *
- * @param {any} [props.onExited]
- * Some editors/tools may include duplicate prop names; this alias is ignored by behavior.
- *
- * @param {...any} props.csstProps
- * All remaining props are forwarded to each `<CSSTransition />`.
- *
- * @returns {Lilact Component}
+ * @param {object} [props.csstProps]
+ *   Any additional props are forwarded to each `CSSTransition` instance.
  */
+
 
 function SwitchTransition({
   children,
@@ -7120,7 +7084,7 @@ function TransitionGroup({ children }) {
 }
 
 
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy90cmFuc2l0aW9uLmpzeCIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi9Vc2Vycy9hcmFzaC9EZXNrdG9wL1Byb2plY3RzL0xpbGFjdC9zcmMvdHJhbnNpdGlvbi5qc3giXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsQUFBQTs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0NBOEJDOztDQUVBOzs7Ozs7O1FBT087UUFDQTtRQUNBOztDQUVQOzs7Ozs7Ozs7Ozs7Ozs7OzsyQkFpQjJCLEFBQUQ7Ozs7Ozs7Ozs7Ozs7O0NBY3pCO0NBQ0E7Q0FDQTs7SUFFRTs7Ozs7b0NBS2dDLFFBQVE7Y0FDOUI7OztJQUdWLDBCQUEwQjtNQUN4QjtNQUNBLFNBQVM7Ozs7OztXQU1ILEFBQUQsTUFBTztTQUNSLGtCQUFrQjs7O1dBR2hCLEFBQUQsTUFBTztLQUNaLHFGQUFxRjtZQUM5RTt3QkFDYSxBQUFELE1BQU87ZUFDZjtlQUNBO2dDQUNrQixBQUFELE1BQU87O21CQUVuQjs7Y0FFTDs7Ozs7O1dBTUwsQUFBRCxNQUFPO0tBQ1osU0FBUzs7R0FFWDtNQUNHOztZQUVNOzttQkFFUSxBQUFELE1BQU87ZUFDVjtlQUNBOztnQ0FFa0IsQUFBRCxNQUFPOzttQkFFbkI7O2NBRUw7Ozs7T0FJVDtNQUNEOztXQUVLOzttQkFFUSxDQUFFLE1BQU07Y0FDWjtlQUNDO2dDQUNrQixBQUFELE1BQU87O21CQUVuQjthQUNOO01BQ1AsZ0JBQWdCOzs7b0JBR0Y7Ozs7Ozs7S0FPbEI7O0lBRUQsYUFBYTtNQUNYLHNDQUFzQztNQUN0Qzs7Ozs7V0FLSyxxQ0FBcUM7TUFDMUM7Ozs7O1dBS0s7V0FDQTs7Ozs7O0NBTVY7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs4QkFxQjhCLEFBQUQ7Ozs7Ozs7Ozs7SUFVMUI7O0lBRUEsTUFBTywwQkFBeUI7Z0JBQ3BCOzs7Ozs7Ozs7Ozs7U0FZUDtFQUNOLG1SQWNDOzs7Ozs7Q0FPSDs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztpQ0E2RGlDLEFBQUQ7OzttQkFHYjs7Ozs7Ozs7O0VBU2pCOzs7Ozs7O0lBT0M7NkJBQzBCLEFBQUQsc0JBQXVCOztHQUVqRDsrQ0FDNEM7aURBQ0U7O0dBRTlDO21EQUNnRDs7R0FFaEQ7NEJBQ3lCOzhCQUNFOytCQUNDOztrQkFFWixBQUFELE1BQU87Ozs7a0JBSU4sQUFBRCxNQUFPOzs7O2tCQUlOLEFBQUQsTUFBTzs7T0FFakI7Ozs7SUFJSDtpQkFDYTs7T0FFVixvQkFBb0I7TUFDckI7cUJBQ2U7b0JBQ0QsUUFBUTtXQUNqQjtNQUNMO3FCQUNlO29CQUNELFNBQVM7Ozs7d0JBSU4sU0FBUyx1QkFBdUI7UUFDaEQseUNBQXlDOztRQUV6QyxnQ0FBZ0M7b0JBQ3BCOztPQUViO1VBQ0csb0JBQW9CO3VCQUNQO3dCQUNDOztPQUVqQjtVQUNHLG9CQUFvQjt1QkFDUDs7Ozs7eUJBS0UsU0FBUyx1QkFBdUI7UUFDakQsMkNBQTJDOztRQUUzQyxvQkFBb0I7T0FDckI7VUFDRyxnRUFBZ0U7dUJBQ25ELFFBQVE7Ozs7O1VBS3JCO0lBQ0wsbUNBQ0UsY0FBZ0IsQUFBRCxrQkFBbUI7Ozs7MEJBTWhDO0NBQ0E7O21CQUNBO21CQUNBOzs7Ozs7T0FPTyxXQUNMOzs7NlBBY0UsNkNBQ0U7Ozs7Ozs7Q0FVZDs7Ozs7OztnQ0FPZ0MsQUFBRCxlQUFlIn0=
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy90cmFuc2l0aW9uLmpzeCIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi9Vc2Vycy9hcmFzaC9EZXNrdG9wL1Byb2plY3RzL0xpbGFjdC9zcmMvdHJhbnNpdGlvbi5qc3giXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsQUFBQTs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0NBOEJDOztDQUVBOzs7Ozs7O1FBT087UUFDQTtRQUNBOztDQUVQOzs7Ozs7Ozs7Ozs7Ozs7OzsyQkFpQjJCLEFBQUQ7Ozs7Ozs7Ozs7Ozs7O0NBY3pCO0NBQ0E7Q0FDQTs7SUFFRTs7Ozs7b0NBS2dDLFFBQVE7Y0FDOUI7OztJQUdWLDBCQUEwQjtNQUN4QjtNQUNBLFNBQVM7Ozs7OztXQU1ILEFBQUQsTUFBTztTQUNSLGtCQUFrQjs7O1dBR2hCLEFBQUQsTUFBTztLQUNaLHFGQUFxRjtZQUM5RTt3QkFDYSxBQUFELE1BQU87ZUFDZjtlQUNBO2dDQUNrQixBQUFELE1BQU87O21CQUVuQjs7Y0FFTDs7Ozs7O1dBTUwsQUFBRCxNQUFPO0tBQ1osU0FBUzs7R0FFWDtNQUNHOztZQUVNOzttQkFFUSxBQUFELE1BQU87ZUFDVjtlQUNBOztnQ0FFa0IsQUFBRCxNQUFPOzttQkFFbkI7O2NBRUw7Ozs7T0FJVDtNQUNEOztXQUVLOzttQkFFUSxDQUFFLE1BQU07Y0FDWjtlQUNDO2dDQUNrQixBQUFELE1BQU87O21CQUVuQjthQUNOO01BQ1AsZ0JBQWdCOzs7b0JBR0Y7Ozs7Ozs7S0FPbEI7O0lBRUQsYUFBYTtNQUNYLHNDQUFzQztNQUN0Qzs7Ozs7V0FLSyxxQ0FBcUM7TUFDMUM7Ozs7O1dBS0s7V0FDQTs7Ozs7O0NBTVY7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs4QkFxQjhCLEFBQUQ7Ozs7Ozs7Ozs7SUFVMUI7O0lBRUEsTUFBTywwQkFBeUI7Z0JBQ3BCOzs7Ozs7Ozs7Ozs7U0FZUDtFQUNOLG1SQWNDOzs7Ozs7Q0FPSDs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztpQ0F3Q2lDLEFBQUQ7OzttQkFHYjs7Ozs7Ozs7O0VBU2pCOzs7Ozs7O0lBT0M7NkJBQzBCLEFBQUQsc0JBQXVCOztHQUVqRDsrQ0FDNEM7aURBQ0U7O0dBRTlDO21EQUNnRDs7R0FFaEQ7NEJBQ3lCOzhCQUNFOytCQUNDOztrQkFFWixBQUFELE1BQU87Ozs7a0JBSU4sQUFBRCxNQUFPOzs7O2tCQUlOLEFBQUQsTUFBTzs7T0FFakI7Ozs7SUFJSDtpQkFDYTs7T0FFVixvQkFBb0I7TUFDckI7cUJBQ2U7b0JBQ0QsUUFBUTtXQUNqQjtNQUNMO3FCQUNlO29CQUNELFNBQVM7Ozs7d0JBSU4sU0FBUyx1QkFBdUI7UUFDaEQseUNBQXlDOztRQUV6QyxnQ0FBZ0M7b0JBQ3BCOztPQUViO1VBQ0csb0JBQW9CO3VCQUNQO3dCQUNDOztPQUVqQjtVQUNHLG9CQUFvQjt1QkFDUDs7Ozs7eUJBS0UsU0FBUyx1QkFBdUI7UUFDakQsMkNBQTJDOztRQUUzQyxvQkFBb0I7T0FDckI7VUFDRyxnRUFBZ0U7dUJBQ25ELFFBQVE7Ozs7O1VBS3JCO0lBQ0wsbUNBQ0UsY0FBZ0IsQUFBRCxrQkFBbUI7Ozs7MEJBTWhDO0NBQ0E7O21CQUNBO21CQUNBOzs7Ozs7T0FPTyxXQUNMOzs7NlBBY0UsNkNBQ0U7Ozs7Ozs7Q0FVZDs7Ozs7OztnQ0FPZ0MsQUFBRCxlQUFlIn0=
 ;// ./src/events.jsx
 /*
 
@@ -10476,7 +10440,6 @@ module.exports = ReactPropTypesSecret;
 /******/ const __webpack_exports__animationFramePromise = __webpack_exports__.animationFramePromise;
 /******/ const __webpack_exports__blocks_info = __webpack_exports__.blocks_info;
 /******/ const __webpack_exports__boolean_html_attributes_set = __webpack_exports__.boolean_html_attributes_set;
-/******/ const __webpack_exports__classNames = __webpack_exports__.classNames;
 /******/ const __webpack_exports__clearInterval = __webpack_exports__.clearInterval;
 /******/ const __webpack_exports__clearTimeout = __webpack_exports__.clearTimeout;
 /******/ const __webpack_exports__combineReducers = __webpack_exports__.combineReducers;
@@ -10555,7 +10518,7 @@ module.exports = ReactPropTypesSecret;
 /******/ const __webpack_exports__useStore = __webpack_exports__.useStore;
 /******/ const __webpack_exports__useTransition = __webpack_exports__.useTransition;
 /******/ const __webpack_exports__wrapListener = __webpack_exports__.wrapListener;
-/******/ export { __webpack_exports__CSSTransition as CSSTransition, __webpack_exports__Children as Children, __webpack_exports__Component as Component, __webpack_exports__ErrorBoundary as ErrorBoundary, __webpack_exports__Fragment as Fragment, __webpack_exports__HTMLComponent as HTMLComponent, __webpack_exports__HashRouter as HashRouter, __webpack_exports__Lilact as Lilact, __webpack_exports__Link as Link, __webpack_exports__NavLink as NavLink, __webpack_exports__PropTypes as PropTypes, __webpack_exports__Provider as Provider, __webpack_exports__ResizablePane as ResizablePane, __webpack_exports__RootComponent as RootComponent, __webpack_exports__Route as Route, __webpack_exports__Routes as Routes, __webpack_exports__Spinner as Spinner, __webpack_exports__Suspense as Suspense, __webpack_exports__SwitchTransition as SwitchTransition, __webpack_exports__Transition as Transition, __webpack_exports__TransitionGroup as TransitionGroup, __webpack_exports__addWrappedEventListener as addWrappedEventListener, __webpack_exports__animationFramePromise as animationFramePromise, __webpack_exports__blocks_info as blocks_info, __webpack_exports__boolean_html_attributes_set as boolean_html_attributes_set, __webpack_exports__classNames as classNames, __webpack_exports__clearInterval as clearInterval, __webpack_exports__clearTimeout as clearTimeout, __webpack_exports__combineReducers as combineReducers, __webpack_exports__connect as connect, __webpack_exports__createComponent as createComponent, __webpack_exports__createContext as createContext, __webpack_exports__createElement as createElement, __webpack_exports__createRoot as createRoot, __webpack_exports__createSyntheticEvent as createSyntheticEvent, __webpack_exports__current_component as current_component, __webpack_exports__deepEqual as deepEqual, __webpack_exports__default as default, __webpack_exports__emotion as emotion, __webpack_exports__error as error, __webpack_exports__eval_num as eval_num, __webpack_exports__events_set as events_set, __webpack_exports__findDOMNode as findDOMNode, __webpack_exports__forwardRef as forwardRef, __webpack_exports__getComponentByPointer as getComponentByPointer, __webpack_exports__globalErrorHandler as globalErrorHandler, __webpack_exports__grabTimers as grabTimers, __webpack_exports__id_num as id_num, __webpack_exports__isAsync as isAsync, __webpack_exports__isClass as isClass, __webpack_exports__isEmpty as isEmpty, __webpack_exports__isError as isError, __webpack_exports__isThenable as isThenable, __webpack_exports__isValidElement as isValidElement, __webpack_exports__layout_effects as layout_effects, __webpack_exports__lazy as lazy, __webpack_exports__length_css_attributes_set as length_css_attributes_set, __webpack_exports__pauseTimers as pauseTimers, __webpack_exports__redux as redux, __webpack_exports__releaseSyntheticEvent as releaseSyntheticEvent, __webpack_exports__releaseTimers as releaseTimers, __webpack_exports__render as render, __webpack_exports__require as require, __webpack_exports__required_scripts as required_scripts, __webpack_exports__resetTimers as resetTimers, __webpack_exports__resumeTimers as resumeTimers, __webpack_exports__roots as roots, __webpack_exports__run as run, __webpack_exports__runScripts as runScripts, __webpack_exports__scanBlockLabels as scanBlockLabels, __webpack_exports__setInterval as setInterval, __webpack_exports__setTimeout as setTimeout, __webpack_exports__shallowEqual as shallowEqual, __webpack_exports__special_attributes as special_attributes, __webpack_exports__timeoutPromise as timeoutPromise, __webpack_exports__toBool as toBool, __webpack_exports__traceError as traceError, __webpack_exports__transpileJSX as transpileJSX, __webpack_exports__transpilerConfig as transpilerConfig, __webpack_exports__update_cbs as update_cbs, __webpack_exports__update_interval_margin as update_interval_margin, __webpack_exports__update_set as update_set, __webpack_exports__update_timeout as update_timeout, __webpack_exports__useActionState as useActionState, __webpack_exports__useCallback as useCallback, __webpack_exports__useContext as useContext, __webpack_exports__useDeferredValue as useDeferredValue, __webpack_exports__useDispatch as useDispatch, __webpack_exports__useEffect as useEffect, __webpack_exports__useHook as useHook, __webpack_exports__useId as useId, __webpack_exports__useImperativeHandle as useImperativeHandle, __webpack_exports__useLayoutEffect as useLayoutEffect, __webpack_exports__useLocalStorage as useLocalStorage, __webpack_exports__useLocation as useLocation, __webpack_exports__useMemo as useMemo, __webpack_exports__useNavigate as useNavigate, __webpack_exports__useReducer as useReducer, __webpack_exports__useRef as useRef, __webpack_exports__useSelector as useSelector, __webpack_exports__useState as useState, __webpack_exports__useStore as useStore, __webpack_exports__useTransition as useTransition, __webpack_exports__wrapListener as wrapListener };
+/******/ export { __webpack_exports__CSSTransition as CSSTransition, __webpack_exports__Children as Children, __webpack_exports__Component as Component, __webpack_exports__ErrorBoundary as ErrorBoundary, __webpack_exports__Fragment as Fragment, __webpack_exports__HTMLComponent as HTMLComponent, __webpack_exports__HashRouter as HashRouter, __webpack_exports__Lilact as Lilact, __webpack_exports__Link as Link, __webpack_exports__NavLink as NavLink, __webpack_exports__PropTypes as PropTypes, __webpack_exports__Provider as Provider, __webpack_exports__ResizablePane as ResizablePane, __webpack_exports__RootComponent as RootComponent, __webpack_exports__Route as Route, __webpack_exports__Routes as Routes, __webpack_exports__Spinner as Spinner, __webpack_exports__Suspense as Suspense, __webpack_exports__SwitchTransition as SwitchTransition, __webpack_exports__Transition as Transition, __webpack_exports__TransitionGroup as TransitionGroup, __webpack_exports__addWrappedEventListener as addWrappedEventListener, __webpack_exports__animationFramePromise as animationFramePromise, __webpack_exports__blocks_info as blocks_info, __webpack_exports__boolean_html_attributes_set as boolean_html_attributes_set, __webpack_exports__clearInterval as clearInterval, __webpack_exports__clearTimeout as clearTimeout, __webpack_exports__combineReducers as combineReducers, __webpack_exports__connect as connect, __webpack_exports__createComponent as createComponent, __webpack_exports__createContext as createContext, __webpack_exports__createElement as createElement, __webpack_exports__createRoot as createRoot, __webpack_exports__createSyntheticEvent as createSyntheticEvent, __webpack_exports__current_component as current_component, __webpack_exports__deepEqual as deepEqual, __webpack_exports__default as default, __webpack_exports__emotion as emotion, __webpack_exports__error as error, __webpack_exports__eval_num as eval_num, __webpack_exports__events_set as events_set, __webpack_exports__findDOMNode as findDOMNode, __webpack_exports__forwardRef as forwardRef, __webpack_exports__getComponentByPointer as getComponentByPointer, __webpack_exports__globalErrorHandler as globalErrorHandler, __webpack_exports__grabTimers as grabTimers, __webpack_exports__id_num as id_num, __webpack_exports__isAsync as isAsync, __webpack_exports__isClass as isClass, __webpack_exports__isEmpty as isEmpty, __webpack_exports__isError as isError, __webpack_exports__isThenable as isThenable, __webpack_exports__isValidElement as isValidElement, __webpack_exports__layout_effects as layout_effects, __webpack_exports__lazy as lazy, __webpack_exports__length_css_attributes_set as length_css_attributes_set, __webpack_exports__pauseTimers as pauseTimers, __webpack_exports__redux as redux, __webpack_exports__releaseSyntheticEvent as releaseSyntheticEvent, __webpack_exports__releaseTimers as releaseTimers, __webpack_exports__render as render, __webpack_exports__require as require, __webpack_exports__required_scripts as required_scripts, __webpack_exports__resetTimers as resetTimers, __webpack_exports__resumeTimers as resumeTimers, __webpack_exports__roots as roots, __webpack_exports__run as run, __webpack_exports__runScripts as runScripts, __webpack_exports__scanBlockLabels as scanBlockLabels, __webpack_exports__setInterval as setInterval, __webpack_exports__setTimeout as setTimeout, __webpack_exports__shallowEqual as shallowEqual, __webpack_exports__special_attributes as special_attributes, __webpack_exports__timeoutPromise as timeoutPromise, __webpack_exports__toBool as toBool, __webpack_exports__traceError as traceError, __webpack_exports__transpileJSX as transpileJSX, __webpack_exports__transpilerConfig as transpilerConfig, __webpack_exports__update_cbs as update_cbs, __webpack_exports__update_interval_margin as update_interval_margin, __webpack_exports__update_set as update_set, __webpack_exports__update_timeout as update_timeout, __webpack_exports__useActionState as useActionState, __webpack_exports__useCallback as useCallback, __webpack_exports__useContext as useContext, __webpack_exports__useDeferredValue as useDeferredValue, __webpack_exports__useDispatch as useDispatch, __webpack_exports__useEffect as useEffect, __webpack_exports__useHook as useHook, __webpack_exports__useId as useId, __webpack_exports__useImperativeHandle as useImperativeHandle, __webpack_exports__useLayoutEffect as useLayoutEffect, __webpack_exports__useLocalStorage as useLocalStorage, __webpack_exports__useLocation as useLocation, __webpack_exports__useMemo as useMemo, __webpack_exports__useNavigate as useNavigate, __webpack_exports__useReducer as useReducer, __webpack_exports__useRef as useRef, __webpack_exports__useSelector as useSelector, __webpack_exports__useState as useState, __webpack_exports__useStore as useStore, __webpack_exports__useTransition as useTransition, __webpack_exports__wrapListener as wrapListener };
 /******/ 
 
 //# sourceMappingURL=lilact.development.js.map
