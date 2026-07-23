@@ -17,7 +17,7 @@ function Demo() {
 
   return (<>
             <p>This is only a showcase of useDeferredValue. No search actually takes place, just 
-              a long list of items are loaded when you type.</p>
+              a long list of items is loaded as you type.</p>
             <div>
               <input value={q} onKeyUp={(e) => setQ(e.target.value)} placeholder="Type to search..." />
               <p>Live: {q}</p>
