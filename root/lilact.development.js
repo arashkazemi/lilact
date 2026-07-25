@@ -1377,9 +1377,227 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 
 /***/ }),
 
-/***/ 241:
+/***/ 363:
+/*!****************************************!*\
+  !*** ./node_modules/react-is/index.js ***!
+  \****************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+
+if (false) // removed by dead control flow
+{} else {
+  module.exports = __webpack_require__(/*! ./cjs/react-is.development.js */ 413);
+}
+
+
+/***/ }),
+
+/***/ 376:
+/*!********************************************!*\
+  !*** ./node_modules/prop-types/lib/has.js ***!
+  \********************************************/
+/***/ ((module) => {
+
+module.exports = Function.call.bind(Object.prototype.hasOwnProperty);
+
+
+/***/ }),
+
+/***/ 413:
+/*!***********************************************************!*\
+  !*** ./node_modules/react-is/cjs/react-is.development.js ***!
+  \***********************************************************/
+/***/ ((__unused_webpack_module, exports) => {
+
+/** @license React v16.13.1
+ * react-is.development.js
+ *
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+
+
+
+
+if (true) {
+  (function() {
+'use strict';
+
+// The Symbol used to tag the ReactElement-like types. If there is no native Symbol
+// nor polyfill, then a plain number is used for performance.
+var hasSymbol = typeof Symbol === 'function' && Symbol.for;
+var REACT_ELEMENT_TYPE = hasSymbol ? Symbol.for('react.element') : 0xeac7;
+var REACT_PORTAL_TYPE = hasSymbol ? Symbol.for('react.portal') : 0xeaca;
+var REACT_FRAGMENT_TYPE = hasSymbol ? Symbol.for('react.fragment') : 0xeacb;
+var REACT_STRICT_MODE_TYPE = hasSymbol ? Symbol.for('react.strict_mode') : 0xeacc;
+var REACT_PROFILER_TYPE = hasSymbol ? Symbol.for('react.profiler') : 0xead2;
+var REACT_PROVIDER_TYPE = hasSymbol ? Symbol.for('react.provider') : 0xeacd;
+var REACT_CONTEXT_TYPE = hasSymbol ? Symbol.for('react.context') : 0xeace; // TODO: We don't use AsyncMode or ConcurrentMode anymore. They were temporary
+// (unstable) APIs that have been removed. Can we remove the symbols?
+
+var REACT_ASYNC_MODE_TYPE = hasSymbol ? Symbol.for('react.async_mode') : 0xeacf;
+var REACT_CONCURRENT_MODE_TYPE = hasSymbol ? Symbol.for('react.concurrent_mode') : 0xeacf;
+var REACT_FORWARD_REF_TYPE = hasSymbol ? Symbol.for('react.forward_ref') : 0xead0;
+var REACT_SUSPENSE_TYPE = hasSymbol ? Symbol.for('react.suspense') : 0xead1;
+var REACT_SUSPENSE_LIST_TYPE = hasSymbol ? Symbol.for('react.suspense_list') : 0xead8;
+var REACT_MEMO_TYPE = hasSymbol ? Symbol.for('react.memo') : 0xead3;
+var REACT_LAZY_TYPE = hasSymbol ? Symbol.for('react.lazy') : 0xead4;
+var REACT_BLOCK_TYPE = hasSymbol ? Symbol.for('react.block') : 0xead9;
+var REACT_FUNDAMENTAL_TYPE = hasSymbol ? Symbol.for('react.fundamental') : 0xead5;
+var REACT_RESPONDER_TYPE = hasSymbol ? Symbol.for('react.responder') : 0xead6;
+var REACT_SCOPE_TYPE = hasSymbol ? Symbol.for('react.scope') : 0xead7;
+
+function isValidElementType(type) {
+  return typeof type === 'string' || typeof type === 'function' || // Note: its typeof might be other than 'symbol' or 'number' if it's a polyfill.
+  type === REACT_FRAGMENT_TYPE || type === REACT_CONCURRENT_MODE_TYPE || type === REACT_PROFILER_TYPE || type === REACT_STRICT_MODE_TYPE || type === REACT_SUSPENSE_TYPE || type === REACT_SUSPENSE_LIST_TYPE || typeof type === 'object' && type !== null && (type.$$typeof === REACT_LAZY_TYPE || type.$$typeof === REACT_MEMO_TYPE || type.$$typeof === REACT_PROVIDER_TYPE || type.$$typeof === REACT_CONTEXT_TYPE || type.$$typeof === REACT_FORWARD_REF_TYPE || type.$$typeof === REACT_FUNDAMENTAL_TYPE || type.$$typeof === REACT_RESPONDER_TYPE || type.$$typeof === REACT_SCOPE_TYPE || type.$$typeof === REACT_BLOCK_TYPE);
+}
+
+function typeOf(object) {
+  if (typeof object === 'object' && object !== null) {
+    var $$typeof = object.$$typeof;
+
+    switch ($$typeof) {
+      case REACT_ELEMENT_TYPE:
+        var type = object.type;
+
+        switch (type) {
+          case REACT_ASYNC_MODE_TYPE:
+          case REACT_CONCURRENT_MODE_TYPE:
+          case REACT_FRAGMENT_TYPE:
+          case REACT_PROFILER_TYPE:
+          case REACT_STRICT_MODE_TYPE:
+          case REACT_SUSPENSE_TYPE:
+            return type;
+
+          default:
+            var $$typeofType = type && type.$$typeof;
+
+            switch ($$typeofType) {
+              case REACT_CONTEXT_TYPE:
+              case REACT_FORWARD_REF_TYPE:
+              case REACT_LAZY_TYPE:
+              case REACT_MEMO_TYPE:
+              case REACT_PROVIDER_TYPE:
+                return $$typeofType;
+
+              default:
+                return $$typeof;
+            }
+
+        }
+
+      case REACT_PORTAL_TYPE:
+        return $$typeof;
+    }
+  }
+
+  return undefined;
+} // AsyncMode is deprecated along with isAsyncMode
+
+var AsyncMode = REACT_ASYNC_MODE_TYPE;
+var ConcurrentMode = REACT_CONCURRENT_MODE_TYPE;
+var ContextConsumer = REACT_CONTEXT_TYPE;
+var ContextProvider = REACT_PROVIDER_TYPE;
+var Element = REACT_ELEMENT_TYPE;
+var ForwardRef = REACT_FORWARD_REF_TYPE;
+var Fragment = REACT_FRAGMENT_TYPE;
+var Lazy = REACT_LAZY_TYPE;
+var Memo = REACT_MEMO_TYPE;
+var Portal = REACT_PORTAL_TYPE;
+var Profiler = REACT_PROFILER_TYPE;
+var StrictMode = REACT_STRICT_MODE_TYPE;
+var Suspense = REACT_SUSPENSE_TYPE;
+var hasWarnedAboutDeprecatedIsAsyncMode = false; // AsyncMode should be deprecated
+
+function isAsyncMode(object) {
+  {
+    if (!hasWarnedAboutDeprecatedIsAsyncMode) {
+      hasWarnedAboutDeprecatedIsAsyncMode = true; // Using console['warn'] to evade Babel and ESLint
+
+      console['warn']('The ReactIs.isAsyncMode() alias has been deprecated, ' + 'and will be removed in React 17+. Update your code to use ' + 'ReactIs.isConcurrentMode() instead. It has the exact same API.');
+    }
+  }
+
+  return isConcurrentMode(object) || typeOf(object) === REACT_ASYNC_MODE_TYPE;
+}
+function isConcurrentMode(object) {
+  return typeOf(object) === REACT_CONCURRENT_MODE_TYPE;
+}
+function isContextConsumer(object) {
+  return typeOf(object) === REACT_CONTEXT_TYPE;
+}
+function isContextProvider(object) {
+  return typeOf(object) === REACT_PROVIDER_TYPE;
+}
+function isElement(object) {
+  return typeof object === 'object' && object !== null && object.$$typeof === REACT_ELEMENT_TYPE;
+}
+function isForwardRef(object) {
+  return typeOf(object) === REACT_FORWARD_REF_TYPE;
+}
+function isFragment(object) {
+  return typeOf(object) === REACT_FRAGMENT_TYPE;
+}
+function isLazy(object) {
+  return typeOf(object) === REACT_LAZY_TYPE;
+}
+function isMemo(object) {
+  return typeOf(object) === REACT_MEMO_TYPE;
+}
+function isPortal(object) {
+  return typeOf(object) === REACT_PORTAL_TYPE;
+}
+function isProfiler(object) {
+  return typeOf(object) === REACT_PROFILER_TYPE;
+}
+function isStrictMode(object) {
+  return typeOf(object) === REACT_STRICT_MODE_TYPE;
+}
+function isSuspense(object) {
+  return typeOf(object) === REACT_SUSPENSE_TYPE;
+}
+
+exports.AsyncMode = AsyncMode;
+exports.ConcurrentMode = ConcurrentMode;
+exports.ContextConsumer = ContextConsumer;
+exports.ContextProvider = ContextProvider;
+exports.Element = Element;
+exports.ForwardRef = ForwardRef;
+exports.Fragment = Fragment;
+exports.Lazy = Lazy;
+exports.Memo = Memo;
+exports.Portal = Portal;
+exports.Profiler = Profiler;
+exports.StrictMode = StrictMode;
+exports.Suspense = Suspense;
+exports.isAsyncMode = isAsyncMode;
+exports.isConcurrentMode = isConcurrentMode;
+exports.isContextConsumer = isContextConsumer;
+exports.isContextProvider = isContextProvider;
+exports.isElement = isElement;
+exports.isForwardRef = isForwardRef;
+exports.isFragment = isFragment;
+exports.isLazy = isLazy;
+exports.isMemo = isMemo;
+exports.isPortal = isPortal;
+exports.isProfiler = isProfiler;
+exports.isStrictMode = isStrictMode;
+exports.isSuspense = isSuspense;
+exports.isValidElementType = isValidElementType;
+exports.typeOf = typeOf;
+  })();
+}
+
+
+/***/ }),
+
+/***/ 451:
 /*!*************************************!*\
-  !*** ./src/lilact.jsx + 29 modules ***!
+  !*** ./src/lilact.jsx + 28 modules ***!
   \*************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
@@ -1674,6 +1892,7 @@ __webpack_require__.d(accessories_namespaceObject, {
   DragHandle: () => (DragHandle),
   ErrorBoundary: () => (ErrorBoundary),
   Spinner: () => (Spinner),
+  SplitPane: () => (SplitPane),
   Suspense: () => (Suspense)
 });
 
@@ -8248,6 +8467,11 @@ function Routes({ children }) {
 
 
 
+
+
+
+
+
 const {css: accessories_css,cx: accessories_cx} = emotion_css_development_esm_namespaceObject;
 
 /**
@@ -8598,12 +8822,6 @@ function DragHandle({
 
 
 
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9hY2Nlc3Nvcmllcy5qc3giLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIvVXNlcnMvYXJhc2gvRGVza3RvcC9Qcm9qZWN0cy9MaWxhY3Qvc3JjL2FjY2Vzc29yaWVzLmpzeCJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSxBQUFBOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7UUE4QlE7UUFDQTtRQUNBO1FBQ0E7UUFDQTtPQUNEOztDQUVOOzs7Ozs7Ozs7Ozs7O3dCQWF3QixBQUFEOzs7Ozs7O0lBT3BCO3FCQUNpQjs7VUFFWDtJQUNMOzs7Ozs7eUJBWUU7Ozs7Ozs7cUJBV0EsRUFBTzs7Ozs7Ozs7O0NBU2I7Ozs7Ozs7Ozs7OzhDQVc2Qzs7O1VBR3BDOztpQ0FFdUIsUUFBUTtVQUMvQjs7O21CQUdTLGNBQWM7U0FDeEI7T0FDRixLQUFLLGlCQUFpQix1QkFBdUIsSUFBSSxlQUFlOzs7VUFHN0QsbUJBQW9CLEFBQUQ7O1FBRXJCLEdBQUc7U0FDRjtNQUNILDZCQUE2Qjs7Ozs7O0NBTWxDOzs7Ozs7Ozs7Ozs7Q0FZQTs7O3dCQUd1Qjs7YUFFWCxRQUFROztRQUViO0NBQ1A7Z0JBQ2U7O0NBRWY7MEJBQ3lCOztDQUV6Qjs7Q0FFQTs7Q0FFQTs7OztDQUlBO2lDQUNnQyxRQUFRO01BQ25DLGlCQUFrQixVQUFTO0lBQzdCOzs7R0FHRDs7OztDQUlGO21CQUNrQixRQUFRO01BQ3JCLGtCQUFtQjs7OztNQUluQixpQkFBa0I7O0dBRXJCO29CQUNpQjs7R0FFakI7TUFDRywyQkFBMkI7MEJBQ1A7SUFDdEI7T0FDRyxtQkFBbUI7d0JBQ0Y7Ozt3Q0FHaUIsQUFBRCxNQUFPOztvQ0FFVjtpQkFDbEIsQUFBRDs7Ozs7Q0FLakI7c0JBQ3FCLEdBQUc7b0JBQ0w7c0JBQ0U7OztDQUdyQjtjQUNhLEdBQUc7TUFDWCxtQkFBbUI7dUJBQ0Y7OztNQUdqQixxQkFBcUI7dUJBQ0o7Ozs7O0NBS3RCO2dCQUNlLFVBQVU7TUFDcEIsaUJBQWtCO29CQUNKOztNQUVkLDJCQUEyQjswQkFDUDtPQUNuQixtQkFBbUI7d0JBQ0Y7Ozt3Q0FHaUIsQUFBRCxNQUFPOztvQ0FFVjtpQkFDbEIsQUFBRDs7OztHQUlmO3FCQUNrQixNQUFNO09BQ3BCLGlCQUFrQixZQUFXO3lCQUNYOztJQUVyQjtPQUNHLDJCQUEyQjtLQUM3QjtRQUNHLG1CQUFtQjt5QkFDRjs7TUFFbkI7bUJBQ2MsQUFBRDs7OztLQUlkOzZCQUN3QixLQUFLOytCQUNIOztRQUV2QixrQkFBa0I7bUJBQ04sQUFBRDtZQUNQO1NBQ0gscUJBQXFCOzBCQUNKOzs7NENBR21CLEFBQUQsTUFBTzs7bUJBRTlCLEFBQUQ7Ozs7OztHQU1qQjtlQUNZOzs7Q0FHZDttQkFDa0IsY0FBYztNQUMzQixrQkFBbUI7c0JBQ0g7OztDQUdyQjtRQUNPLEdBQUc7TUFDTCw2QkFBNkI7V0FDeEIsRUFBRTs7VUFFSCxFQUFFOzs7O0NBSVg7Ozs7Ozs7Ozs7Ozs7Ozs7MkJBZ0IyQixBQUFEOzs7Ozs7OztJQVF2QjttQ0FDK0I7Z0NBQ0g7Z0NBQ0E7K0JBQ0Q7K0JBQ0E7NEJBQ0g7OzhDQUVrQjs7K0JBRWQsQUFBRCxNQUFPOzs7Ozs7O2VBT3RCOzs7MkNBRzRCLEFBQUQsc0JBQXVCOzs7U0FHeEQ7Ozs2QkFHb0IsQUFBRCxtQkFBb0I7S0FDM0M7U0FDSTtXQUNFOzs7bUNBR3dCLEFBQUQsT0FBUTtFQUN4QztLQUNHOzs7Ozs7Ozs7O2VBVVU7V0FDSjs7TUFFTDtvQ0FDOEI7VUFDMUI7R0FDUDs7OzttQ0FJZ0MsQUFBRCxPQUFRO0tBQ3JDO0tBQ0E7O1FBRUcsa0NBQWtDO1dBQy9COzs7Ozs7aUNBTXNCLEFBQUQsT0FBUTtLQUNuQztTQUNJOzs7cUNBRzRCLEFBQUQsT0FBUTtLQUN2QztTQUNJOzs7U0FHRDtFQUNOLG1RQVVDIn0=
-;// ./src/pane.jsx
-
-
-
-
 const clamp = (n, min, max) => {
   if (!Number.isFinite(n)) return n;
   return Math.min(max, Math.max(min, n));
@@ -8853,7 +9071,7 @@ const SplitPane = forwardRef(function SplitPane(
 
 
 
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9wYW5lLmpzeCIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi9Vc2Vycy9hcmFzaC9EZXNrdG9wL1Byb2plY3RzL0xpbGFjdC9zcmMvcGFuZS5qc3giXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsT0FBTztRQUNDOzs7ZUFHTyxpQkFBaUI7TUFDMUIsZ0JBQWlCO2tCQUNMLGFBQWM7OztDQUcvQjs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztvQ0F1RG1DLGtCQUFtQjtDQUNwRDs7YUFFWTs7Ozs7Ozs7Ozs7Ozs7RUFjWjs2QkFDMkI7Z0NBQ0c7Ozs7OztrREFNa0I7O3dEQUVPLEFBQUQ7UUFDL0M7Ozs7Ozs7V0FPRyxBQUFELE1BQU87TUFDWCw4QkFBOEI7OztFQUduQztpQkFDZ0IsQUFBRCxNQUFPO01BQ2pCO3FCQUNnQixBQUFELFlBQWE7OzswQ0FHTzs7c0JBRXBCLFVBQVU7eUJBQ1A7T0FDbEIsa0NBQWtDO2tCQUN2Qjs7OzRCQUdVOzZCQUNDOzsyQkFFRixzQkFBc0I7O09BRTFDOzt5Q0FFa0M7O09BRWxDLGdDQUFnQzs7U0FFOUIsZ0JBQWlCLGtDQUFpQztrQkFDekM7U0FDVCxnQkFBaUI7aUJBQ1Q7V0FDTjs7U0FFRixnQkFBaUIsa0NBQWlDO2tCQUN6QztTQUNULGdCQUFpQjtpQkFDVDs7OztFQUlmO1dBQ1UsQUFBRCxNQUFPO2tCQUNDLE9BQU87UUFDakI7UUFDQTtxQkFDYTs7O2dCQUdMLE9BQU87UUFDZjtRQUNBOzs7OzswQkFLa0IsdUJBQXdCOzBCQUN4QixtQkFBb0I7MEJBQ3BCLHVCQUF3Qjs7VUFFeEMsTUFBTTsrQkFDZTsrQkFDQTsrQkFDQTs7c0JBRVY7O3dCQUVFLE9BQU87T0FDeEI7b0JBQ2E7Ozs7O1FBS1o7eUNBQ2lDO1lBQzdCOztvQkFFUSx3QkFBd0I7OztvQkFHeEIsT0FBTzs7OztPQUlwQixnQ0FBZ0M7U0FDOUI7U0FDQTtXQUNFO1NBQ0Y7U0FDQTs7O09BR0YsY0FBYztzQkFDQztpQkFDTDs7Ozt1QkFJTyxBQUFELE1BQU87OztVQUduQjs7O29CQUdTOzs7Ozs7T0FNYixTQUFVOzs7Ozs7UUFNVCwyRUFBMkUsaUJBQWtCO1FBQzdGLDRFQUE0RSxpQkFBa0I7Ozs7UUFJOUYsaUVBQWlFLGtCQUFtQjtRQUNwRixrRUFBa0Usa0JBQW1COzs7O1FBSXJGLHFLQUFxSyxpQkFBa0I7UUFDdkwscUtBQXFLLGlCQUFrQjs7OztRQUl2TDtRQUNBOztxQkFFYSxLQUFNLE1BQU8sQUFBRDs7V0FFcEIsNkJBQTZCO2VBQ3pCO1dBQ0o7OztTQUdKO0dBQ0wsaUVBQ0UsMkJBQThCLDBDQUU5Qjs7O0tBZUUsMkZBR0YsNEJBQStCIn0=
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9hY2Nlc3Nvcmllcy5qc3giLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIvVXNlcnMvYXJhc2gvRGVza3RvcC9Qcm9qZWN0cy9MaWxhY3Qvc3JjL2FjY2Vzc29yaWVzLmpzeCJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSxBQUFBOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O1FBK0JRO1FBQ0E7OztRQUdBO1FBQ0E7UUFDQTtRQUNBO1FBQ0E7T0FDRDs7Q0FFTjs7Ozs7Ozs7Ozs7Ozt3QkFhd0IsQUFBRDs7Ozs7OztJQU9wQjtxQkFDaUI7O1VBRVg7SUFDTDs7Ozs7O3lCQVlFOzs7Ozs7O3FCQVdBLEVBQU87Ozs7Ozs7OztDQVNiOzs7Ozs7Ozs7Ozs4Q0FXNkM7OztVQUdwQzs7aUNBRXVCLFFBQVE7VUFDL0I7OzttQkFHUyxjQUFjO1NBQ3hCO09BQ0YsS0FBSyxpQkFBaUIsdUJBQXVCLElBQUksZUFBZTs7O1VBRzdELG1CQUFvQixBQUFEOztRQUVyQixHQUFHO1NBQ0Y7TUFDSCw2QkFBNkI7Ozs7OztDQU1sQzs7Ozs7Ozs7Ozs7O0NBWUE7Ozt3QkFHdUI7O2FBRVgsUUFBUTs7UUFFYjtDQUNQO2dCQUNlOztDQUVmOzBCQUN5Qjs7Q0FFekI7O0NBRUE7O0NBRUE7Ozs7Q0FJQTtpQ0FDZ0MsUUFBUTtNQUNuQyxpQkFBa0IsVUFBUztJQUM3Qjs7O0dBR0Q7Ozs7Q0FJRjttQkFDa0IsUUFBUTtNQUNyQixrQkFBbUI7Ozs7TUFJbkIsaUJBQWtCOztHQUVyQjtvQkFDaUI7O0dBRWpCO01BQ0csMkJBQTJCOzBCQUNQO0lBQ3RCO09BQ0csbUJBQW1CO3dCQUNGOzs7d0NBR2lCLEFBQUQsTUFBTzs7b0NBRVY7aUJBQ2xCLEFBQUQ7Ozs7O0NBS2pCO3NCQUNxQixHQUFHO29CQUNMO3NCQUNFOzs7Q0FHckI7Y0FDYSxHQUFHO01BQ1gsbUJBQW1CO3VCQUNGOzs7TUFHakIscUJBQXFC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
 // EXTERNAL MODULE: ./src/jsx.js
 var jsx = __webpack_require__(207);
 ;// ./src/lilact.jsx
@@ -8941,8 +9159,6 @@ var jsx = __webpack_require__(207);
 
 
 
-
-
 /**
  * @namespace Lilact
  * 
@@ -8976,8 +9192,6 @@ const lilact_Lilact =
 	...router_namespaceObject,
 	...accessories_namespaceObject,
 
-	SplitPane: SplitPane,
-
 	transpileJSX: jsx.transpileJSX,
 	transpilerConfig: jsx.transpilerConfig,
 
@@ -9006,225 +9220,7 @@ window.addEventListener('error', (e) => {
 
 
 
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9saWxhY3QuanN4Iiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9saWxhY3QuanN4Il0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLEFBQUE7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Q0ErQkM7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7UUFrQ087UUFDQTs7O1FBR0E7Ozs7Ozs7Ozs7Ozs7UUFhQTtRQUNBOzs7Q0FHUDs7Ozs7Ozs7Q0FRQTs7OztFQUlDOzs7O2lCQUllOztFQUVmOzs7Ozs7Ozs7Ozs7Ozs7Ozs7OztFQW9CQTs7Ozs7Ozs7OzswQkFVd0Isb0JBQXFCLE1BQU07bUJBQ2pDOzs7d0JBSUksU0FBVSxPQUFPOzBCQUNkOzs7YUFLZDthQUNBIn0=
-
-/***/ }),
-
-/***/ 363:
-/*!****************************************!*\
-  !*** ./node_modules/react-is/index.js ***!
-  \****************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-
-
-if (false) // removed by dead control flow
-{} else {
-  module.exports = __webpack_require__(/*! ./cjs/react-is.development.js */ 413);
-}
-
-
-/***/ }),
-
-/***/ 376:
-/*!********************************************!*\
-  !*** ./node_modules/prop-types/lib/has.js ***!
-  \********************************************/
-/***/ ((module) => {
-
-module.exports = Function.call.bind(Object.prototype.hasOwnProperty);
-
-
-/***/ }),
-
-/***/ 413:
-/*!***********************************************************!*\
-  !*** ./node_modules/react-is/cjs/react-is.development.js ***!
-  \***********************************************************/
-/***/ ((__unused_webpack_module, exports) => {
-
-/** @license React v16.13.1
- * react-is.development.js
- *
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-
-
-
-
-if (true) {
-  (function() {
-'use strict';
-
-// The Symbol used to tag the ReactElement-like types. If there is no native Symbol
-// nor polyfill, then a plain number is used for performance.
-var hasSymbol = typeof Symbol === 'function' && Symbol.for;
-var REACT_ELEMENT_TYPE = hasSymbol ? Symbol.for('react.element') : 0xeac7;
-var REACT_PORTAL_TYPE = hasSymbol ? Symbol.for('react.portal') : 0xeaca;
-var REACT_FRAGMENT_TYPE = hasSymbol ? Symbol.for('react.fragment') : 0xeacb;
-var REACT_STRICT_MODE_TYPE = hasSymbol ? Symbol.for('react.strict_mode') : 0xeacc;
-var REACT_PROFILER_TYPE = hasSymbol ? Symbol.for('react.profiler') : 0xead2;
-var REACT_PROVIDER_TYPE = hasSymbol ? Symbol.for('react.provider') : 0xeacd;
-var REACT_CONTEXT_TYPE = hasSymbol ? Symbol.for('react.context') : 0xeace; // TODO: We don't use AsyncMode or ConcurrentMode anymore. They were temporary
-// (unstable) APIs that have been removed. Can we remove the symbols?
-
-var REACT_ASYNC_MODE_TYPE = hasSymbol ? Symbol.for('react.async_mode') : 0xeacf;
-var REACT_CONCURRENT_MODE_TYPE = hasSymbol ? Symbol.for('react.concurrent_mode') : 0xeacf;
-var REACT_FORWARD_REF_TYPE = hasSymbol ? Symbol.for('react.forward_ref') : 0xead0;
-var REACT_SUSPENSE_TYPE = hasSymbol ? Symbol.for('react.suspense') : 0xead1;
-var REACT_SUSPENSE_LIST_TYPE = hasSymbol ? Symbol.for('react.suspense_list') : 0xead8;
-var REACT_MEMO_TYPE = hasSymbol ? Symbol.for('react.memo') : 0xead3;
-var REACT_LAZY_TYPE = hasSymbol ? Symbol.for('react.lazy') : 0xead4;
-var REACT_BLOCK_TYPE = hasSymbol ? Symbol.for('react.block') : 0xead9;
-var REACT_FUNDAMENTAL_TYPE = hasSymbol ? Symbol.for('react.fundamental') : 0xead5;
-var REACT_RESPONDER_TYPE = hasSymbol ? Symbol.for('react.responder') : 0xead6;
-var REACT_SCOPE_TYPE = hasSymbol ? Symbol.for('react.scope') : 0xead7;
-
-function isValidElementType(type) {
-  return typeof type === 'string' || typeof type === 'function' || // Note: its typeof might be other than 'symbol' or 'number' if it's a polyfill.
-  type === REACT_FRAGMENT_TYPE || type === REACT_CONCURRENT_MODE_TYPE || type === REACT_PROFILER_TYPE || type === REACT_STRICT_MODE_TYPE || type === REACT_SUSPENSE_TYPE || type === REACT_SUSPENSE_LIST_TYPE || typeof type === 'object' && type !== null && (type.$$typeof === REACT_LAZY_TYPE || type.$$typeof === REACT_MEMO_TYPE || type.$$typeof === REACT_PROVIDER_TYPE || type.$$typeof === REACT_CONTEXT_TYPE || type.$$typeof === REACT_FORWARD_REF_TYPE || type.$$typeof === REACT_FUNDAMENTAL_TYPE || type.$$typeof === REACT_RESPONDER_TYPE || type.$$typeof === REACT_SCOPE_TYPE || type.$$typeof === REACT_BLOCK_TYPE);
-}
-
-function typeOf(object) {
-  if (typeof object === 'object' && object !== null) {
-    var $$typeof = object.$$typeof;
-
-    switch ($$typeof) {
-      case REACT_ELEMENT_TYPE:
-        var type = object.type;
-
-        switch (type) {
-          case REACT_ASYNC_MODE_TYPE:
-          case REACT_CONCURRENT_MODE_TYPE:
-          case REACT_FRAGMENT_TYPE:
-          case REACT_PROFILER_TYPE:
-          case REACT_STRICT_MODE_TYPE:
-          case REACT_SUSPENSE_TYPE:
-            return type;
-
-          default:
-            var $$typeofType = type && type.$$typeof;
-
-            switch ($$typeofType) {
-              case REACT_CONTEXT_TYPE:
-              case REACT_FORWARD_REF_TYPE:
-              case REACT_LAZY_TYPE:
-              case REACT_MEMO_TYPE:
-              case REACT_PROVIDER_TYPE:
-                return $$typeofType;
-
-              default:
-                return $$typeof;
-            }
-
-        }
-
-      case REACT_PORTAL_TYPE:
-        return $$typeof;
-    }
-  }
-
-  return undefined;
-} // AsyncMode is deprecated along with isAsyncMode
-
-var AsyncMode = REACT_ASYNC_MODE_TYPE;
-var ConcurrentMode = REACT_CONCURRENT_MODE_TYPE;
-var ContextConsumer = REACT_CONTEXT_TYPE;
-var ContextProvider = REACT_PROVIDER_TYPE;
-var Element = REACT_ELEMENT_TYPE;
-var ForwardRef = REACT_FORWARD_REF_TYPE;
-var Fragment = REACT_FRAGMENT_TYPE;
-var Lazy = REACT_LAZY_TYPE;
-var Memo = REACT_MEMO_TYPE;
-var Portal = REACT_PORTAL_TYPE;
-var Profiler = REACT_PROFILER_TYPE;
-var StrictMode = REACT_STRICT_MODE_TYPE;
-var Suspense = REACT_SUSPENSE_TYPE;
-var hasWarnedAboutDeprecatedIsAsyncMode = false; // AsyncMode should be deprecated
-
-function isAsyncMode(object) {
-  {
-    if (!hasWarnedAboutDeprecatedIsAsyncMode) {
-      hasWarnedAboutDeprecatedIsAsyncMode = true; // Using console['warn'] to evade Babel and ESLint
-
-      console['warn']('The ReactIs.isAsyncMode() alias has been deprecated, ' + 'and will be removed in React 17+. Update your code to use ' + 'ReactIs.isConcurrentMode() instead. It has the exact same API.');
-    }
-  }
-
-  return isConcurrentMode(object) || typeOf(object) === REACT_ASYNC_MODE_TYPE;
-}
-function isConcurrentMode(object) {
-  return typeOf(object) === REACT_CONCURRENT_MODE_TYPE;
-}
-function isContextConsumer(object) {
-  return typeOf(object) === REACT_CONTEXT_TYPE;
-}
-function isContextProvider(object) {
-  return typeOf(object) === REACT_PROVIDER_TYPE;
-}
-function isElement(object) {
-  return typeof object === 'object' && object !== null && object.$$typeof === REACT_ELEMENT_TYPE;
-}
-function isForwardRef(object) {
-  return typeOf(object) === REACT_FORWARD_REF_TYPE;
-}
-function isFragment(object) {
-  return typeOf(object) === REACT_FRAGMENT_TYPE;
-}
-function isLazy(object) {
-  return typeOf(object) === REACT_LAZY_TYPE;
-}
-function isMemo(object) {
-  return typeOf(object) === REACT_MEMO_TYPE;
-}
-function isPortal(object) {
-  return typeOf(object) === REACT_PORTAL_TYPE;
-}
-function isProfiler(object) {
-  return typeOf(object) === REACT_PROFILER_TYPE;
-}
-function isStrictMode(object) {
-  return typeOf(object) === REACT_STRICT_MODE_TYPE;
-}
-function isSuspense(object) {
-  return typeOf(object) === REACT_SUSPENSE_TYPE;
-}
-
-exports.AsyncMode = AsyncMode;
-exports.ConcurrentMode = ConcurrentMode;
-exports.ContextConsumer = ContextConsumer;
-exports.ContextProvider = ContextProvider;
-exports.Element = Element;
-exports.ForwardRef = ForwardRef;
-exports.Fragment = Fragment;
-exports.Lazy = Lazy;
-exports.Memo = Memo;
-exports.Portal = Portal;
-exports.Profiler = Profiler;
-exports.StrictMode = StrictMode;
-exports.Suspense = Suspense;
-exports.isAsyncMode = isAsyncMode;
-exports.isConcurrentMode = isConcurrentMode;
-exports.isContextConsumer = isContextConsumer;
-exports.isContextProvider = isContextProvider;
-exports.isElement = isElement;
-exports.isForwardRef = isForwardRef;
-exports.isFragment = isFragment;
-exports.isLazy = isLazy;
-exports.isMemo = isMemo;
-exports.isPortal = isPortal;
-exports.isProfiler = isProfiler;
-exports.isStrictMode = isStrictMode;
-exports.isSuspense = isSuspense;
-exports.isValidElementType = isValidElementType;
-exports.typeOf = typeOf;
-  })();
-}
-
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9saWxhY3QuanN4Iiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9saWxhY3QuanN4Il0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLEFBQUE7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Q0ErQkM7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7UUFrQ087OztRQUdBOzs7Ozs7Ozs7Ozs7O1FBYUE7OztDQUdQOzs7Ozs7OztDQVFBOzs7O0VBSUM7Ozs7aUJBSWU7O0VBRWY7Ozs7Ozs7Ozs7Ozs7Ozs7OztFQWtCQTs7Ozs7Ozs7OzswQkFVd0Isb0JBQXFCLE1BQU07bUJBQ2pDOzs7d0JBSUksU0FBVSxPQUFPOzBCQUNkOzs7YUFLZDthQUNBIn0=
 
 /***/ }),
 
@@ -10000,7 +9996,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   run: () => (/* binding */ run),
 /* harmony export */   runScripts: () => (/* binding */ runScripts)
 /* harmony export */ });
-/* harmony import */ var _lilact_jsx__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./lilact.jsx */ 241);
+/* harmony import */ var _lilact_jsx__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./lilact.jsx */ 451);
 /*
 
 	Lilact
@@ -10549,7 +10545,7 @@ module.exports = ReactPropTypesSecret;
 /******/ // startup
 /******/ // Load entry module and return exports
 /******/ // This entry module is referenced by other modules so it can't be inlined
-/******/ var __webpack_exports__ = __webpack_require__(241);
+/******/ var __webpack_exports__ = __webpack_require__(451);
 /******/ const __webpack_exports__CSSTransition = __webpack_exports__.CSSTransition;
 /******/ const __webpack_exports__Children = __webpack_exports__.Children;
 /******/ const __webpack_exports__Component = __webpack_exports__.Component;
