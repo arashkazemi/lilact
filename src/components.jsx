@@ -408,7 +408,11 @@ class ComponentCore
 				}
 				else if(al==='style') {
 					for(const x in patch[a]) {
-						if(isFinite(patch[a][x])) patch[a][x]+='px';
+						if( Lilact.length_css_attributes_set.has(x) ) {
+							if(isFinite(patch[a][x])) {
+								patch[a][x]+='px';
+							}
+						}
 					}
 					Object.assign(this.element.style, patch[a]);
 				}

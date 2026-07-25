@@ -12,7 +12,7 @@ module.exports = function Demo() {
       </button>
       <button onClick={() => ref.current?.setPosition(0.5)}>Center</button>
 
-      <div  style={{ height: "calc(100% - 2em)", width: "100% - 2em", border: "1px solid" }}>
+      <div  style={{ height: "calc(100% - 2em)", width: "calc(100% - 2em)", border: "1px solid" }}>
         <ResizablePane
           ref={ref}
           mode={mode}

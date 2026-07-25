@@ -51,7 +51,7 @@ function Demo()
         {chs}
       </CSSTransition>
 
-      <button ref={nodeRef} className="test" onClick={() => setInProp(!inProp)}>
+      <button ref={nodeRef} onClick={() => setInProp(!inProp)}>
         Click to {inProp?" OUT":" IN"}
       </button>
 
