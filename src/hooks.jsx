@@ -90,11 +90,10 @@ export function useCallback(callback, deps=undefined)
 
 	const hk = Lilact.useHook();
 
-	if( Lilact.isEmpty(hk) ) {
-		hk.callback = callback;
-	}
-	else {
-		if(deps!==undefined && hk?.deps!==undefined && Lilact.shallowEqual(deps, hk.deps)) return hk.callback;
+	if( !Lilact.isEmpty(hk) ) {
+		if(deps!==undefined && hk?.deps!==undefined && Lilact.shallowEqual(deps, hk.deps)) {
+			return hk.callback;
+		}
 	}
 
 	if(hk?.cleanup) {
@@ -102,6 +101,7 @@ export function useCallback(callback, deps=undefined)
 	}
 
 	hk.deps = deps;
+	hk.callback = callback;
 
 	return hk.callback;
 }
@@ -334,11 +334,13 @@ export function useMemo(factory,deps=undefined)
 	const hk = Lilact.useHook();
 
 	if( !Lilact.isEmpty(hk) ) {
-		if(deps!==undefined && hk?.deps!==undefined && Lilact.shallowEqual(deps, hk.deps)) return hk.value;
+		if(deps!==undefined && hk?.deps!==undefined && Lilact.shallowEqual(deps, hk.deps)) {
+			return hk.value;
+		}
 	}
 
 	hk.deps = deps;
-	hk.value = factory(hk.value);
+	hk.value = factory();
 
 	return hk.value;
 }

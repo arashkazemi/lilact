@@ -99,7 +99,7 @@ export const Lilact =
 	// Configuration
 
 	defaultTransitionTimeout: 300,
-	defaultIsEqual: Object.is, // note: `Lilact.shallowEqual` and `Lilact.deepEqual` are also available, 
+	defaultIsEqual: misc.shallowEqual,
 								  					 // user can set it in your initializer code, and can be changed later too.
 	
 	// Units 

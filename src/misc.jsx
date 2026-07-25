@@ -361,7 +361,7 @@ export let layout_effects = new Set;
 
 /** @ignore */
 export const special_attributes = new Set([
-		"classname", "classname", "ref", "action", "lilact_jsx_loc", "children", "key",
+		"classname", "ref", "action", "lilact_jsx_loc", "children", "key",
 		"defaultvalue", "defaultchecked"
 	]);
 
