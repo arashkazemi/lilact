@@ -29,7 +29,7 @@ If you find Lilact useful, please consider sponsoring. Your support funds ongoin
 
 ## Overview
 
-`Lilact` is a very lightweight implementation of the React API designed to run in the browser. It can be used as a single script that is around `80kb` minified and around `27kb` gzipped, and includes its whole API.
+`Lilact` is a very lightweight implementation of the React API designed to run in the browser. It can be used as a single script that is around `98kb` minified and around `32kb` gzipped, and includes its whole API.
 
 `Lilact` is very fast, uses minimal resources, and handles memory very efficiently.
 
@@ -66,7 +66,8 @@ For convenience, it already includes components such as:
 and helper components like:
 
 - `Spinner`
-- `ResizablePane`
+- `SplitPane`
+- `DragHandle`
 
 It also includes a specific timeout implementation that can be paused and resumed at will. `Lilact`’s `Suspense` includes additional features beyond the standard API.
 

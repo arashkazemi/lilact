@@ -63,7 +63,7 @@ import * as misc from './misc.jsx';
 import * as errors from './errors.jsx';
 import * as router from './router.jsx';
 import * as accessories from './accessories.jsx';
-import {ResizablePane} from './pane.jsx';
+import {SplitPane} from './pane.jsx';
 import {transpileJSX, transpilerConfig} from "./jsx";
 
 
@@ -80,7 +80,7 @@ export * from './misc.jsx';
 export * from './errors.jsx';
 export * from './router.jsx';
 export * from './accessories.jsx';
-export {ResizablePane} from './pane.jsx';
+export {SplitPane} from './pane.jsx';
 export {transpileJSX, transpilerConfig} from "./jsx";
 
 
@@ -94,7 +94,7 @@ export {transpileJSX, transpilerConfig} from "./jsx";
 export const Lilact = 
 {	
 
-	VERSION: "beta.11",
+	VERSION: "beta.13",
 	
 	// Configuration
 
@@ -117,7 +117,7 @@ export const Lilact =
 	...router,
 	...accessories,
 
-	ResizablePane,
+	SplitPane,
 
 	transpileJSX,
 	transpilerConfig,

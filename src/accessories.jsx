@@ -31,6 +31,9 @@
 import {isThenable} from "./misc.jsx"
 import {setTimeout, clearTimeout} from "./timers.jsx"
 import {Component} from "./components.jsx"
+import {useRef, useState, useCallback} from './hooks.jsx'
+import {emotion} from "./lilact.jsx"
+const {css,cx} = emotion;
 
 /**
  * A CSS-only loading spinner component.
@@ -282,5 +285,120 @@ export class Suspense extends Component
 		}
 		return <>{this.props.children}</>;
 	}
+}
+
+/**
+ * DragHandle - helper component to wire up drag interactions.
+ *
+ * This component does not implement dragging/movement itself. Instead, it listens
+ * for drag gesture updates and delegates them to the provided callbacks.
+ *
+ * @param onDelta - Called when the drag position changes. Receives the delta as
+ * `{ x, y, data }`.
+ * @param onStart - Called when the drag begins. Receives the provided `data`.
+ * @param onEnd - Called when the drag finishes or is cancelled.
+ * Receives `(event, data)` where `event` is either `"up"` (completed) or `"cancel"`.
+ * @param data - Arbitrary user data passed back to callbacks.
+ * @param style - Optional style applied to the rendered wrapper.
+ * @param className - Optional CSS class applied to the rendered wrapper.
+ * @param children - Content to render inside the drag handle.
+ */
+export function DragHandle({
+	onDelta,
+	onStart,
+	onEnd,
+	style,
+	className,
+	children,
+	data
+}) {
+	const activePointerIdRef = useRef(null);
+	const startClientXRef = useRef(0);
+	const startClientYRef = useRef(0);
+	const lastClientXRef = useRef(0);
+	const lastClientYRef = useRef(0);
+	const draggingRef = useRef(false);
+
+	const [isDragging, setIsDragging] = useState(false);
+
+	const resetDrag = useCallback(() => {
+		activePointerIdRef.current = null;
+		draggingRef.current = false;
+		startClientXRef.current = 0;
+		startClientYRef.current = 0;
+		lastClientXRef.current = 0;
+		lastClientYRef.current = 0;
+		setIsDragging(false);
+	}, []);
+
+	const computeDeltaFromStart = useCallback((clientX, clientY) => {
+		const dx = clientX - startClientXRef.current;
+		const dy = clientY - startClientYRef.current;
+		return { dx, dy };
+	}, []);
+
+	const endDrag = useCallback((reason = "up") => {
+		if (!draggingRef.current) return;
+		onEnd?.(reason);
+		resetDrag();
+	}, [onEnd, resetDrag]);
+
+	const onPointerDown = useCallback((e) => {
+		// todo: only left mouse / primary touch, should other buttons be supported too? 
+		if (e.button != null && e.button !== 0) return;
+
+		draggingRef.current = true;
+		activePointerIdRef.current = e.pointerId;
+
+		startClientXRef.current = e.clientX;
+		startClientYRef.current = e.clientY;
+		lastClientXRef.current = e.clientX;
+		lastClientYRef.current = e.clientY;
+
+		setIsDragging(true);
+		onStart?.(data);
+
+		try {
+			e.currentTarget.setPointerCapture(e.pointerId);
+		} catch {
+			// ignore if unsupported
+		}
+	}, [onStart]);
+
+	const onPointerMove = useCallback((e) => {
+		if (!draggingRef.current) return;
+		if (activePointerIdRef.current !== e.pointerId) return;
+
+		const { dx, dy } = computeDeltaFromStart(e.clientX, e.clientY);
+		onDelta?.(dx, dy, data);
+
+		lastClientXRef.current = e.clientX;
+		lastClientYRef.current = e.clientY;
+	}, [computeDeltaFromStart, onDelta]);
+
+	const onPointerUp = useCallback((e) => {
+		if (activePointerIdRef.current !== e.pointerId) return;
+		endDrag("up", data);
+	}, [endDrag]);
+
+	const onPointerCancel = useCallback((e) => {
+		if (activePointerIdRef.current !== e.pointerId) return;
+		endDrag("cancel", data);
+	}, [endDrag]);
+
+	return (
+		<div
+			role="button"
+			tabIndex={0}
+			style={{ ...style, touchAction: "none" }}
+			className={cx(className, isDragging?"dragging":"")}
+			onPointerDown={onPointerDown}
+			onPointerMove={onPointerMove}
+			onPointerUp={onPointerUp}
+			onPointerCancel={onPointerCancel}
+		>
+			{children}
+		</div>
+	);
 }
 

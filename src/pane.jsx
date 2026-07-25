@@ -48,9 +48,9 @@ const clamp = (n, min, max) => {
  *
  * @example
  * ```tsx
- * const ref = useRef<ResizablePaneHandle>(null);
+ * const ref = useRef<SplitPaneHandle>(null);
  *
- * <ResizablePane
+ * <SplitPane
  *   ref={ref}
  *   mode="horizontal"
  *   defaultPosition={0.5}
@@ -59,10 +59,10 @@ const clamp = (n, min, max) => {
  *   onSizeChange={(pos) => console.log(pos)}
  * >
  *   <div /> <div />
- * </ResizablePane>
+ * </SplitPane>
  * ```
  */
-export const ResizablePane = forwardRef(function ResizablePane(
+export const SplitPane = forwardRef(function SplitPane(
   {
     mode = "horizontal",
     position, // controlled: number | undefined/null

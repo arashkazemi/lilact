@@ -195,11 +195,22 @@ class ComponentCore
 
 
 			if(next_props.ref) {
-				if(this.element) {
-					next_props.ref.current = this.element;
+				if(typeof(next_props.ref)==='function') {
+					if(this.element) {
+						next_props.ref(this.element);
+					}
+					else {
+						next_props.ref(this.component);
+					}
+
 				}
 				else {
-					next_props.ref.current = this.component;
+					if(this.element) {
+						next_props.ref.current = this.element;
+					}
+					else {
+						next_props.ref.current = this.component;
+					}		
 				}
 			}
 
@@ -311,7 +322,16 @@ class ComponentCore
 	{
 		try {
 			const promises = [];
-	
+			
+			if(this.props?.ref) {
+				if(typeof(this.props.ref)==='function') {
+					this.props.ref(null);
+				}
+				else {
+					this.props.current = null;
+				}
+			}
+
 			if(this.component.componentWillUnmount) {
 				this.component.componentWillUnmount();
 			}

@@ -1,4 +1,4 @@
-const { useRef, useState, ResizablePane } = Lilact;
+const { useRef, useState, SplitPane } = Lilact;
 
 module.exports = function Demo() {
   const ref = useRef(null);
@@ -13,7 +13,7 @@ module.exports = function Demo() {
       <button onClick={() => ref.current?.setPosition(0.5)}>Center</button>
 
       <div  style={{ height: "calc(100% - 2em)", width: "calc(100% - 2em)", border: "1px solid" }}>
-        <ResizablePane
+        <SplitPane
           ref={ref}
           mode={mode}
           position={position}
@@ -24,7 +24,7 @@ module.exports = function Demo() {
         >
           <div style={{ padding: 12 }}>Left/Top</div>
           <div style={{ padding: 12 }}>Right/Bottom</div>
-        </ResizablePane>
+        </SplitPane>
       </div>
     </>
   );

@@ -1389,6 +1389,7 @@ __webpack_require__.d(__webpack_exports__, {
   CSSTransition: () => (/* reexport */ CSSTransition),
   Children: () => (/* reexport */ Children),
   Component: () => (/* reexport */ Component),
+  DragHandle: () => (/* reexport */ DragHandle),
   ErrorBoundary: () => (/* reexport */ ErrorBoundary),
   Fragment: () => (/* reexport */ misc_Fragment),
   HTMLComponent: () => (/* reexport */ HTMLComponent),
@@ -1398,11 +1399,11 @@ __webpack_require__.d(__webpack_exports__, {
   NavLink: () => (/* reexport */ NavLink),
   PropTypes: () => (/* reexport */ (prop_types_default())),
   Provider: () => (/* reexport */ Provider),
-  ResizablePane: () => (/* reexport */ ResizablePane),
   RootComponent: () => (/* reexport */ RootComponent),
   Route: () => (/* reexport */ Route),
   Routes: () => (/* reexport */ Routes),
   Spinner: () => (/* reexport */ Spinner),
+  SplitPane: () => (/* reexport */ SplitPane),
   Suspense: () => (/* reexport */ Suspense),
   SwitchTransition: () => (/* reexport */ SwitchTransition),
   Transition: () => (/* reexport */ Transition),
@@ -1670,6 +1671,7 @@ __webpack_require__.d(router_namespaceObject, {
 var accessories_namespaceObject = {};
 __webpack_require__.r(accessories_namespaceObject);
 __webpack_require__.d(accessories_namespaceObject, {
+  DragHandle: () => (DragHandle),
   ErrorBoundary: () => (ErrorBoundary),
   Spinner: () => (Spinner),
   Suspense: () => (Suspense)
@@ -4963,11 +4965,22 @@ class ComponentCore
 
 
 			if(next_props.ref) {
-				if(this.element) {
-					next_props.ref.current = this.element;
+				if(typeof(next_props.ref)==='function') {
+					if(this.element) {
+						next_props.ref(this.element);
+					}
+					else {
+						next_props.ref(this.component);
+					}
+
 				}
 				else {
-					next_props.ref.current = this.component;
+					if(this.element) {
+						next_props.ref.current = this.element;
+					}
+					else {
+						next_props.ref.current = this.component;
+					}		
 				}
 			}
 
@@ -5079,7 +5092,16 @@ class ComponentCore
 	{
 		try {
 			const promises = [];
-	
+			
+			if(this.props?.ref) {
+				if(typeof(this.props.ref)==='function') {
+					this.props.ref(null);
+				}
+				else {
+					this.props.current = null;
+				}
+			}
+
 			if(this.component.componentWillUnmount) {
 				this.component.componentWillUnmount();
 			}
@@ -5872,7 +5894,7 @@ function render(component, element)
 /** @ignore */
 const createElement = components_createComponent;
 
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9jb21wb25lbnRzLmpzeCIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi9Vc2Vycy9hcmFzaC9EZXNrdG9wL1Byb2plY3RzL0xpbGFjdC9zcmMvY29tcG9uZW50cy5qc3giXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsQUFBQTs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0NBOEJDOztRQUVPOztDQUVQOzs7Ozs7Q0FNQTs7Ozs7O2FBTVk7RUFDWDs7OztNQUlJO0VBQ0o7O2tDQUVnQzs7S0FFN0IsZ0NBQWdDOzs7OzJCQUlWO01BQ3JCLG1CQUFtQjtjQUNYOztTQUVMOztxQkFFWTs7OztRQUliO3lCQUNpQjs7MkJBRUU7TUFDckIsbUJBQW1CO2NBQ1g7O1NBRUw7O3FCQUVZOzs7O01BSWY7Ozs7OztRQU1FO0VBQ047MkJBQ3lCLENBQUUsT0FBTztZQUN2QixrQkFBbUIsQUFBRCxNQUFPO0tBQy9CLHVCQUF1Qjs7Ozs7Ozs7OztDQVU3Qjs7Ozs7Ozs7Ozs7Ozs7Ozs7O0NBa0JBO0VBQ0M7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OzthQTJCVztFQUNYOzt5QkFFdUI7OztPQUdsQjtFQUNMO0dBQ0M7O0dBRUE7R0FDQTtHQUNBO0dBQ0E7O0dBRUEsb0JBQW9COztNQUdqQix5QkFBeUI7b0NBQ0s7O1dBRXpCLDRCQUE0QjtvQ0FDSDs7O01BSTlCLE1BQU8sbURBQWtEOztNQUV6RCwwQ0FBMEM7a0JBQzlCOzs7TUFHWjs7S0FFQTs7O01BR0EsT0FBUSw0QkFBMkI7T0FDbEMsQ0FBRSxvQ0FBbUM7MkNBQ0Q7UUFDbkMsc0RBQXNELCtCQUErQjtRQUNyRjs7Ozs7O01BTUYsaUJBQWlCO09BQ2hCLGVBQWU7OztVQUdaOzs7OztNQUtKLHFFQUFxRTs2Q0FDOUI7OztNQUd2QyxxQ0FBcUM7dUNBQ0o7Ozs7O01BS2pDLGVBQWU7NEJBQ087Ozs7TUFJdEIsb0NBQW9DO09BQ25DLDJC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
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9jb21wb25lbnRzLmpzeCIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi9Vc2Vycy9hcmFzaC9EZXNrdG9wL1Byb2plY3RzL0xpbGFjdC9zcmMvY29tcG9uZW50cy5qc3giXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsQUFBQTs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0NBOEJDOztRQUVPOztDQUVQOzs7Ozs7Q0FNQTs7Ozs7O2FBTVk7RUFDWDs7OztNQUlJO0VBQ0o7O2tDQUVnQzs7S0FFN0IsZ0NBQWdDOzs7OzJCQUlWO01BQ3JCLG1CQUFtQjtjQUNYOztTQUVMOztxQkFFWTs7OztRQUliO3lCQUNpQjs7MkJBRUU7TUFDckIsbUJBQW1CO2NBQ1g7O1NBRUw7O3FCQUVZOzs7O01BSWY7Ozs7OztRQU1FO0VBQ047MkJBQ3lCLENBQUUsT0FBTztZQUN2QixrQkFBbUIsQUFBRCxNQUFPO0tBQy9CLHVCQUF1Qjs7Ozs7Ozs7OztDQVU3Qjs7Ozs7Ozs7Ozs7Ozs7Ozs7O0NBa0JBO0VBQ0M7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OzthQTJCVztFQUNYOzt5QkFFdUI7OztPQUdsQjtFQUNMO0dBQ0M7O0dBRUE7R0FDQTtHQUNBO0dBQ0E7O0dBRUEsb0JBQW9COztNQUdqQix5QkFBeUI7b0NBQ0s7O1dBRXpCLDRCQUE0QjtvQ0FDSDs7O01BSTlCLE1BQU8sbURBQWtEOztNQUV6RCwwQ0FBMEM7a0JBQzlCOzs7TUFHWjs7S0FFQTs7O01BR0EsT0FBUSw0QkFBMkI7T0FDbEMsQ0FBRSxvQ0FBbUM7MkNBQ0Q7UUFDbkMsc0RBQXNELCtCQUErQjtRQUNyRjs7Ozs7O01BTUYsaUJBQWlCO09BQ2hCLE1BQU8sZ0NBQStCO1FBQ3JDLGVBQWU7cUJBQ0Y7O1dBRVY7cUJBQ1U7Ozs7VUFJWDtRQUNGLGVBQWU7OztXQUdaOzs7Ozs7TUFNTCxxRUFBcUU7NkNBQzlCOzs7TUFHdkMscUNB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
 ;// ./src/hooks.jsx
 /*
 
@@ -8225,6 +8247,9 @@ function Routes({ children }) {
 
 
 
+
+const {css: accessories_css,cx: accessories_cx} = emotion_css_development_esm_namespaceObject;
+
 /**
  * A CSS-only loading spinner component.
  * 
@@ -8467,9 +8492,113 @@ class Suspense extends Component
 	}
 }
 
+/**
+ * DragHandle - helper component to wire up drag interactions.
+ *
+ * This component does not implement dragging/movement itself. Instead, it listens
+ * for drag gesture updates and delegates them to the provided callbacks.
+ *
+ * @param onDelta - Called when the drag position changes. Receives the delta as
+ * `{ x, y, data }`.
+ * @param onStart - Called when the drag begins. Receives the provided `data`.
+ * @param onEnd - Called when the drag finishes or is cancelled.
+ * Receives `(event, data)` where `event` is either `"up"` (completed) or `"cancel"`.
+ * @param data - Arbitrary user data passed back to callbacks.
+ * @param style - Optional style applied to the rendered wrapper.
+ * @param className - Optional CSS class applied to the rendered wrapper.
+ * @param children - Content to render inside the drag handle.
+ */
+function DragHandle({
+	onDelta,
+	onStart,
+	onEnd,
+	style,
+	className,
+	children,
+	data
+}) {
+	const activePointerIdRef = useRef(null);
+	const startClientXRef = useRef(0);
+	const startClientYRef = useRef(0);
+	const lastClientXRef = useRef(0);
+	const lastClientYRef = useRef(0);
+	const draggingRef = useRef(false);
+
+	const [isDragging, setIsDragging] = useState(false);
+
+	const resetDrag = useCallback(() => {
+		activePointerIdRef.current = null;
+		draggingRef.current = false;
+		startClientXRef.current = 0;
+		startClientYRef.current = 0;
+		lastClientXRef.current = 0;
+		lastClientYRef.current = 0;
+		setIsDragging(false);
+	}, []);
+
+	const computeDeltaFromStart = useCallback((clientX, clientY) => {
+		const dx = clientX - startClientXRef.current;
+		const dy = clientY - startClientYRef.current;
+		return { dx, dy };
+	}, []);
+
+	const endDrag = useCallback((reason = "up") => {
+		if (!draggingRef.current) return;
+		onEnd?.(reason);
+		resetDrag();
+	}, [onEnd, resetDrag]);
+
+	const onPointerDown = useCallback((e) => {
+		// todo: only left mouse / primary touch, should other buttons be supported too? 
+		if (e.button != null && e.button !== 0) return;
+
+		draggingRef.current = true;
+		activePointerIdRef.current = e.pointerId;
+
+		startClientXRef.current = e.clientX;
+		startClientYRef.current = e.clientY;
+		lastClientXRef.current = e.clientX;
+		lastClientYRef.current = e.clientY;
+
+		setIsDragging(true);
+		onStart?.(data);
+
+		try {
+			e.currentTarget.setPointerCapture(e.pointerId);
+		} catch {
+			// ignore if unsupported
+		}
+	}, [onStart]);
+
+	const onPointerMove = useCallback((e) => {
+		if (!draggingRef.current) return;
+		if (activePointerIdRef.current !== e.pointerId) return;
+
+		const { dx, dy } = computeDeltaFromStart(e.clientX, e.clientY);
+		onDelta?.(dx, dy, data);
+
+		lastClientXRef.current = e.clientX;
+		lastClientYRef.current = e.clientY;
+	}, [computeDeltaFromStart, onDelta]);
+
+	const onPointerUp = useCallback((e) => {
+		if (activePointerIdRef.current !== e.pointerId) return;
+		endDrag("up", data);
+	}, [endDrag]);
+
+	const onPointerCancel = useCallback((e) => {
+		if (activePointerIdRef.current !== e.pointerId) return;
+		endDrag("cancel", data);
+	}, [endDrag]);
+
+	return (
+		 createComponent( "div", { "role": "button", "tabIndex": 0, "style": { ...style, touchAction: "none" }, "className": accessories_cx(className, isDragging?"dragging":""), "onPointerDown": onPointerDown, "onPointerMove": onPointerMove, "onPointerUp": onPointerUp, "onPointerCancel": onPointerCancel }, children )
+	);
+}
 
 
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9hY2Nlc3Nvcmllcy5qc3giLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIvVXNlcnMvYXJhc2gvRGVza3RvcC9Qcm9qZWN0cy9MaWxhY3Qvc3JjL2FjY2Vzc29yaWVzLmpzeCJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSxBQUFBOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7UUE4QlE7UUFDQTtRQUNBOztDQUVQOzs7Ozs7Ozs7Ozs7O3dCQWF3QixBQUFEOzs7Ozs7O0lBT3BCO3FCQUNpQjs7VUFFWDtJQUNMOzs7Ozs7eUJBWUU7Ozs7Ozs7cUJBV0EsRUFBTzs7Ozs7Ozs7O0NBU2I7Ozs7Ozs7Ozs7OzhDQVc2Qzs7O1VBR3BDOztpQ0FFdUIsUUFBUTtVQUMvQjs7O21CQUdTLGNBQWM7U0FDeEI7T0FDRixLQUFLLGlCQUFpQix1QkFBdUIsSUFBSSxlQUFlOzs7VUFHN0QsbUJBQW9CLEFBQUQ7O1FBRXJCLEdBQUc7U0FDRjtNQUNILDZCQUE2Qjs7Ozs7O0NBTWxDOzs7Ozs7Ozs7Ozs7Q0FZQTs7O3dCQUd1Qjs7YUFFWCxRQUFROztRQUViO0NBQ1A7Z0JBQ2U7O0NBRWY7MEJBQ3lCOztDQUV6Qjs7Q0FFQTs7Q0FFQTs7OztDQUlBO2lDQUNnQyxRQUFRO01BQ25DLGlCQUFrQixVQUFTO0lBQzdCOzs7R0FHRDs7OztDQUlGO21CQUNrQixRQUFRO01BQ3JCLGtCQUFtQjs7OztNQUluQixpQkFBa0I7O0dBRXJCO29CQUNpQjs7R0FFakI7TUFDRywyQkFBMkI7MEJBQ1A7SUFDdEI7T0FDRyxtQkFBbUI7d0JBQ0Y7Ozt3Q0FHaUIsQUFBRCxNQUFPOztvQ0FFVjtpQkFDbEIsQUFBRDs7Ozs7Q0FLakI7c0JBQ3FCLEdBQUc7b0JBQ0w7c0JBQ0U7OztDQUdyQjtjQUNhLEdBQUc7TUFDWCxtQkFBbUI7dUJBQ0Y7OztNQUdqQixxQkFBcUI7dUJBQ0o7Ozs7O0NBS3RCO2dCQUNlLFVBQVU7TUFDcEIsaUJBQWtCO29CQUNKOztNQUVkLDJCQUEyQjswQkFDUDtPQUNuQixtQkFBbUI7d0JBQ0Y7Ozt3Q0FHaUIsQUFBRCxNQUFPOztvQ0FFVjtpQkFDbEIsQUFBRDs7OztHQUlmO3FCQUNrQixNQUFNO09BQ3BCLGlCQUFrQixZQUFXO3lCQUNYOztJQUVyQjtPQUNHLDJCQUEyQjtLQUM3QjtRQUNHLG1CQUFtQjt5QkFDRjs7TUFFbkI7bUJBQ2MsQUFBRDs7OztLQUlkOzZCQUN3QixLQUFLOytCQUNIOztRQUV2QixrQkFBa0I7bUJBQ04sQUFBRDtZQUNQO1NBQ0gscUJBQXFCOzBCQUNKOzs7NENBR21CLEFBQUQsTUFBTzs7bUJBRTlCLEFBQUQ7Ozs7OztHQU1qQjtlQUNZOzs7Q0FHZDttQkFDa0IsY0FBYztNQUMzQixrQkFBbUI7c0JBQ0g7OztDQUdyQjtRQUNPLEdBQUc7TUFDTCw2QkFBNkI7V0FDeEIsRUFBRTs7VUFFSCxFQUFFIn0=
+
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9hY2Nlc3Nvcmllcy5qc3giLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIvVXNlcnMvYXJhc2gvRGVza3RvcC9Qcm9qZWN0cy9MaWxhY3Qvc3JjL2FjY2Vzc29yaWVzLmpzeCJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSxBQUFBOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7UUE4QlE7UUFDQTtRQUNBO1FBQ0E7UUFDQTtPQUNEOztDQUVOOzs7Ozs7Ozs7Ozs7O3dCQWF3QixBQUFEOzs7Ozs7O0lBT3BCO3FCQUNpQjs7VUFFWDtJQUNMOzs7Ozs7eUJBWUU7Ozs7Ozs7cUJBV0EsRUFBTzs7Ozs7Ozs7O0NBU2I7Ozs7Ozs7Ozs7OzhDQVc2Qzs7O1VBR3BDOztpQ0FFdUIsUUFBUTtVQUMvQjs7O21CQUdTLGNBQWM7U0FDeEI7T0FDRixLQUFLLGlCQUFpQix1QkFBdUIsSUFBSSxlQUFlOzs7VUFHN0QsbUJBQW9CLEFBQUQ7O1FBRXJCLEdBQUc7U0FDRjtNQUNILDZCQUE2Qjs7Ozs7O0NBTWxDOzs7Ozs7Ozs7Ozs7Q0FZQTs7O3dCQUd1Qjs7YUFFWCxRQUFROztRQUViO0NBQ1A7Z0JBQ2U7O0NBRWY7MEJBQ3lCOztDQUV6Qjs7Q0FFQTs7Q0FFQTs7OztDQUlBO2lDQUNnQyxRQUFRO01BQ25DLGlCQUFrQixVQUFTO0lBQzdCOzs7R0FHRDs7OztDQUlGO21CQUNrQixRQUFRO01BQ3JCLGtCQUFtQjs7OztNQUluQixpQkFBa0I7O0dBRXJCO29CQUNpQjs7R0FFakI7TUFDRywyQkFBMkI7MEJBQ1A7SUFDdEI7T0FDRyxtQkFBbUI7d0JBQ0Y7Ozt3Q0FHaUIsQUFBRCxNQUFPOztvQ0FFVjtpQkFDbEIsQUFBRDs7Ozs7Q0FLakI7c0JBQ3FCLEdBQUc7b0JBQ0w7c0JBQ0U7OztDQUdyQjtjQUNhLEdBQUc7TUFDWCxtQkFBbUI7dUJBQ0Y7OztNQUdqQixxQkFBcUI7dUJBQ0o7Ozs7O0NBS3RCO2dCQUNlLFVBQVU7TUFDcEIsaUJBQWtCO29CQUNKOztNQUVkLDJCQUEyQjswQkFDUDtPQUNuQixtQkFBbUI7d0JBQ0Y7Ozt3Q0FHaUIsQUFBRCxNQUFPOztvQ0FFVjtpQkFDbEIsQUFBRDs7OztHQUlmO3FCQUNrQixNQUFNO09BQ3BCLGlCQUFrQixZQUFXO3lCQUNYOztJQUVyQjtPQUNHLDJCQUEyQjtLQUM3QjtRQUNHLG1CQUFtQjt5QkFDRjs7TUFFbkI7bUJBQ2MsQUFBRDs7OztLQUlkOzZCQUN3QixLQUFLOytCQUNIOztRQUV2QixrQkFBa0I7bUJBQ04sQUFBRDtZQUNQO1NBQ0gscUJBQXFCOzBCQUNKOzs7NENBR21CLEFBQUQsTUFBTzs7bUJBRTlCLEFBQUQ7Ozs7OztHQU1qQjtlQUNZOzs7Q0FHZDttQkFDa0IsY0FBYztNQUMzQixrQkFBbUI7c0JBQ0g7OztDQUdyQjtRQUNPLEdBQUc7TUFDTCw2QkFBNkI7V0FDeEIsRUFBRTs7VUFFSCxFQUFFOzs7O0NBSVg7Ozs7Ozs7Ozs7Ozs7Ozs7MkJBZ0IyQixBQUFEOzs7Ozs7OztJQVF2QjttQ0FDK0I7Z0NBQ0g7Z0NBQ0E7K0JBQ0Q7K0JBQ0E7NEJBQ0g7OzhDQUVrQjs7K0JBRWQsQUFBRCxNQUFPOzs7Ozs7O2VBT3RCOzs7MkNBRzRCLEFBQUQsc0JBQXVCOzs7U0FHeEQ7Ozs2QkFHb0IsQUFBRCxtQkFBb0I7S0FDM0M7U0FDSTtXQUNFOzs7bUNBR3dCLEFBQUQsT0FBUTtFQUN4QztLQUNHOzs7Ozs7Ozs7O2VBVVU7V0FDSjs7TUFFTDtvQ0FDOEI7VUFDMUI7R0FDUDs7OzttQ0FJZ0MsQUFBRCxPQUFRO0tBQ3JDO0tBQ0E7O1FBRUcsa0NBQWtDO1dBQy9COzs7Ozs7aUNBTXNCLEFBQUQsT0FBUTtLQUNuQztTQUNJOzs7cUNBRzRCLEFBQUQsT0FBUTtLQUN2QztTQUNJOzs7U0FHRDtFQUNOLG1RQVVDIn0=
 ;// ./src/pane.jsx
 
 
@@ -8521,9 +8650,9 @@ const clamp = (n, min, max) => {
  *
  * @example
  * ```tsx
- * const ref = useRef<ResizablePaneHandle>(null);
+ * const ref = useRef<SplitPaneHandle>(null);
  *
- * <ResizablePane
+ * <SplitPane
  *   ref={ref}
  *   mode="horizontal"
  *   defaultPosition={0.5}
@@ -8532,10 +8661,10 @@ const clamp = (n, min, max) => {
  *   onSizeChange={(pos) => console.log(pos)}
  * >
  *   <div /> <div />
- * </ResizablePane>
+ * </SplitPane>
  * ```
  */
-const ResizablePane = forwardRef(function ResizablePane(
+const SplitPane = forwardRef(function SplitPane(
   {
     mode = "horizontal",
     position, // controlled: number | undefined/null
@@ -8724,7 +8853,7 @@ const ResizablePane = forwardRef(function ResizablePane(
 
 
 
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9wYW5lLmpzeCIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi9Vc2Vycy9hcmFzaC9EZXNrdG9wL1Byb2plY3RzL0xpbGFjdC9zcmMvcGFuZS5qc3giXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsT0FBTztRQUNDOzs7ZUFHTyxpQkFBaUI7TUFDMUIsZ0JBQWlCO2tCQUNMLGFBQWM7OztDQUcvQjs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozt3Q0F1RHVDLHNCQUF1QjtDQUM1RDs7YUFFWTs7Ozs7Ozs7Ozs7Ozs7RUFjWjs2QkFDMkI7Z0NBQ0c7Ozs7OztrREFNa0I7O3dEQUVPLEFBQUQ7UUFDL0M7Ozs7Ozs7V0FPRyxBQUFELE1BQU87TUFDWCw4QkFBOEI7OztFQUduQztpQkFDZ0IsQUFBRCxNQUFPO01BQ2pCO3FCQUNnQixBQUFELFlBQWE7OzswQ0FHTzs7c0JBRXBCLFVBQVU7eUJBQ1A7T0FDbEIsa0NBQWtDO2tCQUN2Qjs7OzRCQUdVOzZCQUNDOzsyQkFFRixzQkFBc0I7O09BRTFDOzt5Q0FFa0M7O09BRWxDLGdDQUFnQzs7U0FFOUIsZ0JBQWlCLGtDQUFpQztrQkFDekM7U0FDVCxnQkFBaUI7aUJBQ1Q7V0FDTjs7U0FFRixnQkFBaUIsa0NBQWlDO2tCQUN6QztTQUNULGdCQUFpQjtpQkFDVDs7OztFQUlmO1dBQ1UsQUFBRCxNQUFPO2tCQUNDLE9BQU87UUFDakI7UUFDQTtxQkFDYTs7O2dCQUdMLE9BQU87UUFDZjtRQUNBOzs7OzswQkFLa0IsdUJBQXdCOzBCQUN4QixtQkFBb0I7MEJBQ3BCLHVCQUF3Qjs7VUFFeEMsTUFBTTsrQkFDZTsrQkFDQTsrQkFDQTs7c0JBRVY7O3dCQUVFLE9BQU87T0FDeEI7b0JBQ2E7Ozs7O1FBS1o7eUNBQ2lDO1lBQzdCOztvQkFFUSx3QkFBd0I7OztvQkFHeEIsT0FBTzs7OztPQUlwQixnQ0FBZ0M7U0FDOUI7U0FDQTtXQUNFO1NBQ0Y7U0FDQTs7O09BR0YsY0FBYztzQkFDQztpQkFDTDs7Ozt1QkFJTyxBQUFELE1BQU87OztVQUduQjs7O29CQUdTOzs7Ozs7T0FNYixTQUFVOzs7Ozs7UUFNVCwyRUFBMkUsaUJBQWtCO1FBQzdGLDRFQUE0RSxpQkFBa0I7Ozs7UUFJOUYsaUVBQWlFLGtCQUFtQjtRQUNwRixrRUFBa0Usa0JBQW1COzs7O1FBSXJGLHFLQUFxSyxpQkFBa0I7UUFDdkwscUtBQXFLLGlCQUFrQjs7OztRQUl2TDtRQUNBOztxQkFFYSxLQUFNLE1BQU8sQUFBRDs7V0FFcEIsNkJBQTZCO2VBQ3pCO1dBQ0o7OztTQUdKO0dBQ0wsaUVBQ0UsMkJBQThCLDBDQUU5Qjs7O0tBZUUsMkZBR0YsNEJBQStCIn0=
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9wYW5lLmpzeCIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi9Vc2Vycy9hcmFzaC9EZXNrdG9wL1Byb2plY3RzL0xpbGFjdC9zcmMvcGFuZS5qc3giXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsT0FBTztRQUNDOzs7ZUFHTyxpQkFBaUI7TUFDMUIsZ0JBQWlCO2tCQUNMLGFBQWM7OztDQUcvQjs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztvQ0F1RG1DLGtCQUFtQjtDQUNwRDs7YUFFWTs7Ozs7Ozs7Ozs7Ozs7RUFjWjs2QkFDMkI7Z0NBQ0c7Ozs7OztrREFNa0I7O3dEQUVPLEFBQUQ7UUFDL0M7Ozs7Ozs7V0FPRyxBQUFELE1BQU87TUFDWCw4QkFBOEI7OztFQUduQztpQkFDZ0IsQUFBRCxNQUFPO01BQ2pCO3FCQUNnQixBQUFELFlBQWE7OzswQ0FHTzs7c0JBRXBCLFVBQVU7eUJBQ1A7T0FDbEIsa0NBQWtDO2tCQUN2Qjs7OzRCQUdVOzZCQUNDOzsyQkFFRixzQkFBc0I7O09BRTFDOzt5Q0FFa0M7O09BRWxDLGdDQUFnQzs7U0FFOUIsZ0JBQWlCLGtDQUFpQztrQkFDekM7U0FDVCxnQkFBaUI7aUJBQ1Q7V0FDTjs7U0FFRixnQkFBaUIsa0NBQWlDO2tCQUN6QztTQUNULGdCQUFpQjtpQkFDVDs7OztFQUlmO1dBQ1UsQUFBRCxNQUFPO2tCQUNDLE9BQU87UUFDakI7UUFDQTtxQkFDYTs7O2dCQUdMLE9BQU87UUFDZjtRQUNBOzs7OzswQkFLa0IsdUJBQXdCOzBCQUN4QixtQkFBb0I7MEJBQ3BCLHVCQUF3Qjs7VUFFeEMsTUFBTTsrQkFDZTsrQkFDQTsrQkFDQTs7c0JBRVY7O3dCQUVFLE9BQU87T0FDeEI7b0JBQ2E7Ozs7O1FBS1o7eUNBQ2lDO1lBQzdCOztvQkFFUSx3QkFBd0I7OztvQkFHeEIsT0FBTzs7OztPQUlwQixnQ0FBZ0M7U0FDOUI7U0FDQTtXQUNFO1NBQ0Y7U0FDQTs7O09BR0YsY0FBYztzQkFDQztpQkFDTDs7Ozt1QkFJTyxBQUFELE1BQU87OztVQUduQjs7O29CQUdTOzs7Ozs7T0FNYixTQUFVOzs7Ozs7UUFNVCwyRUFBMkUsaUJBQWtCO1FBQzdGLDRFQUE0RSxpQkFBa0I7Ozs7UUFJOUYsaUVBQWlFLGtCQUFtQjtRQUNwRixrRUFBa0Usa0JBQW1COzs7O1FBSXJGLHFLQUFxSyxpQkFBa0I7UUFDdkwscUtBQXFLLGlCQUFrQjs7OztRQUl2TDtRQUNBOztxQkFFYSxLQUFNLE1BQU8sQUFBRDs7V0FFcEIsNkJBQTZCO2VBQ3pCO1dBQ0o7OztTQUdKO0dBQ0wsaUVBQ0UsMkJBQThCLDBDQUU5Qjs7O0tBZUUsMkZBR0YsNEJBQStCIn0=
 // EXTERNAL MODULE: ./src/jsx.js
 var jsx = __webpack_require__(207);
 ;// ./src/lilact.jsx
@@ -8824,7 +8953,7 @@ var jsx = __webpack_require__(207);
 const lilact_Lilact = 
 {	
 
-	VERSION: "beta.11",
+	VERSION: "beta.13",
 	
 	// Configuration
 
@@ -8847,7 +8976,7 @@ const lilact_Lilact =
 	...router_namespaceObject,
 	...accessories_namespaceObject,
 
-	ResizablePane: ResizablePane,
+	SplitPane: SplitPane,
 
 	transpileJSX: jsx.transpileJSX,
 	transpilerConfig: jsx.transpilerConfig,
@@ -10424,6 +10553,7 @@ module.exports = ReactPropTypesSecret;
 /******/ const __webpack_exports__CSSTransition = __webpack_exports__.CSSTransition;
 /******/ const __webpack_exports__Children = __webpack_exports__.Children;
 /******/ const __webpack_exports__Component = __webpack_exports__.Component;
+/******/ const __webpack_exports__DragHandle = __webpack_exports__.DragHandle;
 /******/ const __webpack_exports__ErrorBoundary = __webpack_exports__.ErrorBoundary;
 /******/ const __webpack_exports__Fragment = __webpack_exports__.Fragment;
 /******/ const __webpack_exports__HTMLComponent = __webpack_exports__.HTMLComponent;
@@ -10433,11 +10563,11 @@ module.exports = ReactPropTypesSecret;
 /******/ const __webpack_exports__NavLink = __webpack_exports__.NavLink;
 /******/ const __webpack_exports__PropTypes = __webpack_exports__.PropTypes;
 /******/ const __webpack_exports__Provider = __webpack_exports__.Provider;
-/******/ const __webpack_exports__ResizablePane = __webpack_exports__.ResizablePane;
 /******/ const __webpack_exports__RootComponent = __webpack_exports__.RootComponent;
 /******/ const __webpack_exports__Route = __webpack_exports__.Route;
 /******/ const __webpack_exports__Routes = __webpack_exports__.Routes;
 /******/ const __webpack_exports__Spinner = __webpack_exports__.Spinner;
+/******/ const __webpack_exports__SplitPane = __webpack_exports__.SplitPane;
 /******/ const __webpack_exports__Suspense = __webpack_exports__.Suspense;
 /******/ const __webpack_exports__SwitchTransition = __webpack_exports__.SwitchTransition;
 /******/ const __webpack_exports__Transition = __webpack_exports__.Transition;
@@ -10524,7 +10654,7 @@ module.exports = ReactPropTypesSecret;
 /******/ const __webpack_exports__useStore = __webpack_exports__.useStore;
 /******/ const __webpack_exports__useTransition = __webpack_exports__.useTransition;
 /******/ const __webpack_exports__wrapListener = __webpack_exports__.wrapListener;
-/******/ export { __webpack_exports__CSSTransition as CSSTransition, __webpack_exports__Children as Children, __webpack_exports__Component as Component, __webpack_exports__ErrorBoundary as ErrorBoundary, __webpack_exports__Fragment as Fragment, __webpack_exports__HTMLComponent as HTMLComponent, __webpack_exports__HashRouter as HashRouter, __webpack_exports__Lilact as Lilact, __webpack_exports__Link as Link, __webpack_exports__NavLink as NavLink, __webpack_exports__PropTypes as PropTypes, __webpack_exports__Provider as Provider, __webpack_exports__ResizablePane as ResizablePane, __webpack_exports__RootComponent as RootComponent, __webpack_exports__Route as Route, __webpack_exports__Routes as Routes, __webpack_exports__Spinner as Spinner, __webpack_exports__Suspense as Suspense, __webpack_exports__SwitchTransition as SwitchTransition, __webpack_exports__Transition as Transition, __webpack_exports__TransitionGroup as TransitionGroup, __webpack_exports__addWrappedEventListener as addWrappedEventListener, __webpack_exports__animationFramePromise as animationFramePromise, __webpack_exports__blocks_info as blocks_info, __webpack_exports__boolean_html_attributes_set as boolean_html_attributes_set, __webpack_exports__clearInterval as clearInterval, __webpack_exports__clearTimeout as clearTimeout, __webpack_exports__combineReducers as combineReducers, __webpack_exports__connect as connect, __webpack_exports__createComponent as createComponent, __webpack_exports__createContext as createContext, __webpack_exports__createElement as createElement, __webpack_exports__createRoot as createRoot, __webpack_exports__createSyntheticEvent as createSyntheticEvent, __webpack_exports__current_component as current_component, __webpack_exports__deepEqual as deepEqual, __webpack_exports__default as default, __webpack_exports__emotion as emotion, __webpack_exports__error as error, __webpack_exports__eval_num as eval_num, __webpack_exports__events_set as events_set, __webpack_exports__findDOMNode as findDOMNode, __webpack_exports__forwardRef as forwardRef, __webpack_exports__getComponentByPointer as getComponentByPointer, __webpack_exports__globalErrorHandler as globalErrorHandler, __webpack_exports__grabTimers as grabTimers, __webpack_exports__id_num as id_num, __webpack_exports__isAsync as isAsync, __webpack_exports__isClass as isClass, __webpack_exports__isEmpty as isEmpty, __webpack_exports__isError as isError, __webpack_exports__isThenable as isThenable, __webpack_exports__isValidElement as isValidElement, __webpack_exports__layout_effects as layout_effects, __webpack_exports__lazy as lazy, __webpack_exports__length_css_attributes_set as length_css_attributes_set, __webpack_exports__pauseTimers as pauseTimers, __webpack_exports__redux as redux, __webpack_exports__releaseSyntheticEvent as releaseSyntheticEvent, __webpack_exports__releaseTimers as releaseTimers, __webpack_exports__render as render, __webpack_exports__require as require, __webpack_exports__required_scripts as required_scripts, __webpack_exports__resetTimers as resetTimers, __webpack_exports__resumeTimers as resumeTimers, __webpack_exports__roots as roots, __webpack_exports__run as run, __webpack_exports__runScripts as runScripts, __webpack_exports__scanBlockLabels as scanBlockLabels, __webpack_exports__setInterval as setInterval, __webpack_exports__setTimeout as setTimeout, __webpack_exports__shallowEqual as shallowEqual, __webpack_exports__special_attributes as special_attributes, __webpack_exports__timeoutPromise as timeoutPromise, __webpack_exports__toBool as toBool, __webpack_exports__traceError as traceError, __webpack_exports__transpileJSX as transpileJSX, __webpack_exports__transpilerConfig as transpilerConfig, __webpack_exports__update_cbs as update_cbs, __webpack_exports__update_interval_margin as update_interval_margin, __webpack_exports__update_set as update_set, __webpack_exports__update_timeout as update_timeout, __webpack_exports__useActionState as useActionState, __webpack_exports__useCallback as useCallback, __webpack_exports__useContext as useContext, __webpack_exports__useDeferredValue as useDeferredValue, __webpack_exports__useDispatch as useDispatch, __webpack_exports__useEffect as useEffect, __webpack_exports__useHook as useHook, __webpack_exports__useId as useId, __webpack_exports__useImperativeHandle as useImperativeHandle, __webpack_exports__useLayoutEffect as useLayoutEffect, __webpack_exports__useLocalStorage as useLocalStorage, __webpack_exports__useLocation as useLocation, __webpack_exports__useMemo as useMemo, __webpack_exports__useNavigate as useNavigate, __webpack_exports__useReducer as useReducer, __webpack_exports__useRef as useRef, __webpack_exports__useSelector as useSelector, __webpack_exports__useState as useState, __webpack_exports__useStore as useStore, __webpack_exports__useTransition as useTransition, __webpack_exports__wrapListener as wrapListener };
+/******/ export { __webpack_exports__CSSTransition as CSSTransition, __webpack_exports__Children as Children, __webpack_exports__Component as Component, __webpack_exports__DragHandle as DragHandle, __webpack_exports__ErrorBoundary as ErrorBoundary, __webpack_exports__Fragment as Fragment, __webpack_exports__HTMLComponent as HTMLComponent, __webpack_exports__HashRouter as HashRouter, __webpack_exports__Lilact as Lilact, __webpack_exports__Link as Link, __webpack_exports__NavLink as NavLink, __webpack_exports__PropTypes as PropTypes, __webpack_exports__Provider as Provider, __webpack_exports__RootComponent as RootComponent, __webpack_exports__Route as Route, __webpack_exports__Routes as Routes, __webpack_exports__Spinner as Spinner, __webpack_exports__SplitPane as SplitPane, __webpack_exports__Suspense as Suspense, __webpack_exports__SwitchTransition as SwitchTransition, __webpack_exports__Transition as Transition, __webpack_exports__TransitionGroup as TransitionGroup, __webpack_exports__addWrappedEventListener as addWrappedEventListener, __webpack_exports__animationFramePromise as animationFramePromise, __webpack_exports__blocks_info as blocks_info, __webpack_exports__boolean_html_attributes_set as boolean_html_attributes_set, __webpack_exports__clearInterval as clearInterval, __webpack_exports__clearTimeout as clearTimeout, __webpack_exports__combineReducers as combineReducers, __webpack_exports__connect as connect, __webpack_exports__createComponent as createComponent, __webpack_exports__createContext as createContext, __webpack_exports__createElement as createElement, __webpack_exports__createRoot as createRoot, __webpack_exports__createSyntheticEvent as createSyntheticEvent, __webpack_exports__current_component as current_component, __webpack_exports__deepEqual as deepEqual, __webpack_exports__default as default, __webpack_exports__emotion as emotion, __webpack_exports__error as error, __webpack_exports__eval_num as eval_num, __webpack_exports__events_set as events_set, __webpack_exports__findDOMNode as findDOMNode, __webpack_exports__forwardRef as forwardRef, __webpack_exports__getComponentByPointer as getComponentByPointer, __webpack_exports__globalErrorHandler as globalErrorHandler, __webpack_exports__grabTimers as grabTimers, __webpack_exports__id_num as id_num, __webpack_exports__isAsync as isAsync, __webpack_exports__isClass as isClass, __webpack_exports__isEmpty as isEmpty, __webpack_exports__isError as isError, __webpack_exports__isThenable as isThenable, __webpack_exports__isValidElement as isValidElement, __webpack_exports__layout_effects as layout_effects, __webpack_exports__lazy as lazy, __webpack_exports__length_css_attributes_set as length_css_attributes_set, __webpack_exports__pauseTimers as pauseTimers, __webpack_exports__redux as redux, __webpack_exports__releaseSyntheticEvent as releaseSyntheticEvent, __webpack_exports__releaseTimers as releaseTimers, __webpack_exports__render as render, __webpack_exports__require as require, __webpack_exports__required_scripts as required_scripts, __webpack_exports__resetTimers as resetTimers, __webpack_exports__resumeTimers as resumeTimers, __webpack_exports__roots as roots, __webpack_exports__run as run, __webpack_exports__runScripts as runScripts, __webpack_exports__scanBlockLabels as scanBlockLabels, __webpack_exports__setInterval as setInterval, __webpack_exports__setTimeout as setTimeout, __webpack_exports__shallowEqual as shallowEqual, __webpack_exports__special_attributes as special_attributes, __webpack_exports__timeoutPromise as timeoutPromise, __webpack_exports__toBool as toBool, __webpack_exports__traceError as traceError, __webpack_exports__transpileJSX as transpileJSX, __webpack_exports__transpilerConfig as transpilerConfig, __webpack_exports__update_cbs as update_cbs, __webpack_exports__update_interval_margin as update_interval_margin, __webpack_exports__update_set as update_set, __webpack_exports__update_timeout as update_timeout, __webpack_exports__useActionState as useActionState, __webpack_exports__useCallback as useCallback, __webpack_exports__useContext as useContext, __webpack_exports__useDeferredValue as useDeferredValue, __webpack_exports__useDispatch as useDispatch, __webpack_exports__useEffect as useEffect, __webpack_exports__useHook as useHook, __webpack_exports__useId as useId, __webpack_exports__useImperativeHandle as useImperativeHandle, __webpack_exports__useLayoutEffect as useLayoutEffect, __webpack_exports__useLocalStorage as useLocalStorage, __webpack_exports__useLocation as useLocation, __webpack_exports__useMemo as useMemo, __webpack_exports__useNavigate as useNavigate, __webpack_exports__useReducer as useReducer, __webpack_exports__useRef as useRef, __webpack_exports__useSelector as useSelector, __webpack_exports__useState as useState, __webpack_exports__useStore as useStore, __webpack_exports__useTransition as useTransition, __webpack_exports__wrapListener as wrapListener };
 /******/ 
 
 //# sourceMappingURL=lilact.development.js.map
