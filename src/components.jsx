@@ -426,6 +426,13 @@ class ComponentCore
 					this.event_detachers[al]?.();
 					this.event_detachers[al] = Lilact.addWrappedEventListener(this.element, al.substring(2), patch[a]);
 				}
+				else if( Lilact.capture_events_set.hasOwnProperty(al) ) {
+					const alc = Lilact.capture_events_set[al];
+					this.event_detachers ??= {};
+					this.event_detachers[al]?.();
+					this.event_detachers[al] = 
+						Lilact.addWrappedEventListener(this.element, alc.substring(2), patch[a], {capture: true});
+				}
 				else if(al==='style') {
 					for(const x in patch[a]) {
 						if( Lilact.length_css_attributes_set.has(x) ) {

@@ -380,10 +380,15 @@ export const events_set = new Set([
 	"onloadeddata","onloadedmetadata","onloadstart","onpause","onplay","onplaying","onprogress","onratechange",
 	"onseeked","onseeking","onstalled","onsuspend","ontimeupdate","onvolumechange","onwaiting",
 	"ontoggle",
-
 	"onpointerdown", "onpointerup", "onpointermove", "onpointercancel", "onpointerover", "onpointerout", 
 	"onpointerenter", "onpointerleave"
 ]);
+
+/** @ignore */
+export const capture_events_set = {};
+for (const x of events_set) {
+  capture_events_set[x+"capture"] = x;
+}
 
 /** @ignore */
 export const length_css_attributes_set = new Set([
