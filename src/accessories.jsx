@@ -295,19 +295,27 @@ export class Suspense extends Component
 /**
  * DragHandle - helper component to wire up drag interactions.
  *
- * This component does not implement dragging/movement itself. Instead, it listens
- * for drag gesture updates and delegates them to the provided callbacks.
+ * This component does not implement dragging/movement itself. Instead, it
+ * listens for drag gesture events and delegates them to the provided callbacks.
  *
- * @param onDelta - Called when the drag position changes. Receives the delta as
- * `{ x, y, data }`.
- * @param onStart - Called when the drag begins. Receives the provided `data`.
- * @param onEnd - Called when the drag finishes or is cancelled.
- * Receives `(event, data)` where `event` is either `"up"` (completed) or `"cancel"`.
- * @param data - Arbitrary user data passed back to callbacks.
- * @param style - Optional style applied to the rendered wrapper.
- * @param className - Optional CSS class applied to the rendered wrapper.
- * @param children - Content to render inside the drag handle.
+ * @param {object} props
+ * @param {(x: number, y: number, data: any) => void} [props.onDelta]
+ * Called when the drag position changes.
+ *
+ * @param {(data: any) => void} [props.onStart]
+ * Called when the drag begins.
+ *
+ * @param {(event: ("up"|"cancel"), data: any) => void} [props.onEnd]
+ * Called when the drag ends or is cancelled.
+ *
+ * @param {any} [props.data] Arbitrary user data passed through callbacks.
+ * @param {object} [props.style] Optional style applied to the wrapper element.
+ * @param {string} [props.className] Optional CSS class applied to the wrapper element. 
+ * A `.dragging` class will be also applied when dragging.
+ * 
+ * @param {React.ReactNode} [props.children] Content rendered inside the handle.
  */
+
 export function DragHandle({
 	onDelta,
 	onStart,
