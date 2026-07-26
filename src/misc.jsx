@@ -151,9 +151,13 @@ export const Children = {
  *   The component render function that receives the props and the forwarded ref.
  * @returns {}
  */
-export function forwardRef(render)
+export const forwardRef = (render)=>
 {
-	return (props)=>render({...props, ref: undefined}, props.ref);
+	const forwardRef = function(props) { return render({...props, ref: undefined}, props.ref); }
+
+	forwardRef.displayName = "Forwarded " + render.displayName;
+
+	return forwardRef;
 }
 
 
