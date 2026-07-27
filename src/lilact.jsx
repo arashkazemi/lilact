@@ -97,7 +97,7 @@ export const Lilact =
 	// Configuration
 
 	defaultTransitionTimeout: 300,
-	defaultIsEqual: misc.shallowEqual,
+	defaultIsEqual: Object.is,
 								  					 // user can set it in your initializer code, and can be changed later too.
 	
 	// Units 

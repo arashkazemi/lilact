@@ -434,14 +434,19 @@ class ComponentCore
 						Lilact.addWrappedEventListener(this.element, alc.substring(2), patch[a], {capture: true});
 				}
 				else if(al==='style') {
-					for(const x in patch[a]) {
-						if( Lilact.length_css_attributes_set.has(x) ) {
-							if(isFinite(patch[a][x])) {
-								patch[a][x]+='px';
+					if(typeof(patch[a])==='string') {
+						this.element.style = patch[a];
+					}
+					else {
+						for(const x in patch[a]) {
+							if( Lilact.length_css_attributes_set.has(x) ) {
+								if(isFinite(patch[a][x])) {
+									patch[a][x]+='px';
+								}
 							}
 						}
+						Object.assign(this.element.style, patch[a]);
 					}
-					Object.assign(this.element.style, patch[a]);
 				}
 				else if(Lilact.boolean_html_attributes_set.has(a)) { // not lower cased(al), as it is set as a js property
 					this.element[a] = Lilact.toBool(patch[a]);
