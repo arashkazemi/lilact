@@ -54,6 +54,7 @@ export const [
 				Symbol.for('LILACT:IDX'),
 				Symbol.for('LILACT:CHILD_CLASS_ADDENDUM'),
 				Symbol.for('LILACT:MEMOIZED'),
+				Symbol.for('LILACT:LAZY'),
 
 				Symbol.for('LILACT:TIMERS:DUE'),
 				Symbol.for('LILACT:TIMERS:REPEAT'),

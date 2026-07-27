@@ -8208,8 +8208,11 @@ let error = null; // this is only to ease debuggin,
 const RouterContext = createContext(null);
 const RouteContext = createContext({ params: {} });
 
-// --- HashRouter (as before) ---
-const createURL = (to) => (typeof to === "string" ? to : (to.pathname || "") + (to.search || "") + (to.hash || ""));
+const createURL = (to) =>
+  typeof to === "string" ? to : (to.pathname || "") + (to.search || "") + (to.hash || "");
+
+const router_escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 
 /**
  * Hash-based router component that syncs navigation state with the URL hash (#...).
@@ -8219,53 +8222,87 @@ const createURL = (to) => (typeof to === "string" ? to : (to.pathname || "") + (
  * @param [props.basename=""] - Optional base path prefix applied to all route paths.
  */
 function HashRouter({ children, basename = "" }) {
-	const readLocation = () => {
-		const raw = window.location.hash || "#/";
-		const full = raw.slice(1);
-		const withoutBase = full.replace(new RegExp(`^${basename}`), "") || "/";
-		const [pathAndSearch, hashPart] = withoutBase.split("#");
-		const [path, search = ""] = pathAndSearch.split("?");
-		return {
-			pathname: path || "/",
-			search: search ? "?" + search : "",
-			hash: hashPart ? "#" + hashPart : "",
-			state: history.state?.__state,
-		};
-	};
+  const readLocation = () => {
+    const raw = window.location.hash || "#/";
+    const full = raw.slice(1);
 
-	const [location, setLocation] = useState(readLocation);
-	useEffect(() => {
-		const onChange = () => setLocation(readLocation());
+    const baseRe = new RegExp("^" + router_escapeRegExp(basename));
+    const withoutBase = full.replace(baseRe, "") || "/";
 
-		window.addEventListener("hashchange", onChange);
-		window.addEventListener("popstate", onChange);
+    const [pathAndSearch, hashPart] = withoutBase.split("#");
+    const [path, search = ""] = pathAndSearch.split("?");
 
-		// initialize once in case hash/state are already set
-		onChange();
+    return {
+      pathname: path || "/",
+      search: search ? "?" + search : "",
+      hash: hashPart ? "#" + hashPart : "",
+      state: history.state?.__state,
+    };
+  };
 
-		return () => {
-			window.removeEventListener("hashchange", onChange);
-			window.removeEventListener("popstate", onChange);
-		};
-	}, [basename]);
+  const [location, setLocation] = useState(readLocation);
 
-	const navigate = useCallback((to, { replace = false, state } = {}) => {
-		if (typeof to === "number") {
-			history.go(to);
-			return;
-		}
+  useEffect(() => {
+    const onChange = () => setLocation(readLocation());
 
-		const url = createURL(to);
-		const href = "#" + (basename + url);
+    window.addEventListener("hashchange", onChange);
+    window.addEventListener("popstate", onChange);
 
-		if (replace) history.replaceState({ __state: state }, "", href);
-		else history.pushState({ __state: state }, "", href);
+    // initialize once
+    onChange();
 
-		setLocation(readLocation());
-	}, [basename]);
+    return () => {
+      window.removeEventListener("hashchange", onChange);
+      window.removeEventListener("popstate", onChange);
+    };
+  }, [basename]);
 
-	return  createComponent( RouterContext.Provider, { "value": { location, navigate, basename } }, children );
+  const navigate = useCallback((to, { replace = false, state } = {}) => {
+    if (typeof to === "number") {
+      // Wait for the real popstate (don’t rely on synchronous timing)
+      return new Promise((resolve) => {
+        let done = false;
+
+        const cleanup = (fn) => {
+          if (done) return;
+          done = true;
+          window.removeEventListener("popstate", onPop);
+          window.removeEventListener("hashchange", onHash);
+          fn?.();
+          resolve();
+        };
+
+        const onPop = () => cleanup(() => setLocation(readLocation()));
+        const onHash = () => cleanup(() => setLocation(readLocation()));
+
+        window.addEventListener("popstate", onPop, { once: true });
+        window.addEventListener("hashchange", onHash, { once: true });
+
+        // Fallback: in case popstate/hashchange timing is weird in a given browser
+        setTimeout(() => cleanup(() => setLocation(readLocation())), 0);
+
+        history.go(to);
+      });
+    }
+
+    const url = createURL(to);
+    const href = "#" + (basename + url);
+
+    if (replace) {
+      history.replaceState({ __state: state }, "", href);
+    } else {
+      history.pushState({ __state: state }, "", href);
+    }
+
+    // Update immediately for the initiating navigation.
+    setLocation(readLocation());
+  }, [basename]);
+
+  return (
+     createComponent( RouterContext.Provider, { "value": { location, navigate, basename } }, children )
+  );
 }
+
 
 /**
  * Hook that returns the current location object (path, search, hash, and navigation state).
@@ -8468,7 +8505,7 @@ function Routes({ children }) {
 
 
 
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9yb3V0ZXIuanN4Iiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9yb3V0ZXIuanN4Il0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLEFBQUE7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztRQThCUTs7UUFFQTtRQUNBOztvQ0FFNEI7bUNBQ0EsQUFBRCxVQUFXOztDQUU3QzttQkFDa0IsUUFBUSw4QkFBK0Isc0JBQXNCLG9CQUFvQjs7Q0FFbkc7Ozs7Ozs7MkJBTzJCLEFBQUQsOEJBQThCO3VCQUNsQyxNQUFNOzt5QkFFSjttQ0FDVSxVQUFXO3NEQUNRO2tEQUNKO1VBQ3hDOzs7Ozs7OzswQ0FRZ0M7V0FDOUIsQUFBRCxNQUFPO21CQUNFLGlCQUFpQixZQUFhOzt5QkFFeEI7eUJBQ0E7O0VBRXZCO1VBQ1E7O1NBRUQsTUFBTTs2QkFDYzs2QkFDQTs7Ozs4QkFJQyxBQUFELElBQU0sNkJBQTZCLFFBQU87S0FDbEUseUJBQXlCO2FBQ2pCOzs7O3VCQUlVO3FCQUNGOztLQUVoQiw4QkFBK0IsQUFBRDt3QkFDVixBQUFEOzthQUVYLFlBQWE7OztTQUdsQiwyQ0FBaUU7OztDQUd6RTs7Ozs7NEJBSzJCLEdBQUc7d0JBQ1A7S0FDbkIsc0JBQXNCOzs7O0NBSTFCOzs7Ozs0QkFLMkIsR0FBRzt3QkFDUDtLQUNuQixzQkFBc0I7OzttQkFHUixHQUFHO3dCQUNFO3VCQUNEOzs7Q0FHdEI7Ozs7Ozs7Ozs7Ozs7OztxQkFlcUIsQUFBRCxpR0FBaUc7OEJBQ3hGOzhCQUNBO3NCQUNSLElBQUk7TUFDcEIsaUJBQWlCO01BQ2pCOzs7R0FHRjs7O21CQUdlO1dBQ1IsSUFBSzs7U0FFUDtFQUNOLCtIQUNDOzs7O3VCQUttQixJQUFJO0tBQ3RCO2tCQUNjLEFBQUQ7Ozs7Q0FJakI7Ozs7Ozs7Ozs7Ozs7Ozt3QkFld0IsQUFBRDs7Ozs7Ozs7Ozs7Ozs7SUFjcEI7OEJBQzBCOzhCQUNBO3NEQUN3QixjQUFjLFdBQVc7O3NDQUV6QywrQkFBK0IsNEJBQTRCLHdCQUF3QixhQUFjO3VFQUMvRCxBQUFEO3NGQUNlLGNBQWM7MkRBQ3hDLEFBQUQ7aUNBQzFCLEtBQUssaUJBQWtCLFNBQVEsZUFBZ0I7OEJBQ2xEOztzQkFFUixJQUFJO01BQ3BCLGlCQUFpQjtNQUNqQjttQkFDYTtXQUNSLElBQUs7OztTQUdQO0VBQ04seUxBQ0MseUNBQTJDLEFBQUQ7Ozs7Q0FLN0M7Q0FDQTtxQkFDb0IsVUFBVTs7RUFFN0I7eUNBQ3dDLEFBQUQsbUJBQW9CLEFBQUQ7V0FDaEQsQUFBRCx3QkFBeUIsYUFBYTtrQkFDOUI7OztXQUdQLEFBQUQsc0JBQXNCOzswQkFFUDtTQUNqQjs7O21CQUdVLG9CQUFvQjtLQUNsQyx5QkFBeUIseUJBQXlCLE1BQU07UUFDckQsbUNBQW1DO3NCQUNyQjtLQUNqQixZQUFZO2lCQUNBO29CQUNJLEFBQUQsVUFBVyw4QkFBK0I7RUFDNUQ7S0FDRyxtQ0FBbUM7OERBQ3NCOztTQUVyRDs7O0NBR1I7Q0FDQTs7Ozs7Ozs7c0JBUXNCLEFBQUQscUNBQXFDO0VBQ3pEOzs7Q0FHRDs7Ozs7O3VCQU11QixBQUFELGVBQWU7OEJBQ1I7O0VBRTVCO2lDQUMrQjs7TUFFM0Isb0NBQW9DOztHQUV2Qzs7Ozs7U0FLTSwrQkFBK0I7TUFDbEMsVUFBVTtJQUNaO09BQ0csVUFBVTtZQUNMLHFCQUEwQztjQUN4QyxjQUFjO0tBQ3ZCO1lBQ08scUJBQTBDLEVBQVE7V0FDbkQ7WUFDQyxxQkFBMEM7Ozs7O0VBS3BEIn0=
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9yb3V0ZXIuanN4Iiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9yb3V0ZXIuanN4Il0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLEFBQUE7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztRQThCUTs7UUFFQTtRQUNBOztvQ0FFNEI7bUNBQ0EsQUFBRCxVQUFXOzttQkFFM0I7aUNBQ2Msc0JBQXNCLG9CQUFvQjs7c0JBRXJELGdCQUFpQixBQUFEOzs7Q0FHckM7Ozs7Ozs7MkJBTzJCLEFBQUQsOEJBQThCO3dCQUNqQyxNQUFNOzsyQkFFSDs7OEJBRUcsa0JBQW1CO3FDQUNaOzt3REFFbUI7b0RBQ0o7O1lBRXhDOzs7Ozs7OzsyQ0FRK0I7O1lBRTlCLEFBQUQsTUFBTztxQkFDRyxpQkFBaUIsWUFBYTs7MkJBRXhCOzJCQUNBOztJQUV2QjtZQUNROztXQUVELE1BQU07Z0NBQ2U7Z0NBQ0E7Ozs7K0JBSUQsQUFBRCxJQUFNLDZCQUE2QixRQUFPO09BQ2pFLHlCQUF5QjtNQUMxQjt3QkFDbUIsQUFBRCxhQUFjOzs7dUJBR2QsUUFBUTtZQUNuQjs7bUNBRXVCO21DQUNBO2FBQ3RCO2dCQUNHOzs7cUJBR0ssYUFBYyxBQUFELGlCQUFrQixZQUFhO3NCQUMzQyxhQUFjLEFBQUQsaUJBQWtCLFlBQWE7OzhCQUVwQyxtQkFBb0I7OEJBQ3BCLHNCQUF1Qjs7T0FFOUM7aUJBQ1csQUFBRCxhQUFlLEFBQUQsaUJBQWtCLFlBQWE7O2lCQUU3Qzs7Ozt5QkFJTzt1QkFDRjs7T0FFaEIsVUFBVTswQkFDVSxBQUFEO1dBQ2Y7dUJBQ2EsQUFBRDs7O0lBR25CO2VBQ1csWUFBYTs7O1VBR25CO0lBQ0wsMkNBQ0U7Ozs7O0NBTU47Ozs7OzRCQUsyQixHQUFHO3dCQUNQO0tBQ25CLHNCQUFzQjs7OztDQUkxQjs7Ozs7NEJBSzJCLEdBQUc7d0JBQ1A7S0FDbkIsc0JBQXNCOzs7bUJBR1IsR0FBRzt3QkFDRTt1QkFDRDs7O0NBR3RCOzs7Ozs7Ozs7Ozs7Ozs7cUJBZXFCLEFBQUQsaUdBQWlHOzhCQUN4Rjs4QkFDQTtzQkFDUixJQUFJO01BQ3BCLGlCQUFpQjtNQUNqQjs7O0dBR0Y7OzttQkFHZTtXQUNSLElBQUs7O1NBRVA7RUFDTiwrSEFDQzs7Ozt1QkFLbUIsSUFBSTtLQUN0QjtrQkFDYyxBQUFEOzs7O0NBSWpCOzs7Ozs7Ozs7Ozs7Ozs7d0JBZXdCLEFBQUQ7Ozs7Ozs7Ozs7Ozs7O0lBY3BCOzhCQUMwQjs4QkFDQTtzREFDd0IsY0FBYyxXQUFXOztzQ0FFekMsK0JBQStCLDRCQUE0Qix3QkFBd0IsYUFBYzt1RUFDL0QsQUFBRDtzRkFDZSxjQUFjOzJEQUN4QyxBQUFEO2lDQUMxQixLQUFLLGlCQUFrQixTQUFRLGVBQWdCOzhCQUNsRDs7c0JBRVIsSUFBSTtNQUNwQixpQkFBaUI7TUFDakI7bUJBQ2E7V0FDUixJQUFLOzs7U0FHUDtFQUNOLHlMQUNDLHlDQUEyQyxBQUFEOzs7O0NBSzdDO0NBQ0E7cUJBQ29CLFVBQVU7O0VBRTdCO3lDQUN3QyxBQUFELG1CQUFvQixBQUFEO1dBQ2hELEFBQUQsd0JBQXlCLGFBQWE7a0JBQzlCOzs7V0FHUCxBQUFELHNCQUFzQjs7MEJBRVA7U0FDakI7OzttQkFHVSxvQkFBb0I7S0FDbEMseUJBQXlCLHlCQUF5QixNQUFNO1FBQ3JELG1DQUFtQztzQkFDckI7S0FDakIsWUFBWTtpQkFDQTtvQkFDSSxBQUFELFVBQVcsOEJBQStCO0VBQzVEO0tBQ0csbUNBQW1DOzhEQUNzQjs7U0FFckQ7OztDQUdSO0NBQ0E7Ozs7Ozs7O3NCQVFzQixBQUFELHFDQUFxQztFQUN6RDs7O0NBR0Q7Ozs7Ozt1QkFNdUIsQUFBRCxlQUFlOzhCQUNSOztFQUU1QjtpQ0FDK0I7O01BRTNCLG9DQUFvQzs7R0FFdkM7Ozs7O1NBS00sK0JBQStCO01BQ2xDLFVBQVU7SUFDWjtPQUNHLFVBQVU7WUFDTCxxQkFBMEM7Y0FDeEMsY0FBYztLQUN2QjtZQUNPLHFCQUEwQyxFQUFRO1dBQ25EO1lBQ0MscUJBQTBDOzs7OztFQUtwRCJ9
 ;// ./src/accessories.jsx
 /*
 
@@ -9996,6 +10033,7 @@ const [
 				Symbol.for('LILACT:IDX'),
 				Symbol.for('LILACT:CHILD_CLASS_ADDENDUM'),
 				Symbol.for('LILACT:MEMOIZED'),
+				Symbol.for('LILACT:LAZY'),
 
 				Symbol.for('LILACT:TIMERS:DUE'),
 				Symbol.for('LILACT:TIMERS:REPEAT'),
@@ -10006,7 +10044,7 @@ const [
 			];
 
 
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9zeW1ib2xzLmpzeCIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi9Vc2Vycy9hcmFzaC9EZXNrdG9wL1Byb2plY3RzL0xpbGFjdC9zcmMvc3ltYm9scy5qc3giXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsQUFBQTs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztlQWlEZTtlQUNBO2VBQ0E7ZUFDQTtlQUNBO2VBQ0E7ZUFDQTs7ZUFFQTtlQUNBO2VBQ0E7ZUFDQTtlQUNBO2VBQ0EifQ==
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9zeW1ib2xzLmpzeCIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi9Vc2Vycy9hcmFzaC9EZXNrdG9wL1Byb2plY3RzL0xpbGFjdC9zcmMvc3ltYm9scy5qc3giXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsQUFBQTs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztlQWlEZTtlQUNBO2VBQ0E7ZUFDQTtlQUNBO2VBQ0E7ZUFDQTtlQUNBOztlQUVBO2VBQ0E7ZUFDQTtlQUNBO2VBQ0E7ZUFDQSJ9
 
 /***/ }),
 

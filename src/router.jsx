@@ -36,8 +36,11 @@ import {Children} from "./misc.jsx"
 const RouterContext = createContext(null);
 const RouteContext = createContext({ params: {} });
 
-// --- HashRouter (as before) ---
-const createURL = (to) => (typeof to === "string" ? to : (to.pathname || "") + (to.search || "") + (to.hash || ""));
+const createURL = (to) =>
+  typeof to === "string" ? to : (to.pathname || "") + (to.search || "") + (to.hash || "");
+
+const escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 
 /**
  * Hash-based router component that syncs navigation state with the URL hash (#...).
@@ -47,53 +50,89 @@ const createURL = (to) => (typeof to === "string" ? to : (to.pathname || "") + (
  * @param [props.basename=""] - Optional base path prefix applied to all route paths.
  */
 export function HashRouter({ children, basename = "" }) {
-	const readLocation = () => {
-		const raw = window.location.hash || "#/";
-		const full = raw.slice(1);
-		const withoutBase = full.replace(new RegExp(`^${basename}`), "") || "/";
-		const [pathAndSearch, hashPart] = withoutBase.split("#");
-		const [path, search = ""] = pathAndSearch.split("?");
-		return {
-			pathname: path || "/",
-			search: search ? "?" + search : "",
-			hash: hashPart ? "#" + hashPart : "",
-			state: history.state?.__state,
-		};
-	};
+  const readLocation = () => {
+    const raw = window.location.hash || "#/";
+    const full = raw.slice(1);
 
-	const [location, setLocation] = useState(readLocation);
-	useEffect(() => {
-		const onChange = () => setLocation(readLocation());
+    const baseRe = new RegExp("^" + escapeRegExp(basename));
+    const withoutBase = full.replace(baseRe, "") || "/";
 
-		window.addEventListener("hashchange", onChange);
-		window.addEventListener("popstate", onChange);
+    const [pathAndSearch, hashPart] = withoutBase.split("#");
+    const [path, search = ""] = pathAndSearch.split("?");
 
-		// initialize once in case hash/state are already set
-		onChange();
+    return {
+      pathname: path || "/",
+      search: search ? "?" + search : "",
+      hash: hashPart ? "#" + hashPart : "",
+      state: history.state?.__state,
+    };
+  };
 
-		return () => {
-			window.removeEventListener("hashchange", onChange);
-			window.removeEventListener("popstate", onChange);
-		};
-	}, [basename]);
+  const [location, setLocation] = useState(readLocation);
 
-	const navigate = useCallback((to, { replace = false, state } = {}) => {
-		if (typeof to === "number") {
-			history.go(to);
-			return;
-		}
+  useEffect(() => {
+    const onChange = () => setLocation(readLocation());
 
-		const url = createURL(to);
-		const href = "#" + (basename + url);
+    window.addEventListener("hashchange", onChange);
+    window.addEventListener("popstate", onChange);
 
-		if (replace) history.replaceState({ __state: state }, "", href);
-		else history.pushState({ __state: state }, "", href);
+    // initialize once
+    onChange();
 
-		setLocation(readLocation());
-	}, [basename]);
+    return () => {
+      window.removeEventListener("hashchange", onChange);
+      window.removeEventListener("popstate", onChange);
+    };
+  }, [basename]);
 
-	return <RouterContext.Provider value={{ location, navigate, basename }}>{children}</RouterContext.Provider>;
+  const navigate = useCallback((to, { replace = false, state } = {}) => {
+    if (typeof to === "number") {
+      // Wait for the real popstate (don’t rely on synchronous timing)
+      return new Promise((resolve) => {
+        let done = false;
+
+        const cleanup = (fn) => {
+          if (done) return;
+          done = true;
+          window.removeEventListener("popstate", onPop);
+          window.removeEventListener("hashchange", onHash);
+          fn?.();
+          resolve();
+        };
+
+        const onPop = () => cleanup(() => setLocation(readLocation()));
+        const onHash = () => cleanup(() => setLocation(readLocation()));
+
+        window.addEventListener("popstate", onPop, { once: true });
+        window.addEventListener("hashchange", onHash, { once: true });
+
+        // Fallback: in case popstate/hashchange timing is weird in a given browser
+        setTimeout(() => cleanup(() => setLocation(readLocation())), 0);
+
+        history.go(to);
+      });
+    }
+
+    const url = createURL(to);
+    const href = "#" + (basename + url);
+
+    if (replace) {
+      history.replaceState({ __state: state }, "", href);
+    } else {
+      history.pushState({ __state: state }, "", href);
+    }
+
+    // Update immediately for the initiating navigation.
+    setLocation(readLocation());
+  }, [basename]);
+
+  return (
+    <RouterContext.Provider value={{ location, navigate, basename }}>
+      {children}
+    </RouterContext.Provider>
+  );
 }
+
 
 /**
  * Hook that returns the current location object (path, search, hash, and navigation state).
