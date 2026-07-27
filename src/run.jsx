@@ -27,10 +27,13 @@
 	THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
-
-ʔ defineSymbols ( "LILACT", [ "CORE", "COMPONENT", "LAZY" ] ) ʔ
-
 import Lilact from './lilact.jsx';
+
+import { CORE, COMPONENT, LAZY } from "./symbols.jsx"
+
+
+/** @ignore */
+export const required_scripts = {};
 
 
 /**
@@ -49,7 +52,7 @@ export function run(jsx, path=`InlineJSX-${++Lilact.eval_num}`, is_inline=true)
 	let processed;
 
 
-	Lilact.required_scripts[path] = { 	
+	required_scripts[path] = { 	
 		mappings,
 		module,
 		is_inline,
@@ -76,9 +79,9 @@ export function run(jsx, path=`InlineJSX-${++Lilact.eval_num}`, is_inline=true)
 		throw e;
 	}
 
-ʔ if(DEBUG) {
-		Lilact.required_scripts[path].processed = processed;
-ʔ }		
+if(DEBUG) {
+		required_scripts[path].processed = processed;
+}		
 	
 	processed += "\n//# sourceURL=eval:/" + path;
 
@@ -105,11 +108,11 @@ export function run(jsx, path=`InlineJSX-${++Lilact.eval_num}`, is_inline=true)
 /**
  * Loads a jsx script from a path. All scripts can access Lilact namespace as a global object. 
  * 
- * `Lilact.require` loads synchronously, as it is expected to be loaded on the next instruction.
+ * `require` loads synchronously, as it is expected to be loaded on the next instruction.
  * 
  * As running the transpiled scripts rely on `new Function`, it is not possible to use module imports 
  * and exports. So to import you should use `const {useState} = Lilact` convention. And to 
- * export, you should use `module.exports = ...`. `Lilact.require` returns `module.exports` value
+ * export, you should use `module.exports = ...`. `require` returns `module.exports` value
  * so you can import different modules using the convention above.
  * 
  * If the path is in the format #id, it will query the document for a script element with the given 
@@ -126,14 +129,14 @@ export function run(jsx, path=`InlineJSX-${++Lilact.eval_num}`, is_inline=true)
  */
 export function require(path, forceUpdate)
 {
-	if(Lilact.required_scripts[path] && !forceUpdate) return Lilact.required_scripts[path].module.exports;
+	if(required_scripts[path] && !forceUpdate) return required_scripts[path].module.exports;
 	
 	if(path[0]==='#') {
 
 		const el = document.getElementById(path);
 
 		if(el) {
-			return Lilact.run(el.innerText, path);
+			return run(el.innerText, path);
 		}
 
 	}
@@ -146,7 +149,7 @@ export function require(path, forceUpdate)
 				return res.text();
 			})
 			.then(res => {
-				res = Lilact.run(res, path, false);
+				res = run(res, path, false);
 				// todo: this is for the lazy, so we detect default, should we do it in sync mode too?
 				return res?.default ?? res;
 			})
@@ -162,7 +165,7 @@ export function require(path, forceUpdate)
 		request.open("GET", path, false);
 		request.send(null);
 		if (request.status === 200) {
-			return Lilact.run(request.responseText, path, false);
+			return run(request.responseText, path, false);
 		}
 	}
 
@@ -230,8 +233,8 @@ function scanScriptTagsWithType() {
  * Scans the whole documents and runs all the script elements with type `text/jsx`.
  * It is automatically attached to document.onload when Lilact is loaded.
  * 
- * If element src is set, it will be loaded via `Lilact.require`.
- * If element has inner content, it will be executed via `Lilact.run`.
+ * If element src is set, it will be loaded via `require`.
+ * If element has inner content, it will be executed via `run`.
  * 
  * If both are present, first the src is loaded and then the inner content is executed.
  *
@@ -244,8 +247,8 @@ export function runScripts()
 	const scripts = scanScriptTagsWithType();
 
 	for(const s of scripts) {
-		if(s.src) Lilact.require(s.src);
-		if(s.content) Lilact.run(s.content);
+		if(s.src) require(s.src);
+		if(s.content) run(s.content);
 	}
 }
 

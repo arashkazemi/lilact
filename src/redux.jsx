@@ -28,8 +28,10 @@
 
 */
 
+import { createContext, useContext, useRef, useState, useEffect } from './hooks.jsx'
+import { shallowEqual } from './misc.jsx'
 
-ʔ defineSymbols ( "LILACT", [ "CORE" ] ) ʔ
+import { CORE } from "./symbols.jsx"
 
 let ReduxContext;
 
@@ -42,7 +44,7 @@ let ReduxContext;
  */
 export function Provider({ store, children }) 
 {
-	ReduxContext ??= Lilact.createContext(null);
+	ReduxContext ??= createContext(null);
 	return (
 		<ReduxContext.Provider value={store}>{children}</ReduxContext.Provider>
 	);
@@ -55,7 +57,7 @@ export function Provider({ store, children })
  */
 export function useStore() 
 {
-	const store = Lilact.useContext(ReduxContext);
+	const store = useContext(ReduxContext);
 	if (!store) {
 		throw new Error("Could not find Redux store in context. <Provider> is missing.");
 	}
@@ -70,7 +72,7 @@ export function useStore()
  */
 export function useDispatch() 
 {
-	const store = Lilact.useStore();
+	const store = useStore();
 	return store.dispatch;
 }
 
@@ -82,17 +84,17 @@ export function useDispatch()
  * @returns The selected slice of state.
  */
 export function useSelector(selector, equalityFn = (a, b) => a === b) {
-  const store = Lilact.useStore();
-  const latestSelected = Lilact.useRef();
-  const selectorRef = Lilact.useRef(selector);
+  const store = useStore();
+  const latestSelected = useRef();
+  const selectorRef = useRef(selector);
   selectorRef.current = selector;
 
-  const [selected, setSelected] = Lilact.useState(() => selector(store.getState()));
+  const [selected, setSelected] = useState(() => selector(store.getState()));
 
   // Keep ref in sync for the subscription callback
   latestSelected.current = selected;
 
-  Lilact.useEffect(() => {
+  useEffect(() => {
     function checkForUpdates() {
       const nextSelected = selectorRef.current(store.getState());
       if (!equalityFn(latestSelected.current, nextSelected)) {
@@ -127,7 +129,7 @@ export function connect(mapStateToProps, mapDispatchToProps)
 	return function wrapWithConnect(WrappedComponent) {
 
 		function ConnectedComponent(props) {
-			const store = Lilact.useStore();
+			const store = useStore();
 
 			let dispatchProps = { dispatch: store.dispatch };
 
@@ -148,7 +150,7 @@ export function connect(mapStateToProps, mapDispatchToProps)
 				const selector = (state) => mapStateToProps(state, props);
 
 				// todo: is shallowEqual enough?
-				stateProps = Lilact.useSelector(selector, Lilact.shallowEqual) || {};
+				stateProps = useSelector(selector, shallowEqual) || {};
 			}
 
 			const mergedProps = { ...props, ...stateProps, ...dispatchProps };

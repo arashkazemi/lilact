@@ -1668,7 +1668,7 @@ __webpack_require__.d(__webpack_exports__, {
   releaseTimers: () => (/* reexport */ releaseTimers),
   render: () => (/* reexport */ render),
   require: () => (/* reexport */ run.require),
-  required_scripts: () => (/* reexport */ required_scripts),
+  required_scripts: () => (/* reexport */ run.required_scripts),
   resetTimers: () => (/* reexport */ resetTimers),
   resumeTimers: () => (/* reexport */ resumeTimers),
   roots: () => (/* reexport */ roots),
@@ -1768,7 +1768,6 @@ __webpack_require__.d(misc_namespaceObject, {
   isValidElement: () => (isValidElement),
   layout_effects: () => (layout_effects),
   length_css_attributes_set: () => (length_css_attributes_set),
-  required_scripts: () => (required_scripts),
   roots: () => (roots),
   shallowEqual: () => (shallowEqual),
   special_attributes: () => (special_attributes),
@@ -4585,6 +4584,8 @@ var _createEmotion = createEmotion({
 // EXTERNAL MODULE: ./node_modules/prop-types/index.js
 var prop_types = __webpack_require__(556);
 var prop_types_default = /*#__PURE__*/__webpack_require__.n(prop_types);
+// EXTERNAL MODULE: ./src/symbols.jsx
+var symbols = __webpack_require__(601);
 ;// ./src/misc.jsx
 /*
 
@@ -4619,7 +4620,7 @@ var prop_types_default = /*#__PURE__*/__webpack_require__.n(prop_types);
 
 
 
-const [CORE,COMPONENT,MEMOIZED]=[Symbol.for('LILACT:CORE'),Symbol.for('LILACT:COMPONENT'),Symbol.for('LILACT:MEMOIZED')];
+
 
 
 const typeOf = (input) => {
@@ -4643,7 +4644,7 @@ const typeOf = (input) => {
  * @returns True if the value is a class component; otherwise false.
  */
 const isValidElement = (value) => {
-	return value[CORE]!==undefined || value[TEXT]!==undefined;
+	return value[symbols.CORE]!==undefined || value[TEXT]!==undefined;
 }
 
 /**
@@ -4666,8 +4667,8 @@ const findDOMNode = (component)=>{
 
 	Unlike React, in Lilact findDOMNode can also be used on function components.
 	*/
-	if(!component[CORE]?.element?.parentNode) throw new Error("findDOMNode only works on mounted components.");
-	return component[CORE].element;
+	if(!component[symbols.CORE]?.element?.parentNode) throw new Error("findDOMNode only works on mounted components.");
+	return component[symbols.CORE].element;
 }
 
 /**
@@ -4769,11 +4770,11 @@ function getComponentByPointer()
 
 		let t = event.target;
 
-		while( !t[COMPONENT] && t.parentNode ) {
+		while( !t[symbols.COMPONENT] && t.parentNode ) {
 			t = t.parentNode;
 		}
 
-		resolve_func( t[COMPONENT] );
+		resolve_func( t[symbols.COMPONENT] );
 
 		return false;
 	}
@@ -4927,9 +4928,6 @@ function toBool(value) {
 // Internals
 
 /** @ignore */
-const required_scripts = {};
-
-/** @ignore */
 let update_timeout = undefined;
 /** @ignore */
 let update_interval_margin = 0;
@@ -4998,7 +4996,7 @@ const boolean_html_attributes_set = new
 			 "hidden","open","loop","muted","controls","playsInline","allowFullScreen"]);
 
 
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9taXNjLmpzeCIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi9Vc2Vycy9hcmFzaC9EZXNrdG9wL1Byb2plY3RzL0xpbGFjdC9zcmMvbWlzYy5qc3giXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsQUFBQTs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0NBaUNDOzs7Z0JBR2UsV0FBVztFQUN6QjtFQUNBOztrREFFZ0QsbUJBQW1CO3NCQUMvQzsrQkFDUzs7Ozs7O0NBTTlCOztDQUVBOzs7Ozs7K0JBTThCLFdBQVc7Ozs7Q0FJekM7Ozs7Ozs0QkFNMkIsYUFBYTs7RUFFdkM7Ozs7Ozs7Ozs7OztJQVlFLHVEQUF1RDs7OztDQUkxRDs7Ozs7a0NBS2tDLEFBQUQsYUFBYTs7O0NBRzlDOzs7Ozs7Ozt5QkFRd0I7O0NBRXhCOzs7Ozs7TUFNSyxXQUFXOzs7UUFHVCxvQkFBb0I7TUFDdEIsMkNBQTJDO29CQUM3Qjs7O1dBR1QsZ0RBQWdEO29CQUN2Qzs7O01BR2QsTUFBTTtvQkFDUTs7OztLQUlmOzs7O0NBSUo7Ozs7OztTQU1RLFdBQVc7S0FDZixXQUFXO01BQ1Y7Ozs7Ozs7O0NBUUw7Ozs7Ozs7OzJCQVEwQjtDQUMxQjs2QkFDNEIsUUFBUSxlQUFnQixBQUFEOzs7Ozs7OztDQVFuRDs7Ozs7c0NBS3FDO0NBQ3JDOzs7d0JBR3VCLENBQUUsYUFBYTs7Ozt3QkFJZixRQUFROztpQ0FFQzs2QkFDSjs7OztRQUlyQixrQ0FBa0M7Ozs7ZUFJM0I7Ozs7O3lCQUtVOzs7Ozs7Q0FNeEI7Ozs7Ozt3QkFNdUIsU0FBUztLQUM1Qjs7Ozs7Q0FLSjs7Ozs7Ozs2QkFPNEIsb0JBQW9CO0tBQzVDLE1BQU8sbUJBQW1CLFdBQVU7Ozs7S0FJcEMsTUFBTyx1QkFBc0I7TUFDNUIsa0NBQWtDOzs7c0JBR2pCLEFBQUQ7WUFDVixNQUFPLHdCQUF1QjtxQkFDckIsY0FBZSxBQUFEO1lBQ3ZCLE1BQU8sc0JBQXFCO3dCQUNoQixxQkFBcUI7Ozs7Ozs7Q0FPNUM7Ozs7Ozs7MEJBT3lCLGlCQUFpQjtLQUN0QyxNQUFPLG1CQUFtQixXQUFVOzs7O0tBSXBDLE1BQU8sdUJBQXNCO01BQzVCLGtDQUFrQzs7OztzQkFJakIsQUFBRCwyQkFBNEI7WUFDdEMsTUFBTyx3QkFBdUI7TUFDcEMsV0FBWSwrQkFBK0Isa0JBQWlCOzs7O3FCQUk3QyxjQUFlLEFBQUQ7WUFDdEI7O1lBRUQsTUFBTyxzQkFBcUI7d0JBQ2hCLHFCQUFxQjs7Ozs7Ozs7Q0FRNUM7Ozs7Ozt3QkFNdUIsUUFBUTtFQUM5QjtJQUNFLENBQUU7O0lBRUYsNENBQTZDOzttQ0FFZDs7O0NBR2xDOzs7Ozs7d0JBTXVCLFFBQVE7Ozs7Q0FJL0I7Ozs7OzsyQkFNMEIsUUFBUTtrQkFDakI7OztDQUdqQjs7Ozs7O3dCQU11QixRQUFRO2lFQUNpQzs7O0NBR2hFOzs7Ozs7dUJBTXNCLFFBQVE7S0FDMUI7O0tBRUE7O0tBRUEsNEJBQTRCO3FCQUNaLGNBQWM7TUFDN0I7TUFDQTs7O2dCQUdVOzs7O0NBSWY7O0NBRUE7aUNBQ2dDOztDQUVoQzs7Q0FFQTs7Q0FFQTsrQkFDOEIsV0FBWTtDQUMxQzt5QkFDd0I7OztDQUd4QjtDQUNBOztDQUVBOztDQUVBOztDQUVBOztDQUVBOzs7Q0FHQTswQ0FDeUM7Ozs7O0NBS3pDO2tDQUNpQzs7Ozs7Ozs7Ozs7Ozs7Ozs7O0NBa0JqQzttQ0FDa0M7S0FDOUIsd0JBQXdCOzs7O0NBSTVCO2lEQUNnRDs7Ozs7Ozs7O0NBU2hEOztLQUVJIn0=
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9taXNjLmpzeCIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi9Vc2Vycy9hcmFzaC9EZXNrdG9wL1Byb2plY3RzL0xpbGFjdC9zcmMvbWlzYy5qc3giXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsQUFBQTs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O1FBaUNROzs7Z0JBR1EsV0FBVztFQUN6QjtFQUNBOztrREFFZ0QsbUJBQW1CO3NCQUMvQzsrQkFDUzs7Ozs7O0NBTTlCOztDQUVBOzs7Ozs7K0JBTThCLFdBQVc7Ozs7Q0FJekM7Ozs7Ozs0QkFNMkIsYUFBYTs7RUFFdkM7Ozs7Ozs7Ozs7OztJQVlFLHVEQUF1RDs7OztDQUkxRDs7Ozs7a0NBS2tDLEFBQUQsYUFBYTs7O0NBRzlDOzs7Ozs7Ozt5QkFRd0I7O0NBRXhCOzs7Ozs7TUFNSyxXQUFXOzs7UUFHVCxvQkFBb0I7TUFDdEIsMkNBQTJDO29CQUM3Qjs7O1dBR1QsZ0RBQWdEO29CQUN2Qzs7O01BR2QsTUFBTTtvQkFDUTs7OztLQUlmOzs7O0NBSUo7Ozs7OztTQU1RLFdBQVc7S0FDZixXQUFXO01BQ1Y7Ozs7Ozs7O0NBUUw7Ozs7Ozs7OzJCQVEwQjtDQUMxQjs2QkFDNEIsUUFBUSxlQUFnQixBQUFEOzs7Ozs7OztDQVFuRDs7Ozs7c0NBS3FDO0NBQ3JDOzs7d0JBR3VCLENBQUUsYUFBYTs7Ozt3QkFJZixRQUFROztpQ0FFQzs2QkFDSjs7OztRQUlyQixrQ0FBa0M7Ozs7ZUFJM0I7Ozs7O3lCQUtVOzs7Ozs7Q0FNeEI7Ozs7Ozt3QkFNdUIsU0FBUztLQUM1Qjs7Ozs7Q0FLSjs7Ozs7Ozs2QkFPNEIsb0JBQW9CO0tBQzVDLE1BQU8sbUJBQW1CLFdBQVU7Ozs7S0FJcEMsTUFBTyx1QkFBc0I7TUFDNUIsa0NBQWtDOzs7c0JBR2pCLEFBQUQ7WUFDVixNQUFPLHdCQUF1QjtxQkFDckIsY0FBZSxBQUFEO1lBQ3ZCLE1BQU8sc0JBQXFCO3dCQUNoQixxQkFBcUI7Ozs7Ozs7Q0FPNUM7Ozs7Ozs7MEJBT3lCLGlCQUFpQjtLQUN0QyxNQUFPLG1CQUFtQixXQUFVOzs7O0tBSXBDLE1BQU8sdUJBQXNCO01BQzVCLGtDQUFrQzs7OztzQkFJakIsQUFBRCwyQkFBNEI7WUFDdEMsTUFBTyx3QkFBdUI7TUFDcEMsV0FBWSwrQkFBK0Isa0JBQWlCOzs7O3FCQUk3QyxjQUFlLEFBQUQ7WUFDdEI7O1lBRUQsTUFBTyxzQkFBcUI7d0JBQ2hCLHFCQUFxQjs7Ozs7Ozs7Q0FRNUM7Ozs7Ozt3QkFNdUIsUUFBUTtFQUM5QjtJQUNFLENBQUU7O0lBRUYsNENBQTZDOzttQ0FFZDs7O0NBR2xDOzs7Ozs7d0JBTXVCLFFBQVE7Ozs7Q0FJL0I7Ozs7OzsyQkFNMEIsUUFBUTtrQkFDakI7OztDQUdqQjs7Ozs7O3dCQU11QixRQUFRO2lFQUNpQzs7O0NBR2hFOzs7Ozs7dUJBTXNCLFFBQVE7S0FDMUI7O0tBRUE7O0tBRUEsNEJBQTRCO3FCQUNaLGNBQWM7TUFDN0I7TUFDQTs7O2dCQUdVOzs7O0NBSWY7O0NBRUE7O0NBRUE7O0NBRUE7K0JBQzhCLFdBQVk7Q0FDMUM7eUJBQ3dCOzs7Q0FHeEI7Q0FDQTs7Q0FFQTs7Q0FFQTs7Q0FFQTs7Q0FFQTs7O0NBR0E7MENBQ3lDOzs7OztDQUt6QztrQ0FDaUM7Ozs7Ozs7Ozs7Ozs7Ozs7OztDQWtCakM7bUNBQ2tDO0tBQzlCLHdCQUF3Qjs7OztDQUk1QjtpREFDZ0Q7Ozs7Ozs7OztDQVNoRDs7S0FFSSJ9
 ;// ./src/components.jsx
 /*
 
@@ -5030,7 +5028,6 @@ const boolean_html_attributes_set = new
 
 */
 
-const [components_CORE,components_COMPONENT,components_TEXT,IS_ZOMBIE,IDX,CHILD_CLASS_ADDENDUM,components_MEMOIZED]=[Symbol.for('LILACT:CORE'),Symbol.for('LILACT:COMPONENT'),Symbol.for('LILACT:TEXT'),Symbol.for('LILACT:IS_ZOMBIE'),Symbol.for('LILACT:IDX'),Symbol.for('LILACT:CHILD_CLASS_ADDENDUM'),Symbol.for('LILACT:MEMOIZED')];
 
 
 
@@ -5056,9 +5053,9 @@ class ComponentCache
 		let comp;
 		let buck = this.current_map.get(key);
 
-		if(buck && buck.length>buck[IDX]) {
-			comp = buck[buck[IDX]];
-			buck[IDX]++;
+		if(buck && buck.length>buck[symbols.IDX]) {
+			comp = buck[buck[symbols.IDX]];
+			buck[symbols.IDX]++;
 
 			buck = this.new_map.get(key);
 			if(buck!==undefined) {
@@ -5067,7 +5064,7 @@ class ComponentCache
 			else {
 				buck = [ comp ];
 				this.new_map.set(key, buck);
-				buck[IDX]=0;
+				buck[symbols.IDX]=0;
 			}
 		}
 		else {
@@ -5080,10 +5077,10 @@ class ComponentCache
 			else {
 				buck = [ comp ];
 				this.new_map.set(key, buck);
-				buck[IDX]=0;
+				buck[symbols.IDX]=0;
 			}
 
-			if(comp[components_CORE]) comp[components_CORE].parent ??= this.owner;
+			if(comp[symbols.CORE]) comp[symbols.CORE].parent ??= this.owner;
 		}
 
 		return comp;
@@ -5092,7 +5089,7 @@ class ComponentCache
 	commit() 
 	{
 		this.current_map.forEach( (arr)=>{
-			arr.slice(arr[IDX]).forEach((ex)=>{
+			arr.slice(arr[symbols.IDX]).forEach((ex)=>{
 				if(ex.cleanup) ex.cleanup();
 			});
 		});
@@ -5165,6 +5162,7 @@ class ComponentCore
 		// }
 
 		/*if(do_rerender)*/ {
+if(true) {
 
 			if(this.entity?.propTypes) {
 				Lilact.PropTypes.checkPropTypes(this.entity.propTypes, this.props, 'prop', this.entity.name);
@@ -5173,6 +5171,7 @@ class ComponentCore
 				Lilact.PropTypes.checkPropTypes(this.component.propTypes, this.props, 'prop', this.component.name);
 			}
 
+}	
 			if(typeof(next_state)==='function') next_state = next_state(this.state);
 
 			if(this.component.constructor.defaultProps) {
@@ -5190,7 +5189,7 @@ class ComponentCore
 					if(next_props?.defaultValue) this.element.value = String(next_props.defaultValue).slice(0, next_props?.maxLength);
 					if(next_props?.defaultChecked) this.element.checked = next_props.defaultChecked;
 				}
-				this.element[components_COMPONENT] = this.component;
+				this.element[symbols.COMPONENT] = this.component;
 			}
 
 
@@ -5287,18 +5286,18 @@ class ComponentCore
 					const core = prepareCore(this, item);
 					this.outlet[i] = core;
 
-					if(core[components_TEXT]===undefined) {
+					if(core[symbols.TEXT]===undefined) {
 						core.container= this.element? this : this.container;
 						core.apply(item.props);
 					}
 					else {
 						if(!core.element) {
-							core.element = document.createTextNode(item[components_TEXT]);
-							core[components_TEXT] = item[components_TEXT];
+							core.element = document.createTextNode(item[symbols.TEXT]);
+							core[symbols.TEXT] = item[symbols.TEXT];
 						}
-						else if(core[components_TEXT]!==item[components_TEXT]) {
-							core.element.textContent = item[components_TEXT];
-							core[components_TEXT] = item[components_TEXT];
+						else if(core[symbols.TEXT]!==item[symbols.TEXT]) {
+							core.element.textContent = item[symbols.TEXT];
+							core[symbols.TEXT] = item[symbols.TEXT];
 						}
 					}
 				}
@@ -5473,7 +5472,9 @@ class ComponentCore
 			this.element.onsubmit = undefined;
 		}
 
+if(true) {
 		//this.element.setAttribute('key', this.props.key);
+}		
 
 		this.updateElementClass(patch);
 	}
@@ -5483,8 +5484,8 @@ class ComponentCore
 		let cn = patch?.className;
 		cn ??= patch?.class ? patch.class : '';
 
-		if(this?.parent?.[CHILD_CLASS_ADDENDUM]) {
-			cn += ' ' + this?.parent?.[CHILD_CLASS_ADDENDUM];
+		if(this?.parent?.[symbols.CHILD_CLASS_ADDENDUM]) {
+			cn += ' ' + this?.parent?.[symbols.CHILD_CLASS_ADDENDUM];
 		}
 		
 		if(cn.length>0) {
@@ -5510,7 +5511,7 @@ class ComponentCore
 	{
 		const chs = container.element.childNodes;
 		while( 	chs[container.insert_index] && 
-				chs[container.insert_index][IS_ZOMBIE] && 
+				chs[container.insert_index][symbols.IS_ZOMBIE] && 
 				chs[container.insert_index]!==next_element ) 
 		{
 			container.insert_index++;
@@ -5617,7 +5618,7 @@ function constructFunc(core, parent) // returns {text} or component, and not com
 {
 	let comp = core;
 
-	if( core[components_TEXT]!==undefined ) {
+	if( core[symbols.TEXT]!==undefined ) {
 		// do nothing...
 	}
 	else {
@@ -5636,14 +5637,14 @@ function constructFunc(core, parent) // returns {text} or component, and not com
 				const desc = Object.getOwnPropertyDescriptor(comp, "state");
 				if(desc) {
 					if (typeof desc.get !== "function" && typeof desc.set !== "function") {
-						comp[components_CORE].state = comp.state;
+						comp[symbols.CORE].state = comp.state;
 
 						Object.defineProperty(comp, "state", {
-							get() { return this[components_CORE].state },
+							get() { return this[symbols.CORE].state },
 							set(v) { 
 								// todo: this should be changed, it should be only directly settable in constructor.
-								if(this[components_CORE].state===undefined) {
-									this[components_CORE].state = v;
+								if(this[symbols.CORE].state===undefined) {
+									this[symbols.CORE].state = v;
 								}
 								else {
 									throw new Error('Assigning component state this way is not allowed.');
@@ -5664,23 +5665,23 @@ function constructFunc(core, parent) // returns {text} or component, and not com
 				// the binding is not necessary and is not according to the specs, 
 				// probably not even recommended! but helpful.
 				comp.render = core.entity.bind(comp); 
-				comp[components_CORE].hooks = [];
-				comp[components_CORE].hook_index = 0;
+				comp[symbols.CORE].hooks = [];
+				comp[symbols.CORE].hook_index = 0;
 			}
 			else {
 				throw new Error("Invalid entity for createComponent.");
 			}
 
-			comp[components_CORE].entity = core.entity;
+			comp[symbols.CORE].entity = core.entity;
 
 			if(core.container) {
-				comp[components_CORE].container = core.container;
+				comp[symbols.CORE].container = core.container;
 			}
 		}
 
 	}
 
-	if(parent instanceof ComponentCore) comp[components_CORE].parent = parent;
+	if(parent instanceof ComponentCore) comp[symbols.CORE].parent = parent;
 
 	return comp;
 }
@@ -5690,9 +5691,9 @@ function prepareCore(parent, core)
 {
 	try {
 		parent.cache ??= new ComponentCache(parent);
-		core =  parent.cache.pick( 	core[components_TEXT]===undefined?core?.props?.key:':text:', 
-									()=>(  (core[components_TEXT]!==undefined || core instanceof ComponentCore) ?   
-											 core : constructFunc(core, parent)[components_CORE]  ) 
+		core =  parent.cache.pick( 	core[symbols.TEXT]===undefined?core?.props?.key:':text:', 
+									()=>(  (core[symbols.TEXT]!==undefined || core instanceof ComponentCore) ?   
+											 core : constructFunc(core, parent)[symbols.CORE]  ) 
 								);
 		return core;
 	}
@@ -5750,7 +5751,7 @@ const generateComponentKey = (entity, props)=> {
 	else if(props.path!==undefined) {
 		key = ':p:'+props.path;
 	}
-	else if(props[components_TEXT]!==undefined) {
+	else if(props[symbols.TEXT]!==undefined) {
 		key = ':text:';
 	}
 	else {
@@ -5819,11 +5820,11 @@ class Component
 	* Update it with `setState()` to trigger a re-render.
 	* @type {object}
 	*/
-	get state() { return this[components_CORE].state }
+	get state() { return this[symbols.CORE].state }
 	set state(v) { 
 		// todo: this should be changed, it should be only directly settable in constructor.
-		if(this[components_CORE].state===undefined) {
-			this[components_CORE].state = v;
+		if(this[symbols.CORE].state===undefined) {
+			this[symbols.CORE].state = v;
 		}
 		else {
 			throw new Error('Assigning component state this way is not allowed.');
@@ -5835,7 +5836,7 @@ class Component
 	* @type {any}
 	* @protected
 	*/
-	get context() { return this[components_CORE].context }
+	get context() { return this[symbols.CORE].context }
 	set context(v) { throw new Error('Assigning component context this way is not allowed.') }
 
 	/**
@@ -5843,7 +5844,7 @@ class Component
 	* Use it to access shared data provided by an outer component/system.
 	* @type {any}
 	*/
-	get type() { return this[components_CORE].entity }
+	get type() { return this[symbols.CORE].entity }
 	set type(v) { throw new Error('Component type is immutable.') }
 
 	/**
@@ -5851,7 +5852,7 @@ class Component
 	* Use it as read-only input when rendering.
 	* @type {any}
 	*/
-	get props() { return this[components_CORE].props }
+	get props() { return this[symbols.CORE].props }
 	set props(v) { throw new Error('Assigning component props this way is not allowed.') }
 
 	/**
@@ -5859,7 +5860,7 @@ class Component
 	* Can be used to expose the component instance or an underlying DOM node.
 	* @type {any}
 	*/
-	get ref() { return this[components_CORE].ref }
+	get ref() { return this[symbols.CORE].ref }
 	set ref(v) { throw new Error('Component ref is immutable.') }
 
 	/**
@@ -5867,7 +5868,7 @@ class Component
 	* The key is immutable and can only be set when the component is declared.
 	* @type {string|number}
 	*/
-	get key() { return this[components_CORE].props.key }
+	get key() { return this[symbols.CORE].props.key }
 	set key(v) { throw new Error('Component key is immutable.') }
 
 
@@ -5878,16 +5879,16 @@ class Component
 	*/
 	displayName()
 	{
-		if(this[components_CORE].entity?.displayName) return this[components_CORE].entity?.displayName;
-		if(typeof(this[components_CORE].entity)==='string') return this[components_CORE].entity;
-		if( Lilact.isClass(this[components_CORE].entity) ) this[components_CORE].entity.constructor.name;
-		if( typeof(this[components_CORE].entity)==='function' ) return this[components_CORE].entity.name;
+		if(this[symbols.CORE].entity?.displayName) return this[symbols.CORE].entity?.displayName;
+		if(typeof(this[symbols.CORE].entity)==='string') return this[symbols.CORE].entity;
+		if( Lilact.isClass(this[symbols.CORE].entity) ) this[symbols.CORE].entity.constructor.name;
+		if( typeof(this[symbols.CORE].entity)==='function' ) return this[symbols.CORE].entity.name;
 		return "Component";
 	}
 
 	constructor(props)
 	{
-		this[components_CORE] = new ComponentCore(this, props);
+		this[symbols.CORE] = new ComponentCore(this, props);
 	}
 
 	/**
@@ -5899,7 +5900,7 @@ class Component
 	{
 		Lilact.clearTimeout(Lilact.update_timeout);
 
-		Lilact.update_set.add(this[components_CORE].container || this[components_CORE]);
+		Lilact.update_set.add(this[symbols.CORE].container || this[symbols.CORE]);
 		if(callback) Lilact.update_cbs.add(callback.bind(this));
 		Lilact.update_timeout = Lilact.setTimeout( doUpdates,  Lilact.update_interval_margin );
 	}
@@ -5914,10 +5915,10 @@ class Component
 	setState(next_state, callback)
 	{
 		if(this.getSnapshotBeforeUpdate!==undefined) {
-			this[components_CORE].last_snapshot = this.getSnapshotBeforeUpdate(this[components_CORE].props, this.state);
+			this[symbols.CORE].last_snapshot = this.getSnapshotBeforeUpdate(this[symbols.CORE].props, this.state);
 		}
 
-		this[components_CORE].next_state = next_state;
+		this[symbols.CORE].next_state = next_state;
 		this.forceUpdate(callback?callback.bind(this):undefined);
 	}
 
@@ -5973,12 +5974,12 @@ class HTMLComponent extends Component
 	constructor(entity, props)
 	{
 		super(props);
-		this[components_CORE].entity = entity;
+		this[symbols.CORE].entity = entity;
 	}
 
 	render()
 	{	
-		return this[components_CORE].props.children;
+		return this[symbols.CORE].props.children;
 	}
 }
 
@@ -6017,11 +6018,11 @@ class RootComponent extends HTMLComponent
 			element = document.querySelector(element);
 		}
 
-		this[components_CORE].element = element;
+		this[symbols.CORE].element = element;
 
 		for(const ch of props.children) {
-			if(ch[components_CORE]) ch[components_CORE].container = this[components_CORE];
-			else ch.container = this[components_CORE];
+			if(ch[symbols.CORE]) ch[symbols.CORE].container = this[symbols.CORE];
+			else ch.container = this[symbols.CORE];
 		}
 	}
 }
@@ -6059,7 +6060,7 @@ function components_createComponent(entity, props={}, ...children)
 		}
 
 		if( typeof(ch)==='string' ) {
-			children[i] = { [components_TEXT]: ch };
+			children[i] = { [symbols.TEXT]: ch };
 		}
 		else {
 			children[i] = ch;
@@ -6096,7 +6097,7 @@ function createRoot(element)
 		render(component) {
 			if(!root) {
 				root = new RootComponent( element, {children:[component]} );
-				Lilact.roots.add(root[components_CORE]);
+				Lilact.roots.add(root[symbols.CORE]);
 				root.forceUpdate();
 				return root;
 			}
@@ -6127,7 +6128,7 @@ function createRoot(element)
 
 function render(component, element)
 {
-	if(component[components_CORE] && (component[components_CORE].container || component[components_CORE].parent)) {
+	if(component[symbols.CORE] && (component[symbols.CORE].container || component[symbols.CORE].parent)) {
 		throw new Error("Component is already in use");
 	}
 	return createRoot(element).render(component);
@@ -6136,7 +6137,7 @@ function render(component, element)
 /** @ignore */
 const createElement = components_createComponent;
 
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9jb21wb25lbnRzLmpzeCIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi9Vc2Vycy9hcmFzaC9EZXNrdG9wL1Byb2plY3RzL0xpbGFjdC9zcmMvY29tcG9uZW50cy5qc3giXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsQUFBQTs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0NBOEJDOztRQUVPOztDQUVQOzs7Ozs7Q0FNQTs7Ozs7O2FBTVk7RUFDWDs7OztNQUlJO0VBQ0o7O2tDQUVnQzs7S0FFN0IsZ0NBQWdDOzs7OzJCQUlWO01BQ3JCLG1CQUFtQjtjQUNYOztTQUVMOztxQkFFWTs7OztRQUliO3lCQUNpQjs7MkJBRUU7TUFDckIsbUJBQW1CO2NBQ1g7O1NBRUw7O3FCQUVZOzs7O01BSWY7Ozs7OztRQU1FO0VBQ047MkJBQ3lCLENBQUUsT0FBTztZQUN2QixrQkFBbUIsQUFBRCxNQUFPO0tBQy9CLHVCQUF1Qjs7Ozs7Ozs7OztDQVU3Qjs7Ozs7Ozs7Ozs7Ozs7Ozs7O0NBa0JBO0VBQ0M7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OzthQTJCVztFQUNYOzt5QkFFdUI7OztPQUdsQjtFQUNMO0dBQ0M7O0dBRUE7R0FDQTtHQUNBO0dBQ0E7O0dBRUEsb0JBQW9COztNQUdqQix5QkFBeUI7b0NBQ0s7O1dBRXpCLDRCQUE0QjtvQ0FDSDs7O01BSTlCLE1BQU8sbURBQWtEOztNQUV6RCwwQ0FBMEM7a0JBQzlCOzs7TUFHWjs7S0FFQTs7O01BR0EsT0FBUSw0QkFBMkI7T0FDbEMsQ0FBRSxvQ0FBbUM7MkNBQ0Q7UUFDbkMsc0RBQXNELCtCQUErQjtRQUNyRjs7Ozs7O01BTUYsaUJBQWlCO09BQ2hCLE1BQU8sZ0NBQStCO1FBQ3JDLGVBQWU7cUJBQ0Y7O1dBRVY7cUJBQ1U7Ozs7VUFJWDtRQUNGLGVBQWU7OztXQUdaOzs7Ozs7TUFNTCxxRUFBcUU7NkNBQzlCOzs7TUFHdkMscUNB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
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9jb21wb25lbnRzLmpzeCIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi9Vc2Vycy9hcmFzaC9EZXNrdG9wL1Byb2plY3RzL0xpbGFjdC9zcmMvY29tcG9uZW50cy5qc3giXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsQUFBQTs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O1FBOEJRO1FBQ0E7O0NBRVA7Ozs7OztDQU1BOzs7Ozs7YUFNWTtFQUNYOzs7O01BSUk7RUFDSjs7a0NBRWdDOztLQUU3QixnQ0FBZ0M7Ozs7MkJBSVY7TUFDckIsbUJBQW1CO2NBQ1g7O1NBRUw7O3FCQUVZOzs7O1FBSWI7eUJBQ2lCOzsyQkFFRTtNQUNyQixtQkFBbUI7Y0FDWDs7U0FFTDs7cUJBRVk7Ozs7TUFJZjs7Ozs7O1FBTUU7RUFDTjsyQkFDeUIsQ0FBRSxPQUFPO1lBQ3ZCLGtCQUFtQixBQUFELE1BQU87S0FDL0IsdUJBQXVCOzs7Ozs7Ozs7O0NBVTdCOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Q0FrQkE7RUFDQzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O2FBMkJXO0VBQ1g7O3lCQUV1Qjs7O09BR2xCO0VBQ0w7R0FDQzs7R0FFQTtHQUNBO0dBQ0E7R0FDQTs7R0FFQSxvQkFBb0I7R0FDcEIsUUFBUTs7TUFFTCx5QkFBeUI7b0NBQ0s7O1dBRXpCLDRCQUE0QjtvQ0FDSDs7OztNQUk5QixNQUFPLG1EQUFrRDs7TUFFekQsMENBQTBDO2tCQUM5Qjs7O01BR1o7O0tBRUE7OztNQUdBLE9BQVEsNEJBQTJCO09BQ2xDLENBQUUsb0NBQW1DOzJDQUNEO1FBQ25DLHNEQUFzRCwrQkFBK0I7UUFDckY7Ozs7OztNQU1GLGlCQUFpQjtPQUNoQixNQUFPLGdDQUErQjtRQUNyQyxlQUFlO3FCQUNGOztXQUVWO3FCQUNVOzs7O1VBSVg7UUFDRixlQUFlOzs7V0FHWjs7Ozs7O01BTUwscUVBQXFFOzZDQUM5Qjs7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
 ;// ./src/hooks.jsx
 /*
 
@@ -6168,7 +6169,9 @@ const createElement = components_createComponent;
 
 */
 
-const [hooks_CORE,hooks_COMPONENT]=[Symbol.for('LILACT:CORE'),Symbol.for('LILACT:COMPONENT')];
+
+
+
 
 
 /**
@@ -6197,9 +6200,9 @@ function useHook()
  */
 function useState(initialValue)
 {
-	const hk = Lilact.useHook();
+	const hk = useHook();
 
-	if( Lilact.isEmpty(hk) ) {
+	if( isEmpty(hk) ) {
 		if(typeof(initialValue)==='function') hk.value = initialValue();
 		else hk.value = initialValue;
 		
@@ -6228,9 +6231,9 @@ function useCallback(callback, deps=undefined)
 		throw new Error("Callback dependencies must be an array or omitted.");
 	}
 
-	const hk = Lilact.useHook();
+	const hk = useHook();
 
-	if( !Lilact.isEmpty(hk) ) {
+	if( !isEmpty(hk) ) {
 		if(deps!==undefined && hk?.deps!==undefined && Lilact.shallowEqual(deps, hk.deps)) {
 			return hk.callback;
 		}
@@ -6294,9 +6297,9 @@ function useContext(context)
  */
 function useId(prefix="N")
 {
-	const hk = Lilact.useHook();
+	const hk = useHook();
 
-	if( Lilact.isEmpty(hk) ) {
+	if( isEmpty(hk) ) {
 		hk.id = prefix+Lilact.id_num++;
 	}
 
@@ -6310,9 +6313,9 @@ function useId(prefix="N")
  */
 function useTransition()
 {
-	const hk = Lilact.useHook();
+	const hk = useHook();
 
-	if( Lilact.isEmpty(hk) ) {
+	if( isEmpty(hk) ) {
 		hk.count=0;
 
 		hk.func =
@@ -6350,7 +6353,7 @@ function useTransition()
 function useLocalStorage(key, initialValue)
 {
 
-	const hk = Lilact.useHook();
+	const hk = useHook();
 	let val;
 
 	try {
@@ -6365,7 +6368,7 @@ function useLocalStorage(key, initialValue)
 		localStorage[key] = JSON.stringify(val);
 	}
 
-	if( Lilact.isEmpty(hk) ) {
+	if( isEmpty(hk) ) {
 		hk.value = val;
 		hk.set_func = function(core, hk, val) {
 
@@ -6393,9 +6396,9 @@ function useLocalStorage(key, initialValue)
  */
 function useRef(initialValue = null)
 {
-	const hk = Lilact.useHook();
+	const hk = useHook();
 
-	if( Lilact.isEmpty(hk) ) {
+	if( isEmpty(hk) ) {
 		hk.current = initialValue;
 	}
 
@@ -6415,9 +6418,9 @@ function useLayoutEffect(effect, deps=undefined)
 		throw new Error("Layout effect dependencies must be an array or omitted.");
 	}
 
-	const hk = Lilact.useHook();
+	const hk = useHook();
 
-	if( !Lilact.isEmpty(hk) ) {
+	if( !isEmpty(hk) ) {
 		if(deps!==undefined && hk?.deps!==undefined && Lilact.shallowEqual(deps, hk.deps)) return;
 	}
 
@@ -6443,9 +6446,9 @@ function useEffect(effect, deps=undefined)
 		throw new Error("Effect dependencies must be an array or omitted.");
 	}
 
-	const hk = Lilact.useHook();
+	const hk = useHook();
 
-	if( !Lilact.isEmpty(hk) ) {
+	if( !isEmpty(hk) ) {
 		if(deps!==undefined && hk?.deps!==undefined && Lilact.shallowEqual(deps, hk.deps)) return;
 	}
 
@@ -6471,9 +6474,9 @@ function useMemo(factory,deps=undefined)
 		throw new Error("Memo dependencies must be an array or omitted.");
 	}
 
-	const hk = Lilact.useHook();
+	const hk = useHook();
 
-	if( !Lilact.isEmpty(hk) ) {
+	if( !isEmpty(hk) ) {
 		if(deps!==undefined && hk?.deps!==undefined && Lilact.shallowEqual(deps, hk.deps)) {
 			return hk.value;
 		}
@@ -6494,10 +6497,10 @@ function useMemo(factory,deps=undefined)
  */
 function useActionState(action, initialState)
 {
-	const hk = Lilact.useHook();
+	const hk = useHook();
 	const [is_pending, tran_start_func] = Lilact.useTransition();
 
-	if( Lilact.isEmpty(hk) ) {
+	if( isEmpty(hk) ) {
 
 		hk.state = initialState;
 
@@ -6529,9 +6532,9 @@ function useActionState(action, initialState)
  */
 function useReducer(reducer, initialArg, init)
 {
-	const hk = Lilact.useHook();
+	const hk = useHook();
 
-	if( Lilact.isEmpty(hk) ) {
+	if( isEmpty(hk) ) {
 		hk.reducer = reducer;
 		hk.state = init?init(initialArg):initialArg;
 		hk.dispatch = function(core, hk, action) {
@@ -6540,7 +6543,6 @@ function useReducer(reducer, initialArg, init)
 				hk.state = newst;
 				core.component.forceUpdate();
 			}
-
 		}.bind(undefined, Lilact.current_component[0], hk);
 	}
 
@@ -6628,7 +6630,7 @@ function useImperativeHandle(ref, factory, deps=undefined)
 
 
 
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9ob29rcy5qc3giLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIvVXNlcnMvYXJhc2gvRGVza3RvcC9Qcm9qZWN0cy9MaWxhY3Qvc3JjL2hvb2tzLmpzeCJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSxBQUFBOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Q0E4QkM7OztDQUdBOzs7Ozs7O3dCQU91QjtDQUN2Qjs7O0lBR0csMENBQTBDO2tCQUMzQixBQUFEOzs7Ozs7Q0FNakI7Ozs7Ozt5QkFNd0I7Q0FDeEI7MkJBQzBCOztJQUV2QixlQUFnQixRQUFPO0tBQ3RCLE1BQU8scURBQW9EOzs7eUJBR3ZDLGtCQUFrQjtNQUNyQyxNQUFPLHVDQUFzQzs7OzhCQUdyQjtTQUNyQjs7Ozs7OztDQU9SOzs7Ozs7OzRCQU8yQjtDQUMzQjtJQUNHLHFCQUFzQixNQUFPLDBEQUF3RDtrQkFDdkU7OzsyQkFHUzs7SUFFdkIsZ0JBQWlCLFFBQU87S0FDdkIsK0RBQWdFLGtCQUFpQjs7Ozs7SUFLbEYsY0FBYzthQUNMOzs7Ozs7Ozs7Q0FTWjs7Ozs7OzhCQU02QjtDQUM3Qjt1QkFDdUIsQUFBRCxvQkFBb0I7Ozs7U0FJbEM7Ozs7OztDQU1SOzs7Ozs7MkJBTTBCO0NBQzFCOzs7T0FHTSxnREFBZ0Q7Ozs7SUFJbkQsY0FBYzs7Ozs7Ozs7Q0FRakI7Ozs7OztzQkFNcUI7Q0FDckI7MkJBQzBCOztJQUV2QixlQUFnQixRQUFPOzs7Ozs7O0NBTzFCOzs7Ozs4QkFLNkI7Q0FDN0I7MkJBQzBCOztJQUV2QixlQUFnQixRQUFPOzs7OztHQUt4QixjQUFlLGVBQWU7Ozs7S0FJM0IsZUFBZTs4QkFDVTs7O1dBR25COzs7O0tBSU4sZUFBZTs4QkFDVTs7OztTQUl0Qjs7Ozs7O0NBTVI7Ozs7Ozs7Z0NBTytCO0NBQy9COzsyQkFFMEI7OztNQUdyQjttQkFDYTs7T0FFWixJQUFJOzs7SUFHUCxrQkFBa0I7S0FDakIsTUFBTyx5REFBd0Q7O3FDQUUvQjs7O0lBR2pDLGVBQWdCLFFBQU87O3lCQUVGLGdCQUFnQjs7TUFFbkMsTUFBTyw4QkFBNkI7O01BRXBDOztzQ0FFZ0M7Ozs4QkFHUjs7U0FFckI7Ozs7OztDQU1SOzs7Ozs7O3VCQU9zQjtDQUN0QjsyQkFDMEI7O0lBRXZCLGVBQWdCLFFBQU87Ozs7Ozs7Q0FPMUI7Ozs7Ozs7Z0NBTytCO0NBQy9CO0lBQ0cscUJBQXNCLE1BQU8sMERBQXdEO2tCQUN2RTs7OzJCQUdTOztJQUV2QixnQkFBaUIsUUFBTztLQUN2QiwrREFBZ0U7OztJQUdqRSxjQUFjO2FBQ0w7Ozs7MkJBSWMsQ0FBRSxJQUFJLHFCQUFxQjttREFDSDs7O0NBR2xEOzs7Ozs7OzBCQU95QjtDQUN6QjtJQUNHLHFCQUFzQixNQUFPLDBEQUF3RDtrQkFDdkU7OzsyQkFHUzs7SUFFdkIsZ0JBQWlCLFFBQU87S0FDdkIsK0RBQWdFOzs7SUFHakUsY0FBYzthQUNMOzs7O21CQUlNLENBQUUsSUFBSSxxQkFBcUI7Ozs7Q0FJN0M7Ozs7Ozs7d0JBT3VCO0NBQ3ZCO0lBQ0cscUJBQXNCLE1BQU8sMERBQXdEO2tCQUN2RTs7OzJCQUdTOztJQUV2QixnQkFBaUIsUUFBTztLQUN2QiwrREFBZ0Usa0JBQWlCOzs7Ozs7b0JBTWxFOzs7OztDQUtuQjs7Ozs7OzsrQkFPOEI7Q0FDOUI7MkJBQzBCOzREQUNpQzs7SUFFeEQsZUFBZ0IsUUFBTzs7OztvQkFJUCxPQUFPO3dCQUNIOzttQkFFTDtXQUNQLEtBQUs7b0NBQ29COzZCQUNQOzs7Ozs7Ozs7Ozs7Q0FZN0I7Ozs7Ozs7OzJCQVEwQjtDQUMxQjsyQkFDMEI7O0lBRXZCLGVBQWdCLFFBQU87O3VCQUVKO3lCQUNFLG1CQUFtQjs0QkFDaEI7TUFDdEIsc0JBQXVCLG1CQUFrQjs7K0JBRWhCOzs7U0FHdEI7Ozs7Ozs7O0NBUVI7O0NBRUE7Ozs7OztpQ0FNZ0M7Q0FDaEM7UUFDTzs7MENBRWtDOzs7NkJBR2I7MkJBQ0Y7O1dBRWYsQUFBRCxNQUFPO0tBQ1o7OztFQUdIO0tBQ0csNkJBQTZCOzs7OztFQUtoQztjQUNZOzs7aUJBR0csT0FBUSxBQUFELE1BQU87S0FDekI7RUFDSDthQUNXOzs7O1NBSUwsTUFBTTtNQUNULHFCQUFxQjs7Ozs7Ozs7OztDQVUzQjs7Ozs7Ozs7Ozs7OztvQ0FhbUM7Q0FDbkM7SUFDRyxnRUFBaUU7Ozs7bUJBSWxELENBQUUsSUFBSTtJQUNwQixtQ0FBbUM7aUJBQ3RCOztlQUVGLHFCQUFzQiJ9
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9ob29rcy5qc3giLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIvVXNlcnMvYXJhc2gvRGVza3RvcC9Qcm9qZWN0cy9MaWxhY3Qvc3JjL2hvb2tzLmpzeCJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSxBQUFBOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7UUE4QlE7O1FBRUE7OztDQUdQOzs7Ozs7O3dCQU91QjtDQUN2Qjs7O0lBR0csMENBQTBDO2tCQUMzQixBQUFEOzs7Ozs7Q0FNakI7Ozs7Ozt5QkFNd0I7Q0FDeEI7b0JBQ21COztJQUVoQixRQUFTLFFBQU87S0FDZixNQUFPLHFEQUFvRDs7O3lCQUd2QyxrQkFBa0I7TUFDckMsTUFBTyx1Q0FBc0M7Ozs4QkFHckI7U0FDckI7Ozs7Ozs7Q0FPUjs7Ozs7Ozs0QkFPMkI7Q0FDM0I7SUFDRyxxQkFBc0IsTUFBTywwREFBd0Q7a0JBQ3ZFOzs7b0JBR0U7O0lBRWhCLFNBQVUsUUFBTztLQUNoQiwrREFBZ0Usa0JBQWlCOzs7OztJQUtsRixjQUFjO2FBQ0w7Ozs7Ozs7OztDQVNaOzs7Ozs7OEJBTTZCO0NBQzdCO3VCQUN1QixBQUFELG9CQUFvQjs7OztTQUlsQzs7Ozs7O0NBTVI7Ozs7OzsyQkFNMEI7Q0FDMUI7OztPQUdNLGdEQUFnRDs7OztJQUluRCxjQUFjOzs7Ozs7OztDQVFqQjs7Ozs7O3NCQU1xQjtDQUNyQjtvQkFDbUI7O0lBRWhCLFFBQVMsUUFBTzs7Ozs7OztDQU9uQjs7Ozs7OEJBSzZCO0NBQzdCO29CQUNtQjs7SUFFaEIsUUFBUyxRQUFPOzs7OztHQUtqQixjQUFlLGVBQWU7Ozs7S0FJM0IsZUFBZTs4QkFDVTs7O1dBR25COzs7O0tBSU4sZUFBZTs4QkFDVTs7OztTQUl0Qjs7Ozs7O0NBTVI7Ozs7Ozs7Z0NBTytCO0NBQy9COztvQkFFbUI7OztNQUdkO21CQUNhOztPQUVaLElBQUk7OztJQUdQLGtCQUFrQjtLQUNqQixNQUFPLHlEQUF3RDs7cUNBRS9COzs7SUFHakMsUUFBUyxRQUFPOzt5QkFFSyxnQkFBZ0I7O01BRW5DLE1BQU8sOEJBQTZCOztNQUVwQzs7c0NBRWdDOzs7OEJBR1I7O1NBRXJCOzs7Ozs7Q0FNUjs7Ozs7Ozt1QkFPc0I7Q0FDdEI7b0JBQ21COztJQUVoQixRQUFTLFFBQU87Ozs7Ozs7Q0FPbkI7Ozs7Ozs7Z0NBTytCO0NBQy9CO0lBQ0cscUJBQXNCLE1BQU8sMERBQXdEO2tCQUN2RTs7O29CQUdFOztJQUVoQixTQUFVLFFBQU87S0FDaEIsK0RBQWdFOzs7SUFHakUsY0FBYzthQUNMOzs7OzJCQUljLENBQUUsSUFBSSxxQkFBcUI7bURBQ0g7OztDQUdsRDs7Ozs7OzswQkFPeUI7Q0FDekI7SUFDRyxxQkFBc0IsTUFBTywwREFBd0Q7a0JBQ3ZFOzs7b0JBR0U7O0lBRWhCLFNBQVUsUUFBTztLQUNoQiwrREFBZ0U7OztJQUdqRSxjQUFjO2FBQ0w7Ozs7bUJBSU0sQ0FBRSxJQUFJLHFCQUFxQjs7OztDQUk3Qzs7Ozs7Ozt3QkFPdUI7Q0FDdkI7SUFDRyxxQkFBc0IsTUFBTywwREFBd0Q7a0JBQ3ZFOzs7b0JBR0U7O0lBRWhCLFNBQVUsUUFBTztLQUNoQiwrREFBZ0Usa0JBQWlCOzs7Ozs7b0JBTWxFOzs7OztDQUtuQjs7Ozs7OzsrQkFPOEI7Q0FDOUI7b0JBQ21COzREQUN3Qzs7SUFFeEQsUUFBUyxRQUFPOzs7O29CQUlBLE9BQU87d0JBQ0g7O21CQUVMO1dBQ1AsS0FBSztvQ0FDb0I7NkJBQ1A7Ozs7Ozs7Ozs7OztDQVk3Qjs7Ozs7Ozs7MkJBUTBCO0NBQzFCO29CQUNtQjs7SUFFaEIsUUFBUyxRQUFPOzt1QkFFRzt5QkFDRSxtQkFBbUI7NEJBQ2hCO01BQ3RCLHNCQUF1QixtQkFBa0I7OytCQUVoQjs7U0FFdEI7Ozs7Ozs7O0NBUVI7O0NBRUE7Ozs7OztpQ0FNZ0M7Q0FDaEM7UUFDTzs7MENBRWtDOzs7NkJBR2I7MkJBQ0Y7O1dBRWYsQUFBRCxNQUFPO0tBQ1o7OztFQUdIO0tBQ0csNkJBQTZCOzs7OztFQUtoQztjQUNZOzs7aUJBR0csT0FBUSxBQUFELE1BQU87S0FDekI7RUFDSDthQUNXOzs7O1NBSUwsTUFBTTtNQUNULHFCQUFxQjs7Ozs7Ozs7OztDQVUzQjs7Ozs7Ozs7Ozs7OztvQ0FhbUM7Q0FDbkM7SUFDRyxnRUFBaUU7Ozs7bUJBSWxELENBQUUsSUFBSTtJQUNwQixtQ0FBbUM7aUJBQ3RCOztlQUVGLHFCQUFzQiJ9
 // EXTERNAL MODULE: ./src/run.jsx
 var run = __webpack_require__(861);
 ;// ./src/timers.jsx
@@ -6667,7 +6669,7 @@ var run = __webpack_require__(861);
 //ʔ outputJS('./dist/timers.js');
 
 
-const [timers_CORE,timers_IDX,DUE,REPEAT,CLEARED,INTERVAL,CALLBACK,ARGS]=[Symbol.for('LILACT:TIMERS:CORE'),Symbol.for('LILACT:TIMERS:IDX'),Symbol.for('LILACT:TIMERS:DUE'),Symbol.for('LILACT:TIMERS:REPEAT'),Symbol.for('LILACT:TIMERS:CLEARED'),Symbol.for('LILACT:TIMERS:INTERVAL'),Symbol.for('LILACT:TIMERS:CALLBACK'),Symbol.for('LILACT:TIMERS:ARGS')];
+
 
 /**
  * Timer helpers for a promise-friendly timer framework.
@@ -6707,7 +6709,7 @@ function get_bucket(target)
 
 	while (left <= right) {
 		const mid = Math.floor((left + right) / 2);
-		const mid_val = timer_list[mid][DUE];
+		const mid_val = timer_list[mid][symbols.DUE];
 
 		if (mid_val === target) {
 			return [mid, timer_list[mid]];
@@ -6721,7 +6723,7 @@ function get_bucket(target)
 	}
 
 	const bucket = [];
-	bucket[DUE] = target;
+	bucket[symbols.DUE] = target;
 
 	timer_list.splice(left, 0, bucket); 
 	return [left, bucket];
@@ -6729,19 +6731,19 @@ function get_bucket(target)
 
 function add_timer(t, is_repeat=false)
 {
-	const [i,bucket] = get_bucket(t[DUE]);
+	const [i,bucket] = get_bucket(t[symbols.DUE]);
 
 	if(!is_repeat) {
 		current_timer_idx++;
 		all_timers[current_timer_idx]=t;
-		t[timers_IDX] = current_timer_idx;
+		t[symbols.IDX] = current_timer_idx;
 	}
 
 	bucket.push(t);
 
 	if(timer_list[0][0]===t) {
 		_clearTimeout( timer_timeout );
-		timer_timeout = _setTimeout( run_timer, t[INTERVAL] );
+		timer_timeout = _setTimeout( run_timer, t[symbols.INTERVAL] );
 	}
 
 	return current_timer_idx;
@@ -6754,21 +6756,21 @@ function run_timer()
 	let i = 0;
 	let buck = timer_list[i];
 
-	while( buck && buck[DUE]-now <= 0 ) {
+	while( buck && buck[symbols.DUE]-now <= 0 ) {
 		for(const t of buck) {
 
-			if(!t[CLEARED]) {
-				t[CALLBACK](...t[ARGS]);			
-				if(t[REPEAT]) {
-					t[DUE] = Date.now()+t[INTERVAL];
+			if(!t[symbols.CLEARED]) {
+				t[symbols.CALLBACK](...t[symbols.ARGS]);			
+				if(t[symbols.REPEAT]) {
+					t[symbols.DUE] = Date.now()+t[symbols.INTERVAL];
 					add_timer(t, true);
 				}
 				else {
-					delete all_timers[t[timers_IDX]];
+					delete all_timers[t[symbols.IDX]];
 				}
 			}
 			else {
-				delete all_timers[t[timers_IDX]];
+				delete all_timers[t[symbols.IDX]];
 			}
 		}
 		i++;
@@ -6779,7 +6781,7 @@ function run_timer()
 
 	if(timer_list.length>0) {
 		_clearTimeout( timer_timeout );
-		timer_timeout = _setTimeout( run_timer, timer_list[0][DUE] - now);
+		timer_timeout = _setTimeout( run_timer, timer_list[0][symbols.DUE] - now);
 	}
 
 }
@@ -6824,10 +6826,10 @@ function resumeTimers()
 		timer_pause_time -= now;
 
 		for( const t of timer_list ) {
-			t[DUE] -= timer_pause_time;
+			t[symbols.DUE] -= timer_pause_time;
 		}
 
-		timer_timeout = _setTimeout( run_timer, timer_list[0][DUE] - now);
+		timer_timeout = _setTimeout( run_timer, timer_list[0][symbols.DUE] - now);
 	}
 
 	timer_pause_time = undefined;
@@ -6845,7 +6847,7 @@ function resumeTimers()
 
 function timers_setTimeout(callback, delay, ...args)
 {
-	return add_timer( { [CALLBACK]: callback, [INTERVAL]: delay, [DUE]: Date.now()+delay, [REPEAT]: false, [ARGS]: args } );
+	return add_timer( { [symbols.CALLBACK]: callback, [symbols.INTERVAL]: delay, [symbols.DUE]: Date.now()+delay, [symbols.REPEAT]: false, [symbols.ARGS]: args } );
 }
 
 /**
@@ -6858,7 +6860,7 @@ function timers_setTimeout(callback, delay, ...args)
 
 function timers_setInterval(callback, interval, ...args)
 {
-	return add_timer( { [CALLBACK]: callback, [INTERVAL]: interval, [DUE]: Date.now()+interval, [REPEAT]: true, [ARGS]: args } );
+	return add_timer( { [symbols.CALLBACK]: callback, [symbols.INTERVAL]: interval, [symbols.DUE]: Date.now()+interval, [symbols.REPEAT]: true, [symbols.ARGS]: args } );
 }
 
 /**
@@ -6868,7 +6870,7 @@ function timers_setInterval(callback, interval, ...args)
  */
 function timers_clearTimeout(id)
 {
-	if(all_timers[id]) all_timers[id][CLEARED] = true;
+	if(all_timers[id]) all_timers[id][symbols.CLEARED] = true;
 }
 
 /**
@@ -6878,7 +6880,7 @@ function timers_clearTimeout(id)
  */
 function timers_clearInterval(id)
 {
-	if(all_timers[id]) all_timers[id][CLEARED] = true;
+	if(all_timers[id]) all_timers[id][symbols.CLEARED] = true;
 }
 
 /**
@@ -6888,10 +6890,10 @@ function timers_clearInterval(id)
  */
 function grabTimers()
 {
-	globalThis.setTimeout = this.setTimeout;
-	globalThis.setInterval = this.setInterval;
-	globalThis.clearTimeout = this.clearTimeout;
-	globalThis.clearInterval = this.clearInterval;
+	globalThis.setTimeout = Lilact.setTimeout;
+	globalThis.setInterval = Lilact.setInterval;
+	globalThis.clearTimeout = Lilact.clearTimeout;
+	globalThis.clearInterval = Lilact.clearInterval;
 }
 
 /**
@@ -6911,7 +6913,7 @@ function releaseTimers()
  * @param {number} duration - Delay in milliseconds.
  * @returns {Promise} Promise that resolves after the delay.
  */
-function timeoutPromise(duration=0, timerSource=this) 
+function timeoutPromise(duration=0, timerSource=Lilact) 
 {	
 	let id, resolve, reject;
 
@@ -6952,7 +6954,7 @@ function animationFramePromise() {
 
 
 
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy90aW1lcnMuanN4Iiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy90aW1lcnMuanN4Il0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLEFBQUE7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztDQThCQztDQUNBO0NBQ0E7OztDQUdBOztDQUVBOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7a0JBcUJpQjs7O0NBR2pCOzs7Ozs7O29CQU9tQjtDQUNuQjs7OztRQUlPLGdCQUFnQjt5QkFDRSxBQUFEOzs7TUFHbkIscUJBQXFCOzs7V0FHaEIsbUJBQW1COzs7UUFHdEI7Ozs7Ozs7O21CQVFXOzs7O21CQUlBO0NBQ2xCOytCQUM4Qjs7SUFFM0IsYUFBYTs7Ozs7O2FBTUo7O0lBRVQsdUJBQXVCO2dCQUNYOzhCQUNjOzs7Ozs7bUJBTVg7Q0FDbEI7c0JBQ3FCOzs7OztPQUtmLCtCQUErQjtNQUNoQyxrQkFBa0I7O01BRWxCLGNBQWM7Z0JBQ0o7T0FDVCxZQUFZO3VCQUNJO2VBQ1I7O1VBRUw7Ozs7U0FJRDs7Ozs7Ozs7bUJBUVU7O0lBRWYsc0JBQXNCO2dCQUNWOzhCQUNjOzs7OztDQUs3Qjs7Q0FFQTs7Ozs2QkFJNEI7Q0FDNUI7ZUFDYzs7Ozs7ZUFLQTs7O0NBR2Q7Ozs7NkJBSTRCO0NBQzVCO2VBQ2M7NkJBQ2M7OztDQUc1Qjs7Ozs2QkFJNEI7Q0FDNUI7SUFDRzs7SUFFQSxzQkFBc0I7dUJBQ0g7Ozs7TUFJakIsMEJBQTBCOzs7OzhCQUlGOzs7Ozs7O0NBTzdCOzs7Ozs7Ozs7MkJBUzBCO0NBQzFCO2tCQUNpQixDQUFFLDBEQUEwRDs7O0NBRzdFOzs7Ozs7Ozs0QkFRMkI7Q0FDM0I7a0JBQ2lCLENBQUUsNkRBQTZEOzs7Q0FHaEY7Ozs7OzZCQUs0QjtDQUM1QjtJQUNHOzs7Q0FHSDs7Ozs7OEJBSzZCO0NBQzdCO0lBQ0c7OztDQUdIOzs7OzsyQkFLMEI7Q0FDMUI7Ozs7Ozs7Q0FPQTs7Ozs4QkFJNkI7Q0FDN0I7Ozs7Ozs7Q0FPQTs7Ozs7K0JBSzhCO0NBQzlCOzs7NkJBRzZCLEFBQUQsY0FBZTs7OzZCQUdiLEFBQUQsTUFBTztTQUMxQjs7OztFQUlUO29CQUNrQixNQUFNOzJCQUNDO1VBQ2pCOzs7RUFHUjttQkFDaUIsTUFBTTsyQkFDRTtTQUNsQjs7Ozs7O0NBTVI7Ozs7c0NBSXFDLEdBQUc7dUJBQ2pCLEFBQUQsYUFBYzs2QkFDTixBQUFELE1BQU87a0JBQ2pCIn0=
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy90aW1lcnMuanN4Iiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy90aW1lcnMuanN4Il0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLEFBQUE7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztDQThCQztDQUNBO0NBQ0E7OztTQUdROztDQUVSOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7a0JBcUJpQjs7O0NBR2pCOzs7Ozs7O29CQU9tQjtDQUNuQjs7OztRQUlPLGdCQUFnQjt5QkFDRSxBQUFEOzs7TUFHbkIscUJBQXFCOzs7V0FHaEIsbUJBQW1COzs7UUFHdEI7Ozs7Ozs7O21CQVFXOzs7O21CQUlBO0NBQ2xCOytCQUM4Qjs7SUFFM0IsYUFBYTs7Ozs7O2FBTUo7O0lBRVQsdUJBQXVCO2dCQUNYOzhCQUNjOzs7Ozs7bUJBTVg7Q0FDbEI7c0JBQ3FCOzs7OztPQUtmLCtCQUErQjtNQUNoQyxrQkFBa0I7O01BRWxCLGNBQWM7Z0JBQ0o7T0FDVCxZQUFZO3VCQUNJO2VBQ1I7O1VBRUw7Ozs7U0FJRDs7Ozs7Ozs7bUJBUVU7O0lBRWYsc0JBQXNCO2dCQUNWOzhCQUNjOzs7OztDQUs3Qjs7Q0FFQTs7Ozs2QkFJNEI7Q0FDNUI7ZUFDYzs7Ozs7ZUFLQTs7O0NBR2Q7Ozs7NkJBSTRCO0NBQzVCO2VBQ2M7NkJBQ2M7OztDQUc1Qjs7Ozs2QkFJNEI7Q0FDNUI7SUFDRzs7SUFFQSxzQkFBc0I7dUJBQ0g7Ozs7TUFJakIsMEJBQTBCOzs7OzhCQUlGOzs7Ozs7O0NBTzdCOzs7Ozs7Ozs7MkJBUzBCO0NBQzFCO2tCQUNpQixDQUFFLDBEQUEwRDs7O0NBRzdFOzs7Ozs7Ozs0QkFRMkI7Q0FDM0I7a0JBQ2lCLENBQUUsNkRBQTZEOzs7Q0FHaEY7Ozs7OzZCQUs0QjtDQUM1QjtJQUNHOzs7Q0FHSDs7Ozs7OEJBSzZCO0NBQzdCO0lBQ0c7OztDQUdIOzs7OzsyQkFLMEI7Q0FDMUI7Ozs7Ozs7Q0FPQTs7Ozs4QkFJNkI7Q0FDN0I7Ozs7Ozs7Q0FPQTs7Ozs7K0JBSzhCO0NBQzlCOzs7NkJBRzZCLEFBQUQsY0FBZTs7OzZCQUdiLEFBQUQsTUFBTztTQUMxQjs7OztFQUlUO29CQUNrQixNQUFNOzJCQUNDO1VBQ2pCOzs7RUFHUjttQkFDaUIsTUFBTTsyQkFDRTtTQUNsQjs7Ozs7O0NBTVI7Ozs7c0NBSXFDLEdBQUc7dUJBQ2pCLEFBQUQsYUFBYzs2QkFDTixBQUFELE1BQU87a0JBQ2pCIn0=
 ;// ./src/transition.jsx
 /*
 
@@ -6984,7 +6986,10 @@ function animationFramePromise() {
 
 */
 
-const [transition_CORE,transition_COMPONENT,transition_CHILD_CLASS_ADDENDUM]=[Symbol.for('LILACT:CORE'),Symbol.for('LILACT:COMPONENT'),Symbol.for('LILACT:CHILD_CLASS_ADDENDUM')];
+
+
+
+
 
 /* States */
 const UNMOUNTED = "unmounted";
@@ -6992,9 +6997,6 @@ const EXITED = 	  "exited";
 const ENTERING =  "entering";
 const ENTERED =   "entered";
 const EXITING =   "exiting";
-
-
-
 
 
 /**
@@ -7033,37 +7035,37 @@ function Transition({
 	// but the user should use CSSTransition itself.
 	_classNames: classNames
 }) {
-	this[transition_CORE].is_mounted ??= !mountOnEnter || inProp || appear;
-	this[transition_CORE].is_appeared ??= inProp;
-	this[transition_CORE].timer ??= null;
+	this[symbols.CORE].is_mounted ??= !mountOnEnter || inProp || appear;
+	this[symbols.CORE].is_appeared ??= inProp;
+	this[symbols.CORE].timer ??= null;
 
-	this[transition_CORE].childFunctionHandler = (func)=>{
-		return func(this[transition_CORE].mount_state); 
+	this[symbols.CORE].childFunctionHandler = (func)=>{
+		return func(this[symbols.CORE].mount_state); 
 	}
 
-	if(!this[transition_CORE].mount_state) {
-		if (!this[transition_CORE].is_mounted) this[transition_CORE].mount_state = UNMOUNTED;
+	if(!this[symbols.CORE].mount_state) {
+		if (!this[symbols.CORE].is_mounted) this[symbols.CORE].mount_state = UNMOUNTED;
 		if (inProp) {
-			this[transition_CORE].mount_state = appear && !this[transition_CORE].is_appeared ? ENTERING : ENTERED;
+			this[symbols.CORE].mount_state = appear && !this[symbols.CORE].is_appeared ? ENTERING : ENTERED;
 		}
-		else this[transition_CORE].mount_state = EXITED;
+		else this[symbols.CORE].mount_state = EXITED;
 	}
 
 	useEffect(() => {
-		return () => timers_clearTimeout(this[transition_CORE].timer);
+		return () => timers_clearTimeout(this[symbols.CORE].timer);
 	}, []);
 
 	useEffect(() => {
-		if (!this[transition_CORE].is_appeared && appear && this[transition_CORE].mount_state === ENTERING && inProp) {
+		if (!this[symbols.CORE].is_appeared && appear && this[symbols.CORE].mount_state === ENTERING && inProp) {
 			onEnter?.();
 			requestAnimationFrame(() => {
-				onEntering?.(!this[transition_CORE].is_appeared);
-				timers_clearTimeout(this[transition_CORE].timer);
-				this[transition_CORE].timer = timers_setTimeout(() => {
-					this[transition_CORE].mount_state = ENTERED;
+				onEntering?.(!this[symbols.CORE].is_appeared);
+				timers_clearTimeout(this[symbols.CORE].timer);
+				this[symbols.CORE].timer = timers_setTimeout(() => {
+					this[symbols.CORE].mount_state = ENTERED;
 					this.forceUpdate();
-					this[transition_CORE].is_appeared = true;
-					onEntered?.(!this[transition_CORE].is_appeared);
+					this[symbols.CORE].is_appeared = true;
+					onEntered?.(!this[symbols.CORE].is_appeared);
 				}, timeout);
 			});
 		}
@@ -7071,39 +7073,39 @@ function Transition({
 
 	useEffect(() => {
 		if (inProp) {
-			this[transition_CORE].is_mounted = true;
+			this[symbols.CORE].is_mounted = true;
 			// If we are already entering/entered, no-op
-			if (this[transition_CORE].mount_state === ENTERING || this[transition_CORE].mount_state === ENTERED) return;
+			if (this[symbols.CORE].mount_state === ENTERING || this[symbols.CORE].mount_state === ENTERED) return;
 
-			onEnter?.(!this[transition_CORE].is_appeared);
-			this[transition_CORE].mount_state = ENTERING;
+			onEnter?.(!this[symbols.CORE].is_appeared);
+			this[symbols.CORE].mount_state = ENTERING;
 			this.forceUpdate(() => {
-				onEntering?.(!this[transition_CORE].is_appeared);
-				timers_clearTimeout(this[transition_CORE].timer);
+				onEntering?.(!this[symbols.CORE].is_appeared);
+				timers_clearTimeout(this[symbols.CORE].timer);
 
-				this[transition_CORE].timer = timers_setTimeout(() => {
-					this[transition_CORE].mount_state = ENTERED;
+				this[symbols.CORE].timer = timers_setTimeout(() => {
+					this[symbols.CORE].mount_state = ENTERED;
 					this.forceUpdate();
-					this[transition_CORE].is_appeared = true;
+					this[symbols.CORE].is_appeared = true;
 					onEntered?.();
 				}, timeout);
 			});
 		} 
 		else {
-			if (this[transition_CORE].mount_state === UNMOUNTED || this[transition_CORE].mount_state === EXITING || this[transition_CORE].mount_state === EXITED) return;
+			if (this[symbols.CORE].mount_state === UNMOUNTED || this[symbols.CORE].mount_state === EXITING || this[symbols.CORE].mount_state === EXITED) return;
 
 			onExit?.();
-			this[transition_CORE].mount_state = EXITING;
+			this[symbols.CORE].mount_state = EXITING;
 			this.forceUpdate( () => {
 				onExiting?.();
-				timers_clearTimeout(this[transition_CORE].timer);
-				this[transition_CORE].timer = timers_setTimeout(() => {
-					this[transition_CORE].mount_state = EXITED;
+				timers_clearTimeout(this[symbols.CORE].timer);
+				this[symbols.CORE].timer = timers_setTimeout(() => {
+					this[symbols.CORE].mount_state = EXITED;
 					this.forceUpdate();
 					onExited?.();
 					if (unmountOnExit) {
-						this[transition_CORE].is_mounted = false;
-						this[transition_CORE].mount_state = UNMOUNTED;
+						this[symbols.CORE].is_mounted = false;
+						this[symbols.CORE].mount_state = UNMOUNTED;
 						this.forceUpdate();
 					}
 				}, timeout);
@@ -7111,23 +7113,23 @@ function Transition({
 		}
 	}, [inProp, timeout]);
 
-	if (!this[transition_CORE].is_mounted) return null;
+	if (!this[symbols.CORE].is_mounted) return null;
 
 	if(classNames) {
-		if (this[transition_CORE].mount_state === ENTERING) {
-			if(this[transition_CORE].is_appeared)
-				this[transition_CORE][transition_CHILD_CLASS_ADDENDUM] = classNames.appearActive;
+		if (this[symbols.CORE].mount_state === ENTERING) {
+			if(this[symbols.CORE].is_appeared)
+				this[symbols.CORE][symbols.CHILD_CLASS_ADDENDUM] = classNames.appearActive;
 			else
-				this[transition_CORE][transition_CHILD_CLASS_ADDENDUM] = classNames.enterActive;
+				this[symbols.CORE][symbols.CHILD_CLASS_ADDENDUM] = classNames.enterActive;
 		}
-		else if (this[transition_CORE].mount_state === ENTERED) {
-			if(this[transition_CORE].is_appeared)
-				this[transition_CORE][transition_CHILD_CLASS_ADDENDUM] = classNames.appearDone;
+		else if (this[symbols.CORE].mount_state === ENTERED) {
+			if(this[symbols.CORE].is_appeared)
+				this[symbols.CORE][symbols.CHILD_CLASS_ADDENDUM] = classNames.appearDone;
 			else
-				this[transition_CORE][transition_CHILD_CLASS_ADDENDUM] = classNames.enterDone;
+				this[symbols.CORE][symbols.CHILD_CLASS_ADDENDUM] = classNames.enterDone;
 		}
-		else if (this[transition_CORE].mount_state === EXITING) this[transition_CORE][transition_CHILD_CLASS_ADDENDUM] = classNames.exitActive;
-		else if (this[transition_CORE].mount_state === EXITED) this[transition_CORE][transition_CHILD_CLASS_ADDENDUM] = classNames.exitDone;
+		else if (this[symbols.CORE].mount_state === EXITING) this[symbols.CORE][symbols.CHILD_CLASS_ADDENDUM] = classNames.exitActive;
+		else if (this[symbols.CORE].mount_state === EXITED) this[symbols.CORE][symbols.CHILD_CLASS_ADDENDUM] = classNames.exitDone;
 	}
 	return children;
 }
@@ -7354,7 +7356,7 @@ function TransitionGroup({ children }) {
 }
 
 
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy90cmFuc2l0aW9uLmpzeCIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi9Vc2Vycy9hcmFzaC9EZXNrdG9wL1Byb2plY3RzL0xpbGFjdC9zcmMvdHJhbnNpdGlvbi5qc3giXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsQUFBQTs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0NBOEJDOztDQUVBOzs7Ozs7O1FBT087UUFDQTtRQUNBOztDQUVQOzs7Ozs7Ozs7Ozs7Ozs7OzsyQkFpQjJCLEFBQUQ7Ozs7Ozs7Ozs7Ozs7O0NBY3pCO0NBQ0E7Q0FDQTs7SUFFRTs7Ozs7b0NBS2dDLFFBQVE7Y0FDOUI7OztJQUdWLDBCQUEwQjtNQUN4QjtNQUNBLFNBQVM7Ozs7OztXQU1ILEFBQUQsTUFBTztTQUNSLGtCQUFrQjs7O1dBR2hCLEFBQUQsTUFBTztLQUNaLHFGQUFxRjtZQUM5RTt3QkFDYSxBQUFELE1BQU87ZUFDZjtlQUNBO2dDQUNrQixBQUFELE1BQU87O21CQUVuQjs7Y0FFTDs7Ozs7O1dBTUwsQUFBRCxNQUFPO0tBQ1osU0FBUzs7R0FFWDtNQUNHOztZQUVNOzttQkFFUSxBQUFELE1BQU87ZUFDVjtlQUNBOztnQ0FFa0IsQUFBRCxNQUFPOzttQkFFbkI7O2NBRUw7Ozs7T0FJVDtNQUNEOztXQUVLOzttQkFFUSxDQUFFLE1BQU07Y0FDWjtlQUNDO2dDQUNrQixBQUFELE1BQU87O21CQUVuQjthQUNOO01BQ1AsZ0JBQWdCOzs7b0JBR0Y7Ozs7Ozs7S0FPbEI7O0lBRUQsYUFBYTtNQUNYLHNDQUFzQztNQUN0Qzs7Ozs7V0FLSyxxQ0FBcUM7TUFDMUM7Ozs7O1dBS0s7V0FDQTs7Ozs7O0NBTVY7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs4QkFxQjhCLEFBQUQ7Ozs7Ozs7Ozs7SUFVMUI7O0lBRUEsTUFBTywwQkFBeUI7Z0JBQ3BCOzs7Ozs7Ozs7Ozs7U0FZUDtFQUNOLG1SQWNDOzs7Ozs7Q0FPSDs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztpQ0F3Q2lDLEFBQUQ7OzttQkFHYjs7Ozs7Ozs7O0VBU2pCOzs7Ozs7O0lBT0M7NkJBQzBCLEFBQUQsc0JBQXVCOztHQUVqRDsrQ0FDNEM7aURBQ0U7O0dBRTlDO21EQUNnRDs7R0FFaEQ7NEJBQ3lCOzhCQUNFOytCQUNDOztrQkFFWixBQUFELE1BQU87Ozs7a0JBSU4sQUFBRCxNQUFPOzs7O2tCQUlOLEFBQUQsTUFBTzs7T0FFakI7Ozs7SUFJSDtpQkFDYTs7T0FFVixvQkFBb0I7TUFDckI7cUJBQ2U7b0JBQ0QsUUFBUTtXQUNqQjtNQUNMO3FCQUNlO29CQUNELFNBQVM7Ozs7d0JBSU4sU0FBUyx1QkFBdUI7UUFDaEQseUNBQXlDOztRQUV6QyxnQ0FBZ0M7b0JBQ3BCOztPQUViO1VBQ0csb0JBQW9CO3VCQUNQO3dCQUNDOztPQUVqQjtVQUNHLG9CQUFvQjt1QkFDUDs7Ozs7eUJBS0UsU0FBUyx1QkFBdUI7UUFDakQsMkNBQTJDOztRQUUzQyxvQkFBb0I7T0FDckI7VUFDRyxnRUFBZ0U7dUJBQ25ELFFBQVE7Ozs7O1VBS3JCO0lBQ0wsbUNBQ0UsY0FBZ0IsQUFBRCxrQkFBbUI7Ozs7MEJBTWhDO0NBQ0E7O21CQUNBO21CQUNBOzs7Ozs7T0FPTyxXQUNMOzs7NlBBY0UsNkNBQ0U7Ozs7Ozs7Q0FVZDs7Ozs7OztnQ0FPZ0MsQUFBRCxlQUFlIn0=
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy90cmFuc2l0aW9uLmpzeCIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi9Vc2Vycy9hcmFzaC9EZXNrdG9wL1Byb2plY3RzL0xpbGFjdC9zcmMvdHJhbnNpdGlvbi5qc3giXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsQUFBQTs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7UUE2QlE7UUFDQTtRQUNBOztRQUVBOztDQUVQOzs7Ozs7OztDQVFBOzs7Ozs7Ozs7Ozs7Ozs7OzsyQkFpQjJCLEFBQUQ7Ozs7Ozs7Ozs7Ozs7O0NBY3pCO0NBQ0E7Q0FDQTs7SUFFRTs7Ozs7b0NBS2dDLFFBQVE7Y0FDOUI7OztJQUdWLDBCQUEwQjtNQUN4QjtNQUNBLFNBQVM7Ozs7OztXQU1ILEFBQUQsTUFBTztTQUNSLGtCQUFrQjs7O1dBR2hCLEFBQUQsTUFBTztLQUNaLHFGQUFxRjtZQUM5RTt3QkFDYSxBQUFELE1BQU87ZUFDZjtlQUNBO2dDQUNrQixBQUFELE1BQU87O21CQUVuQjs7Y0FFTDs7Ozs7O1dBTUwsQUFBRCxNQUFPO0tBQ1osU0FBUzs7R0FFWDtNQUNHOztZQUVNOzttQkFFUSxBQUFELE1BQU87ZUFDVjtlQUNBOztnQ0FFa0IsQUFBRCxNQUFPOzttQkFFbkI7O2NBRUw7Ozs7T0FJVDtNQUNEOztXQUVLOzttQkFFUSxDQUFFLE1BQU07Y0FDWjtlQUNDO2dDQUNrQixBQUFELE1BQU87O21CQUVuQjthQUNOO01BQ1AsZ0JBQWdCOzs7b0JBR0Y7Ozs7Ozs7S0FPbEI7O0lBRUQsYUFBYTtNQUNYLHNDQUFzQztNQUN0Qzs7Ozs7V0FLSyxxQ0FBcUM7TUFDMUM7Ozs7O1dBS0s7V0FDQTs7Ozs7O0NBTVY7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs4QkFxQjhCLEFBQUQ7Ozs7Ozs7Ozs7SUFVMUI7O0lBRUEsTUFBTywwQkFBeUI7Z0JBQ3BCOzs7Ozs7Ozs7Ozs7U0FZUDtFQUNOLG1SQWNDOzs7Ozs7Q0FPSDs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztpQ0F3Q2lDLEFBQUQ7OzttQkFHYjs7Ozs7Ozs7O0VBU2pCOzs7Ozs7O0lBT0M7NkJBQzBCLEFBQUQsc0JBQXVCOztHQUVqRDsrQ0FDNEM7aURBQ0U7O0dBRTlDO21EQUNnRDs7R0FFaEQ7NEJBQ3lCOzhCQUNFOytCQUNDOztrQkFFWixBQUFELE1BQU87Ozs7a0JBSU4sQUFBRCxNQUFPOzs7O2tCQUlOLEFBQUQsTUFBTzs7T0FFakI7Ozs7SUFJSDtpQkFDYTs7T0FFVixvQkFBb0I7TUFDckI7cUJBQ2U7b0JBQ0QsUUFBUTtXQUNqQjtNQUNMO3FCQUNlO29CQUNELFNBQVM7Ozs7d0JBSU4sU0FBUyx1QkFBdUI7UUFDaEQseUNBQXlDOztRQUV6QyxnQ0FBZ0M7b0JBQ3BCOztPQUViO1VBQ0csb0JBQW9CO3VCQUNQO3dCQUNDOztPQUVqQjtVQUNHLG9CQUFvQjt1QkFDUDs7Ozs7eUJBS0UsU0FBUyx1QkFBdUI7UUFDakQsMkNBQTJDOztRQUUzQyxvQkFBb0I7T0FDckI7VUFDRyxnRUFBZ0U7dUJBQ25ELFFBQVE7Ozs7O1VBS3JCO0lBQ0wsbUNBQ0UsY0FBZ0IsQUFBRCxrQkFBbUI7Ozs7MEJBTWhDO0NBQ0E7O21CQUNBO21CQUNBOzs7Ozs7T0FPTyxXQUNMOzs7NlBBY0UsNkNBQ0U7Ozs7Ozs7Q0FVZDs7Ozs7OztnQ0FPZ0MsQUFBRCxlQUFlIn0=
 ;// ./src/events.jsx
 /*
 
@@ -7684,7 +7686,9 @@ function addWrappedEventListener(target, type, fn, options = {}) {
 */
 
 
-const [redux_CORE]=[Symbol.for('LILACT:CORE')];
+
+
+
 
 let ReduxContext;
 
@@ -7697,7 +7701,7 @@ let ReduxContext;
  */
 function Provider({ store, children }) 
 {
-	ReduxContext ??= Lilact.createContext(null);
+	ReduxContext ??= createContext(null);
 	return (
 		 createComponent( ReduxContext.Provider, { "value": store }, children )
 	);
@@ -7710,7 +7714,7 @@ function Provider({ store, children })
  */
 function useStore() 
 {
-	const store = Lilact.useContext(ReduxContext);
+	const store = useContext(ReduxContext);
 	if (!store) {
 		throw new Error("Could not find Redux store in context. <Provider> is missing.");
 	}
@@ -7725,7 +7729,7 @@ function useStore()
  */
 function useDispatch() 
 {
-	const store = Lilact.useStore();
+	const store = useStore();
 	return store.dispatch;
 }
 
@@ -7737,17 +7741,17 @@ function useDispatch()
  * @returns The selected slice of state.
  */
 function useSelector(selector, equalityFn = (a, b) => a === b) {
-  const store = Lilact.useStore();
-  const latestSelected = Lilact.useRef();
-  const selectorRef = Lilact.useRef(selector);
+  const store = useStore();
+  const latestSelected = useRef();
+  const selectorRef = useRef(selector);
   selectorRef.current = selector;
 
-  const [selected, setSelected] = Lilact.useState(() => selector(store.getState()));
+  const [selected, setSelected] = useState(() => selector(store.getState()));
 
   // Keep ref in sync for the subscription callback
   latestSelected.current = selected;
 
-  Lilact.useEffect(() => {
+  useEffect(() => {
     function checkForUpdates() {
       const nextSelected = selectorRef.current(store.getState());
       if (!equalityFn(latestSelected.current, nextSelected)) {
@@ -7782,7 +7786,7 @@ function connect(mapStateToProps, mapDispatchToProps)
 	return function wrapWithConnect(WrappedComponent) {
 
 		function ConnectedComponent(props) {
-			const store = Lilact.useStore();
+			const store = useStore();
 
 			let dispatchProps = { dispatch: store.dispatch };
 
@@ -7803,7 +7807,7 @@ function connect(mapStateToProps, mapDispatchToProps)
 				const selector = (state) => mapStateToProps(state, props);
 
 				// todo: is shallowEqual enough?
-				stateProps = Lilact.useSelector(selector, Lilact.shallowEqual) || {};
+				stateProps = useSelector(selector, shallowEqual) || {};
 			}
 
 			const mergedProps = { ...props, ...stateProps, ...dispatchProps };
@@ -7857,7 +7861,7 @@ function redux_combineReducers(reducers) {
   };
 }
 
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9yZWR1eC5qc3giLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIvVXNlcnMvYXJhc2gvRGVza3RvcC9Qcm9qZWN0cy9MaWxhY3Qvc3JjL3JlZHV4LmpzeCJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSxBQUFBOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0NBK0JDOzs7O0NBSUE7Ozs7Ozs7eUJBT3lCLEFBQUQ7Q0FDeEI7dUNBQ3NDO1NBQzlCO0VBQ04sZ0JBQXFDOzs7O0NBSXZDOzs7Ozt5QkFLd0I7Q0FDeEI7aUNBQ2dDO0tBQzVCLFNBQVM7a0JBQ0k7Ozs7OztDQU1qQjs7Ozs7NEJBSzJCO0NBQzNCOytCQUM4Qjs7OztDQUk5Qjs7Ozs7Ozs0QkFPMkIsdUJBQXdCLG9CQUFtQjtnQ0FDdkM7dUNBQ087b0NBQ0g7OztrREFHZSxBQUFELGNBQWUsY0FBZTs7R0FFN0U7OzttQkFHaUIsQUFBRCxNQUFPOzRCQUNHLEdBQUc7OENBQ2UsY0FBZTtTQUNwRCxXQUFZLHlDQUF3Qzs7bUJBRTFDOzs7O3VDQUlvQjs7SUFFbkM7bUJBQ2U7Ozs7Ozs7OztDQVNuQjs7Ozs7Ozt3QkFPdUI7Q0FDdkI7aUNBQ2dDOztpQ0FFQSxtQkFBbUI7OzhCQUV0QixRQUFRO2lDQUNMOzt3QkFFVDs7T0FFakIsMkNBQTJDO3VDQUNYOztZQUUzQix3RUFBd0U7cUJBQy9EOztTQUVaLGtDQUFrQzs7MkJBRWhCLHFCQUFxQixhQUFjOzs7O3FCQUl6QztPQUNkLGtCQUFrQjtzQkFDSCwwQkFBMEI7O0tBRTNDO29DQUMrQixtQ0FBbUM7Ozt3QkFHL0M7O1dBRWI7OztHQUdSO0dBQ0E7Ozs7OztDQU1GOzs7Ozs7Ozs7Ozs7OztnQ0FjK0IsV0FBVztrQ0FDVDs7T0FFM0IsMkJBQTJCO1FBQzFCLHNDQUFzQztzQkFDeEI7Ozs7OEJBSVEsUUFBUyxhQUFZOzt1QkFFNUI7O1NBRWQsMkJBQTJCOzs7Z0NBR0oifQ==
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9yZWR1eC5qc3giLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIvVXNlcnMvYXJhc2gvRGVza3RvcC9Qcm9qZWN0cy9MaWxhY3Qvc3JjL3JlZHV4LmpzeCJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSxBQUFBOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7UUE4QlE7UUFDQTs7UUFFQTs7OztDQUlQOzs7Ozs7O3lCQU95QixBQUFEO0NBQ3hCO2dDQUMrQjtTQUN2QjtFQUNOLGdCQUFxQzs7OztDQUl2Qzs7Ozs7eUJBS3dCO0NBQ3hCOzBCQUN5QjtLQUNyQixTQUFTO2tCQUNJOzs7Ozs7Q0FNakI7Ozs7OzRCQUsyQjtDQUMzQjt3QkFDdUI7Ozs7Q0FJdkI7Ozs7Ozs7NEJBTzJCLHVCQUF3QixvQkFBbUI7eUJBQzlDO2dDQUNPOzZCQUNIOzs7MkNBR2UsQUFBRCxjQUFlLGNBQWU7O0dBRXRFOzs7WUFHVSxBQUFELE1BQU87NEJBQ1UsR0FBRzs4Q0FDZSxjQUFlO1NBQ3BELFdBQVkseUNBQXdDOzttQkFFMUM7Ozs7dUNBSW9COztJQUVuQzttQkFDZTs7Ozs7Ozs7O0NBU25COzs7Ozs7O3dCQU91QjtDQUN2QjtpQ0FDZ0M7O2lDQUVBLG1CQUFtQjs7OEJBRXRCLFFBQVE7MEJBQ1o7O3dCQUVGOztPQUVqQiwyQ0FBMkM7dUNBQ1g7O1lBRTNCLHdFQUF3RTtxQkFDL0Q7O1NBRVosa0NBQWtDOzsyQkFFaEIscUJBQXFCLGFBQWM7Ozs7cUJBSXpDO09BQ2Qsa0JBQWtCO3NCQUNILDBCQUEwQjs7S0FFM0M7NkJBQ3dCLDRCQUE0Qjs7O3dCQUdqQzs7V0FFYjs7O0dBR1I7R0FDQTs7Ozs7O0NBTUY7Ozs7Ozs7Ozs7Ozs7O2dDQWMrQixXQUFXO2tDQUNUOztPQUUzQiwyQkFBMkI7UUFDMUIsc0NBQXNDO3NCQUN4Qjs7Ozs4QkFJUSxRQUFTLGFBQVk7O3VCQUU1Qjs7U0FFZCwyQkFBMkI7OztnQ0FHSiJ9
 ;// ./src/errors.jsx
 /*
 
@@ -8185,7 +8189,7 @@ let error = null; // this is only to ease debuggin,
 
 */
 
-const [router_CORE,router_COMPONENT]=[Symbol.for('LILACT:CORE'),Symbol.for('LILACT:COMPONENT')];
+
 
 
 
@@ -8453,7 +8457,7 @@ function Routes({ children }) {
 
 
 
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9yb3V0ZXIuanN4Iiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9yb3V0ZXIuanN4Il0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLEFBQUE7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztDQThCQzs7UUFFTztRQUNBOztvQ0FFNEI7bUNBQ0EsQUFBRCxVQUFXOztDQUU3QzttQkFDa0IsUUFBUSw4QkFBK0Isc0JBQXNCLG9CQUFvQjs7Q0FFbkc7Ozs7Ozs7MkJBTzJCLEFBQUQsOEJBQThCO3VCQUNsQyxNQUFNOzt5QkFFSjttQ0FDVSxVQUFXO3NEQUNRO2tEQUNKO1VBQ3hDOzs7Ozs7OzswQ0FRZ0M7V0FDOUIsQUFBRCxNQUFPO21CQUNFLGlCQUFpQixZQUFhOzt5QkFFeEI7eUJBQ0E7O0VBRXZCO1VBQ1E7O1NBRUQsTUFBTTs2QkFDYzs2QkFDQTs7Ozs4QkFJQyxBQUFELElBQU0sNkJBQTZCLFFBQU87S0FDbEUseUJBQXlCO2FBQ2pCOzs7O3VCQUlVO3FCQUNGOztLQUVoQiw4QkFBK0IsQUFBRDt3QkFDVixBQUFEOzthQUVYLFlBQWE7OztTQUdsQiwyQ0FBaUU7OztDQUd6RTs7Ozs7NEJBSzJCLEdBQUc7d0JBQ1A7S0FDbkIsc0JBQXNCOzs7O0NBSTFCOzs7Ozs0QkFLMkIsR0FBRzt3QkFDUDtLQUNuQixzQkFBc0I7OzttQkFHUixHQUFHO3dCQUNFO3VCQUNEOzs7Q0FHdEI7Ozs7Ozs7Ozs7Ozs7OztxQkFlcUIsQUFBRCxpR0FBaUc7OEJBQ3hGOzhCQUNBO3NCQUNSLElBQUk7TUFDcEIsaUJBQWlCO01BQ2pCOzs7R0FHRjs7O21CQUdlO1dBQ1IsSUFBSzs7U0FFUDtFQUNOLCtIQUNDOzs7O3VCQUttQixJQUFJO0tBQ3RCO2tCQUNjLEFBQUQ7Ozs7Q0FJakI7Ozs7Ozs7Ozs7Ozs7Ozt3QkFld0IsQUFBRDs7Ozs7Ozs7Ozs7Ozs7SUFjcEI7OEJBQzBCOzhCQUNBO3NEQUN3QixjQUFjLFdBQVc7O3NDQUV6QywrQkFBK0IsNEJBQTRCLHdCQUF3QixhQUFjO3VFQUMvRCxBQUFEO3NGQUNlLGNBQWM7MkRBQ3hDLEFBQUQ7aUNBQzFCLEtBQUssaUJBQWtCLFNBQVEsZUFBZ0I7OEJBQ2xEOztzQkFFUixJQUFJO01BQ3BCLGlCQUFpQjtNQUNqQjttQkFDYTtXQUNSLElBQUs7OztTQUdQO0VBQ04seUxBQ0MseUNBQTJDLEFBQUQ7Ozs7Q0FLN0M7Q0FDQTtxQkFDb0IsVUFBVTs7RUFFN0I7eUNBQ3dDLEFBQUQsbUJBQW9CLEFBQUQ7V0FDaEQsQUFBRCx3QkFBeUIsYUFBYTtrQkFDOUI7OztXQUdQLEFBQUQsc0JBQXNCOzswQkFFUDtTQUNqQjs7O21CQUdVLG9CQUFvQjtLQUNsQyx5QkFBeUIseUJBQXlCLE1BQU07UUFDckQsbUNBQW1DO3NCQUNyQjtLQUNqQixZQUFZO2lCQUNBO29CQUNJLEFBQUQsVUFBVyw4QkFBK0I7RUFDNUQ7S0FDRyxtQ0FBbUM7OERBQ3NCOztTQUVyRDs7O0NBR1I7Q0FDQTs7Ozs7Ozs7c0JBUXNCLEFBQUQscUNBQXFDO0VBQ3pEOzs7Q0FHRDs7Ozs7O3VCQU11QixBQUFELGVBQWU7OEJBQ1I7O0VBRTVCO2lDQUMrQjs7TUFFM0Isb0NBQW9DOztHQUV2Qzs7Ozs7U0FLTSwrQkFBK0I7TUFDbEMsVUFBVTtJQUNaO09BQ0csVUFBVTtZQUNMLHFCQUEwQztjQUN4QyxjQUFjO0tBQ3ZCO1lBQ08scUJBQTBDLEVBQVE7V0FDbkQ7WUFDQyxxQkFBMEM7Ozs7O0VBS3BEIn0=
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9yb3V0ZXIuanN4Iiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9yb3V0ZXIuanN4Il0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLEFBQUE7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztRQThCUTs7UUFFQTtRQUNBOztvQ0FFNEI7bUNBQ0EsQUFBRCxVQUFXOztDQUU3QzttQkFDa0IsUUFBUSw4QkFBK0Isc0JBQXNCLG9CQUFvQjs7Q0FFbkc7Ozs7Ozs7MkJBTzJCLEFBQUQsOEJBQThCO3VCQUNsQyxNQUFNOzt5QkFFSjttQ0FDVSxVQUFXO3NEQUNRO2tEQUNKO1VBQ3hDOzs7Ozs7OzswQ0FRZ0M7V0FDOUIsQUFBRCxNQUFPO21CQUNFLGlCQUFpQixZQUFhOzt5QkFFeEI7eUJBQ0E7O0VBRXZCO1VBQ1E7O1NBRUQsTUFBTTs2QkFDYzs2QkFDQTs7Ozs4QkFJQyxBQUFELElBQU0sNkJBQTZCLFFBQU87S0FDbEUseUJBQXlCO2FBQ2pCOzs7O3VCQUlVO3FCQUNGOztLQUVoQiw4QkFBK0IsQUFBRDt3QkFDVixBQUFEOzthQUVYLFlBQWE7OztTQUdsQiwyQ0FBaUU7OztDQUd6RTs7Ozs7NEJBSzJCLEdBQUc7d0JBQ1A7S0FDbkIsc0JBQXNCOzs7O0NBSTFCOzs7Ozs0QkFLMkIsR0FBRzt3QkFDUDtLQUNuQixzQkFBc0I7OzttQkFHUixHQUFHO3dCQUNFO3VCQUNEOzs7Q0FHdEI7Ozs7Ozs7Ozs7Ozs7OztxQkFlcUIsQUFBRCxpR0FBaUc7OEJBQ3hGOzhCQUNBO3NCQUNSLElBQUk7TUFDcEIsaUJBQWlCO01BQ2pCOzs7R0FHRjs7O21CQUdlO1dBQ1IsSUFBSzs7U0FFUDtFQUNOLCtIQUNDOzs7O3VCQUttQixJQUFJO0tBQ3RCO2tCQUNjLEFBQUQ7Ozs7Q0FJakI7Ozs7Ozs7Ozs7Ozs7Ozt3QkFld0IsQUFBRDs7Ozs7Ozs7Ozs7Ozs7SUFjcEI7OEJBQzBCOzhCQUNBO3NEQUN3QixjQUFjLFdBQVc7O3NDQUV6QywrQkFBK0IsNEJBQTRCLHdCQUF3QixhQUFjO3VFQUMvRCxBQUFEO3NGQUNlLGNBQWM7MkRBQ3hDLEFBQUQ7aUNBQzFCLEtBQUssaUJBQWtCLFNBQVEsZUFBZ0I7OEJBQ2xEOztzQkFFUixJQUFJO01BQ3BCLGlCQUFpQjtNQUNqQjttQkFDYTtXQUNSLElBQUs7OztTQUdQO0VBQ04seUxBQ0MseUNBQTJDLEFBQUQ7Ozs7Q0FLN0M7Q0FDQTtxQkFDb0IsVUFBVTs7RUFFN0I7eUNBQ3dDLEFBQUQsbUJBQW9CLEFBQUQ7V0FDaEQsQUFBRCx3QkFBeUIsYUFBYTtrQkFDOUI7OztXQUdQLEFBQUQsc0JBQXNCOzswQkFFUDtTQUNqQjs7O21CQUdVLG9CQUFvQjtLQUNsQyx5QkFBeUIseUJBQXlCLE1BQU07UUFDckQsbUNBQW1DO3NCQUNyQjtLQUNqQixZQUFZO2lCQUNBO29CQUNJLEFBQUQsVUFBVyw4QkFBK0I7RUFDNUQ7S0FDRyxtQ0FBbUM7OERBQ3NCOztTQUVyRDs7O0NBR1I7Q0FDQTs7Ozs7Ozs7c0JBUXNCLEFBQUQscUNBQXFDO0VBQ3pEOzs7Q0FHRDs7Ozs7O3VCQU11QixBQUFELGVBQWU7OEJBQ1I7O0VBRTVCO2lDQUMrQjs7TUFFM0Isb0NBQW9DOztHQUV2Qzs7Ozs7U0FLTSwrQkFBK0I7TUFDbEMsVUFBVTtJQUNaO09BQ0csVUFBVTtZQUNMLHFCQUEwQztjQUN4QyxjQUFjO0tBQ3ZCO1lBQ08scUJBQTBDLEVBQVE7V0FDbkQ7WUFDQyxxQkFBMEM7Ozs7O0VBS3BEIn0=
 ;// ./src/accessories.jsx
 /*
 
@@ -8484,9 +8488,6 @@ function Routes({ children }) {
 	THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
-
-
-
 
 
 
@@ -8614,7 +8615,7 @@ class Suspense extends Component
 
 /** @ignore */
 	static getDerivedStateFromError(error) {
-		if (Lilact.isThenable(error)) {
+		if (isThenable(error)) {
 			// signal to call componentDidCatch where we handle the thenable
 			return null;
 		}
@@ -8624,7 +8625,7 @@ class Suspense extends Component
 
 /** @ignore */
 	componentDidCatch(error) {
-		if (!Lilact.isThenable(error)) return;
+		if (!isThenable(error)) return;
 
 		const promise = error;
 
@@ -8638,10 +8639,10 @@ class Suspense extends Component
 			const delay = Math.max(0, this.props.minDelay);
 			// Ensure no leftover timers
 			if (this._delayTimer) {
-				Lilact.clearTimeout(this._delayTimer);
+				timers_clearTimeout(this._delayTimer);
 				this._delayTimer = null;
 			}
-			this._delayTimer = Lilact.setTimeout(() => {
+			this._delayTimer = timers_setTimeout(() => {
 				this._delayTimer = null;
 				this._fallbackShownAt = Date.now();
 				this.setState({ showingFallback: true });
@@ -8658,11 +8659,11 @@ class Suspense extends Component
 /** @ignore */
 	_clearTimers() {
 		if (this._delayTimer) {
-			Lilact.clearTimeout(this._delayTimer);
+			timers_clearTimeout(this._delayTimer);
 			this._delayTimer = null;
 		}
 		if (this._minShowTimer) {
-			Lilact.clearTimeout(this._minShowTimer);
+			timers_clearTimeout(this._minShowTimer);
 			this._minShowTimer = null;
 		}
 	}
@@ -8675,10 +8676,10 @@ class Suspense extends Component
 		if (this._pending.size === 1) {
 			const delay = Math.max(0, this.props.minDelay);
 			if (this._delayTimer) {
-				Lilact.clearTimeout(this._delayTimer);
+				timers_clearTimeout(this._delayTimer);
 				this._delayTimer = null;
 			}
-			this._delayTimer = Lilact.setTimeout(() => {
+			this._delayTimer = timers_setTimeout(() => {
 				this._delayTimer = null;
 				this._fallbackShownAt = Date.now();
 				this.setState({ showingFallback: true });
@@ -8694,7 +8695,7 @@ class Suspense extends Component
 			if (this._pending.size === 0) {
 				// cancel delay if fallback hasn't shown yet
 				if (this._delayTimer) {
-					Lilact.clearTimeout(this._delayTimer);
+					timers_clearTimeout(this._delayTimer);
 					this._delayTimer = null;
 					// fallback never shown; just ensure state is not showing
 					this.setState({ showingFallback: false });
@@ -8709,10 +8710,10 @@ class Suspense extends Component
 					this.setState({ showingFallback: false });
 				} else {
 					if (this._minShowTimer) {
-						Lilact.clearTimeout(this._minShowTimer);
+						timers_clearTimeout(this._minShowTimer);
 						this._minShowTimer = null;
 					}
-					this._minShowTimer = Lilact.setTimeout(() => {
+					this._minShowTimer = timers_setTimeout(() => {
 						this._minShowTimer = null;
 						this.setState({ showingFallback: false });
 					}, remaining);
@@ -8726,7 +8727,7 @@ class Suspense extends Component
 
 /** @ignore */
 	componentDidCatch(error, info) {
-		if (!Lilact.isThenable(error)) return;
+		if (!isThenable(error)) return;
 		this._attachPromise(error);
 	}
 
@@ -9102,7 +9103,7 @@ const SplitPane = forwardRef(function SplitPane(
 
 
 
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9hY2Nlc3Nvcmllcy5qc3giLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIvVXNlcnMvYXJhc2gvRGVza3RvcC9Qcm9qZWN0cy9MaWxhY3Qvc3JjL2FjY2Vzc29yaWVzLmpzeCJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSxBQUFBOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O1FBK0JRO1FBQ0E7OztRQUdBO1FBQ0E7UUFDQTtRQUNBO1FBQ0E7T0FDRDs7Q0FFTjs7Ozs7Ozs7Ozs7Ozt3QkFhd0IsQUFBRDs7Ozs7OztJQU9wQjtxQkFDaUI7O1VBRVg7SUFDTDs7Ozs7O3lCQVlFOzs7Ozs7O3FCQVdBLEVBQU87Ozs7Ozs7OztDQVNiOzs7Ozs7Ozs7Ozs4Q0FXNkM7OztVQUdwQzs7aUNBRXVCLFFBQVE7VUFDL0I7OzttQkFHUyxjQUFjO1NBQ3hCO09BQ0YsS0FBSyxpQkFBaUIsdUJBQXVCLElBQUksZUFBZTs7O1VBRzdELG1CQUFvQixBQUFEOztRQUVyQixHQUFHO1NBQ0Y7TUFDSCw2QkFBNkI7Ozs7OztDQU1sQzs7Ozs7Ozs7Ozs7O0NBWUE7Ozt3QkFHdUI7O2FBRVgsUUFBUTs7UUFFYjtDQUNQO2dCQUNlOztDQUVmOzBCQUN5Qjs7Q0FFekI7O0NBRUE7O0NBRUE7Ozs7Q0FJQTtpQ0FDZ0MsUUFBUTtNQUNuQyxpQkFBa0IsVUFBUztJQUM3Qjs7O0dBR0Q7Ozs7Q0FJRjttQkFDa0IsUUFBUTtNQUNyQixrQkFBbUI7Ozs7TUFJbkIsaUJBQWtCOztHQUVyQjtvQkFDaUI7O0dBRWpCO01BQ0csMkJBQTJCOzBCQUNQO0lBQ3RCO09BQ0csbUJBQW1CO3dCQUNGOzs7d0NBR2lCLEFBQUQsTUFBTzs7b0NBRVY7aUJBQ2xCLEFBQUQ7Ozs7O0NBS2pCO3NCQUNxQixHQUFHO29CQUNMO3NCQUNFOzs7Q0FHckI7Y0FDYSxHQUFHO01BQ1gsbUJBQW1CO3VCQUNGOzs7TUFHakIscUJBQXFC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
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9hY2Nlc3Nvcmllcy5qc3giLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIvVXNlcnMvYXJhc2gvRGVza3RvcC9Qcm9qZWN0cy9MaWxhY3Qvc3JjL2FjY2Vzc29yaWVzLmpzeCJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSxBQUFBOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O1FBK0JRO1FBQ0E7O1FBRUE7UUFDQTtRQUNBO09BQ0Q7O0NBRU47Ozs7Ozs7Ozs7Ozs7d0JBYXdCLEFBQUQ7Ozs7Ozs7SUFPcEI7cUJBQ2lCOztVQUVYO0lBQ0w7Ozs7Ozt5QkFZRTs7Ozs7OztxQkFXQSxFQUFPOzs7Ozs7Ozs7Q0FTYjs7Ozs7Ozs7Ozs7OENBVzZDOzs7VUFHcEM7O2lDQUV1QixRQUFRO1VBQy9COzs7bUJBR1MsY0FBYztTQUN4QjtPQUNGLEtBQUssaUJBQWlCLHVCQUF1QixJQUFJLGVBQWU7OztVQUc3RCxtQkFBb0IsQUFBRDs7UUFFckIsR0FBRztTQUNGO01BQ0gsNkJBQTZCOzs7Ozs7Q0FNbEM7Ozs7Ozs7Ozs7OztDQVlBOzs7d0JBR3VCOzthQUVYLFFBQVE7O1FBRWI7Q0FDUDtnQkFDZTs7Q0FFZjswQkFDeUI7O0NBRXpCOztDQUVBOztDQUVBOzs7O0NBSUE7aUNBQ2dDLFFBQVE7TUFDbkMsVUFBVyxVQUFTO0lBQ3RCOzs7R0FHRDs7OztDQUlGO21CQUNrQixRQUFRO01BQ3JCLFdBQVk7Ozs7TUFJWixpQkFBa0I7O0dBRXJCO29CQUNpQjs7R0FFakI7TUFDRywyQkFBMkI7MEJBQ1A7SUFDdEI7T0FDRyxtQkFBbUI7aUJBQ1Q7OztpQ0FHaUIsQUFBRCxNQUFPOztvQ0FFSDtpQkFDbEIsQUFBRDs7Ozs7Q0FLakI7c0JBQ3FCLEdBQUc7b0JBQ0w7c0JBQ0U7OztDQUdyQjtjQUNhLEdBQUc7TUFDWCxtQkFBbUI7Z0JBQ1Q7OztNQUdWLHFCQUFxQjtnQkFDWDs7Ozs7Q0FLZjtn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
 // EXTERNAL MODULE: ./src/jsx.js
 var jsx = __webpack_require__(207);
 ;// ./src/lilact.jsx
@@ -9200,7 +9201,7 @@ var jsx = __webpack_require__(207);
 const lilact_Lilact = 
 {	
 
-	VERSION: "beta.14",
+	VERSION: "beta.15",
 	
 	// Configuration
 
@@ -9240,18 +9241,22 @@ document.addEventListener('DOMContentLoaded', () => {
   lilact_Lilact.runScripts();
 });
 
-window.addEventListener('error', (e) => {
-	lilact_Lilact.globalErrorHandler(e);
-});
+if(true) {
+	window.addEventListener('error', (e) => {
+		lilact_Lilact.globalErrorHandler(e);
+	});
+}
 
+if(true) {
 	console.log(`Lilact (Version: ${lilact_Lilact.VERSION}) - Debug Mode`);
 	console.log(`Copyright(C) 2024-2026 Arash Kazemi <contact.arash.kazemi@gmail.com>`);
+}
 
 /* harmony default export */ const lilact = (lilact_Lilact);
 
 
 
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9saWxhY3QuanN4Iiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9saWxhY3QuanN4Il0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLEFBQUE7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Q0ErQkM7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7UUFrQ087OztRQUdBOzs7Ozs7Ozs7Ozs7O1FBYUE7OztDQUdQOzs7Ozs7OztDQVFBOzs7O0VBSUM7Ozs7aUJBSWU7O0VBRWY7Ozs7Ozs7Ozs7Ozs7Ozs7OztFQWtCQTs7Ozs7Ozs7OzswQkFVd0Isb0JBQXFCLE1BQU07bUJBQ2pDOzs7d0JBSUksU0FBVSxPQUFPOzBCQUNkOzs7YUFLZDthQUNBIn0=
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9saWxhY3QuanN4Iiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9saWxhY3QuanN4Il0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLEFBQUE7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Q0ErQkM7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7UUFrQ087OztRQUdBOzs7Ozs7Ozs7Ozs7O1FBYUE7OztDQUdQOzs7Ozs7OztDQVFBOzs7O0VBSUM7Ozs7aUJBSWU7O0VBRWY7Ozs7Ozs7Ozs7Ozs7Ozs7OztFQWtCQTs7Ozs7Ozs7OzswQkFVd0Isb0JBQXFCLE1BQU07bUJBQ2pDOzs7R0FHakIsUUFBUTt5QkFDYyxTQUFVLE9BQU87MkJBQ2Q7Ozs7R0FJekIsUUFBUTthQUNFO2FBQ0EifQ==
 
 /***/ }),
 
@@ -9901,6 +9906,99 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
 
 /***/ }),
 
+/***/ 601:
+/*!*************************!*\
+  !*** ./src/symbols.jsx ***!
+  \*************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   ARGS: () => (/* binding */ ARGS),
+/* harmony export */   CALLBACK: () => (/* binding */ CALLBACK),
+/* harmony export */   CHILD_CLASS_ADDENDUM: () => (/* binding */ CHILD_CLASS_ADDENDUM),
+/* harmony export */   CLEARED: () => (/* binding */ CLEARED),
+/* harmony export */   COMPONENT: () => (/* binding */ COMPONENT),
+/* harmony export */   CORE: () => (/* binding */ CORE),
+/* harmony export */   DUE: () => (/* binding */ DUE),
+/* harmony export */   IDX: () => (/* binding */ IDX),
+/* harmony export */   INTERVAL: () => (/* binding */ INTERVAL),
+/* harmony export */   IS_ZOMBIE: () => (/* binding */ IS_ZOMBIE),
+/* harmony export */   LAZY: () => (/* binding */ LAZY),
+/* harmony export */   MEMOIZED: () => (/* binding */ MEMOIZED),
+/* harmony export */   REPEAT: () => (/* binding */ REPEAT),
+/* harmony export */   TEXT: () => (/* binding */ TEXT)
+/* harmony export */ });
+/*
+
+	Lilact
+	Copyright (C) 2024-2026 Arash Kazemi <contact.arash.kazemi@gmail.com>
+	All rights reserved.
+
+	BSD-2-Clause
+
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
+
+	* Redistributions of source code must retain the above copyright
+		notice, this list of conditions and the following disclaimer.
+	* Redistributions in binary form must reproduce the above copyright
+		notice, this list of conditions and the following disclaimer in the
+		documentation and/or other materials provided with the distribution.
+
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+	DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+	(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+	LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+	ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+	(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+	THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+*/
+
+
+const [ 	
+				CORE,
+				COMPONENT,
+				TEXT,
+				IS_ZOMBIE,
+				IDX,
+				CHILD_CLASS_ADDENDUM,
+				MEMOIZED,
+				LAZY,
+
+				DUE,
+				REPEAT,
+				CLEARED,
+				INTERVAL,
+				CALLBACK,
+				ARGS 
+			] = 
+			[
+				Symbol.for('LILACT:CORE'),
+				Symbol.for('LILACT:COMPONENT'),
+				Symbol.for('LILACT:TEXT'),
+				Symbol.for('LILACT:IS_ZOMBIE'),
+				Symbol.for('LILACT:IDX'),
+				Symbol.for('LILACT:CHILD_CLASS_ADDENDUM'),
+				Symbol.for('LILACT:MEMOIZED'),
+
+				Symbol.for('LILACT:TIMERS:DUE'),
+				Symbol.for('LILACT:TIMERS:REPEAT'),
+				Symbol.for('LILACT:TIMERS:CLEARED'),
+				Symbol.for('LILACT:TIMERS:INTERVAL'),
+				Symbol.for('LILACT:TIMERS:CALLBACK'),
+				Symbol.for('LILACT:TIMERS:ARGS')
+			];
+
+
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9zeW1ib2xzLmpzeCIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi9Vc2Vycy9hcmFzaC9EZXNrdG9wL1Byb2plY3RzL0xpbGFjdC9zcmMvc3ltYm9scy5qc3giXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsQUFBQTs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztlQWlEZTtlQUNBO2VBQ0E7ZUFDQTtlQUNBO2VBQ0E7ZUFDQTs7ZUFFQTtlQUNBO2VBQ0E7ZUFDQTtlQUNBO2VBQ0EifQ==
+
+/***/ }),
+
 /***/ 847:
 /*!***************************************************!*\
   !*** ./node_modules/prop-types/checkPropTypes.js ***!
@@ -10024,10 +10122,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   lazy: () => (/* binding */ lazy),
 /* harmony export */   require: () => (/* binding */ require),
+/* harmony export */   required_scripts: () => (/* binding */ required_scripts),
 /* harmony export */   run: () => (/* binding */ run),
 /* harmony export */   runScripts: () => (/* binding */ runScripts)
 /* harmony export */ });
 /* harmony import */ var _lilact_jsx__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./lilact.jsx */ 451);
+/* harmony import */ var _symbols_jsx__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./symbols.jsx */ 601);
 /*
 
 	Lilact
@@ -10058,9 +10158,12 @@ __webpack_require__.r(__webpack_exports__);
 
 */
 
-const [CORE,COMPONENT,LAZY]=[Symbol.for('LILACT:CORE'),Symbol.for('LILACT:COMPONENT'),Symbol.for('LILACT:LAZY')];
 
 
+
+
+/** @ignore */
+const required_scripts = {};
 
 
 /**
@@ -10079,7 +10182,7 @@ function run(jsx, path=`InlineJSX-${++_lilact_jsx__WEBPACK_IMPORTED_MODULE_0__["
 	let processed;
 
 
-	_lilact_jsx__WEBPACK_IMPORTED_MODULE_0__["default"].required_scripts[path] = { 	
+	required_scripts[path] = { 	
 		mappings,
 		module,
 		is_inline,
@@ -10106,7 +10209,9 @@ function run(jsx, path=`InlineJSX-${++_lilact_jsx__WEBPACK_IMPORTED_MODULE_0__["
 		throw e;
 	}
 
-		_lilact_jsx__WEBPACK_IMPORTED_MODULE_0__["default"].required_scripts[path].processed = processed;
+if(true) {
+		required_scripts[path].processed = processed;
+}		
 	
 	processed += "\n//# sourceURL=eval:/" + path;
 
@@ -10133,11 +10238,11 @@ function run(jsx, path=`InlineJSX-${++_lilact_jsx__WEBPACK_IMPORTED_MODULE_0__["
 /**
  * Loads a jsx script from a path. All scripts can access Lilact namespace as a global object. 
  * 
- * `Lilact.require` loads synchronously, as it is expected to be loaded on the next instruction.
+ * `require` loads synchronously, as it is expected to be loaded on the next instruction.
  * 
  * As running the transpiled scripts rely on `new Function`, it is not possible to use module imports 
  * and exports. So to import you should use `const {useState} = Lilact` convention. And to 
- * export, you should use `module.exports = ...`. `Lilact.require` returns `module.exports` value
+ * export, you should use `module.exports = ...`. `require` returns `module.exports` value
  * so you can import different modules using the convention above.
  * 
  * If the path is in the format #id, it will query the document for a script element with the given 
@@ -10154,19 +10259,19 @@ function run(jsx, path=`InlineJSX-${++_lilact_jsx__WEBPACK_IMPORTED_MODULE_0__["
  */
 function require(path, forceUpdate)
 {
-	if(_lilact_jsx__WEBPACK_IMPORTED_MODULE_0__["default"].required_scripts[path] && !forceUpdate) return _lilact_jsx__WEBPACK_IMPORTED_MODULE_0__["default"].required_scripts[path].module.exports;
+	if(required_scripts[path] && !forceUpdate) return required_scripts[path].module.exports;
 	
 	if(path[0]==='#') {
 
 		const el = document.getElementById(path);
 
 		if(el) {
-			return _lilact_jsx__WEBPACK_IMPORTED_MODULE_0__["default"].run(el.innerText, path);
+			return run(el.innerText, path);
 		}
 
 	}
-	else if(_lilact_jsx__WEBPACK_IMPORTED_MODULE_0__["default"]?.[LAZY]) {
-		_lilact_jsx__WEBPACK_IMPORTED_MODULE_0__["default"][LAZY]=false;
+	else if(_lilact_jsx__WEBPACK_IMPORTED_MODULE_0__["default"]?.[_symbols_jsx__WEBPACK_IMPORTED_MODULE_1__.LAZY]) {
+		_lilact_jsx__WEBPACK_IMPORTED_MODULE_0__["default"][_symbols_jsx__WEBPACK_IMPORTED_MODULE_1__.LAZY]=false;
 
 		return fetch(path)
 			.then(res => {
@@ -10174,7 +10279,7 @@ function require(path, forceUpdate)
 				return res.text();
 			})
 			.then(res => {
-				res = _lilact_jsx__WEBPACK_IMPORTED_MODULE_0__["default"].run(res, path, false);
+				res = run(res, path, false);
 				// todo: this is for the lazy, so we detect default, should we do it in sync mode too?
 				return res?.default ?? res;
 			})
@@ -10190,7 +10295,7 @@ function require(path, forceUpdate)
 		request.open("GET", path, false);
 		request.send(null);
 		if (request.status === 200) {
-			return _lilact_jsx__WEBPACK_IMPORTED_MODULE_0__["default"].run(request.responseText, path, false);
+			return run(request.responseText, path, false);
 		}
 	}
 
@@ -10212,7 +10317,7 @@ function lazy(factory) {
 	let status = "pending"; // pending | success | error
 	let result;             // component | error
 
-	_lilact_jsx__WEBPACK_IMPORTED_MODULE_0__["default"][LAZY] = true;
+	_lilact_jsx__WEBPACK_IMPORTED_MODULE_0__["default"][_symbols_jsx__WEBPACK_IMPORTED_MODULE_1__.LAZY] = true;
 	result = factory();
 
 	if(_lilact_jsx__WEBPACK_IMPORTED_MODULE_0__["default"].isThenable(result)) {
@@ -10258,8 +10363,8 @@ function scanScriptTagsWithType() {
  * Scans the whole documents and runs all the script elements with type `text/jsx`.
  * It is automatically attached to document.onload when Lilact is loaded.
  * 
- * If element src is set, it will be loaded via `Lilact.require`.
- * If element has inner content, it will be executed via `Lilact.run`.
+ * If element src is set, it will be loaded via `require`.
+ * If element has inner content, it will be executed via `run`.
  * 
  * If both are present, first the src is loaded and then the inner content is executed.
  *
@@ -10272,14 +10377,14 @@ function runScripts()
 	const scripts = scanScriptTagsWithType();
 
 	for(const s of scripts) {
-		if(s.src) _lilact_jsx__WEBPACK_IMPORTED_MODULE_0__["default"].require(s.src);
-		if(s.content) _lilact_jsx__WEBPACK_IMPORTED_MODULE_0__["default"].run(s.content);
+		if(s.src) require(s.src);
+		if(s.content) run(s.content);
 	}
 }
 
 
 
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9ydW4uanN4Iiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9ydW4uanN4Il0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLEFBQUE7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztDQThCQzs7Ozs7Q0FLQTs7Ozs7Ozs7O29CQVNtQjtDQUNuQjs7aUJBRWdCLFVBQVU7Ozs7a0NBSU87Ozs7Ozs7OztNQVM1QjtrQ0FDNEI7RUFDL0I7Ozs7Ozs7Ozs7T0FVSSxJQUFJO0dBQ1I7Ozs7Ozs7OztFQVdEO3dCQUNzQjs7TUFFbEI7Ozs7O0dBS0g7bUJBQ2dCO0tBQ2Q7OztPQUdFLElBQUk7d0JBQ2E7Ozs7OztDQU12Qjs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozt3QkFzQnVCO0NBQ3ZCO0lBQ0c7O0lBRUEsZ0JBQWdCOztxQ0FFaUI7O0tBRWhDLEtBQUs7cUJBQ1c7Ozs7U0FJWixpQkFBaUI7OztlQUdYO1NBQ04sT0FBUTtPQUNULHlCQUF5QjttQkFDYjs7U0FFWCxPQUFRO29CQUNJO0lBQ2hCOzs7VUFHSyxPQUFROzs7O09BSVg7R0FDSjtHQUNBOztxQ0FFa0M7ZUFDdEI7ZUFDQTtNQUNULHlCQUF5QjtxQkFDVjs7OztpQkFJSjs7OztDQUloQjs7Ozs7Ozs7OztxQkFVb0IsVUFBVTswQkFDTDswQkFDQTs7O2tCQUdSOztJQUVkLGlCQUFrQixXQUFVO2NBQ2xCO0dBQ1YsU0FBUzs7Ozs7R0FLVCxTQUFTOzs7Ozs7O09BT047Ozs7d0JBSWlCLFFBQVE7TUFDMUI7TUFDQTs7VUFFSTs7Ozs7O2dDQU1zQixHQUFHOzRCQUNQOzJCQUNBOzs7b0JBR1AsQUFBRCxRQUFVLEFBQUQ7cUJBQ047Ozs7O0NBS3RCOzs7Ozs7Ozs7Ozs7OzJCQWEwQjtDQUMxQjt3Q0FDdUM7O0tBRW5DLHFCQUFxQjtLQUNyQixzQkFBc0I7S0FDdEIsc0JBQXNCIn0=
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9ydW4uanN4Iiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiL1VzZXJzL2FyYXNoL0Rlc2t0b3AvUHJvamVjdHMvTGlsYWN0L3NyYy9ydW4uanN4Il0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLEFBQUE7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7UUErQlE7OztDQUdQO2lDQUNnQzs7O0NBR2hDOzs7Ozs7Ozs7b0JBU21CO0NBQ25COztpQkFFZ0IsVUFBVTs7OzsyQkFJQTs7Ozs7Ozs7O01BU3JCO2tDQUM0QjtFQUMvQjs7Ozs7Ozs7OztPQVVJLElBQUk7R0FDUjs7Ozs7R0FLQSxRQUFROzs7Ozs7RUFNVDt3QkFDc0I7O01BRWxCOzs7OztHQUtIO21CQUNnQjtLQUNkOzs7T0FHRSxJQUFJO3dCQUNhOzs7Ozs7Q0FNdkI7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7d0JBc0J1QjtDQUN2QjtJQUNHOztJQUVBLGdCQUFnQjs7cUNBRWlCOztLQUVoQyxLQUFLO2NBQ0k7Ozs7U0FJTCxpQkFBaUI7OztlQUdYO1NBQ04sT0FBUTtPQUNULHlCQUF5QjttQkFDYjs7U0FFWCxPQUFRO2FBQ0g7SUFDVDs7O1VBR0ssT0FBUTs7OztPQUlYO0dBQ0o7R0FDQTs7cUNBRWtDO2VBQ3RCO2VBQ0E7TUFDVCx5QkFBeUI7Y0FDakI7Ozs7aUJBSUc7Ozs7Q0FJaEI7Ozs7Ozs7Ozs7cUJBVW9CLFVBQVU7MEJBQ0w7MEJBQ0E7OztrQkFHUjs7SUFFZCxpQkFBa0IsV0FBVTtjQUNsQjtHQUNWLFNBQVM7Ozs7O0dBS1QsU0FBUzs7Ozs7OztPQU9OOzs7O3dCQUlpQixRQUFRO01BQzFCO01BQ0E7O1VBRUk7Ozs7OztnQ0FNc0IsR0FBRzs0QkFDUDsyQkFDQTs7O29CQUdQLEFBQUQsUUFBVSxBQUFEO3FCQUNOOzs7OztDQUt0Qjs7Ozs7Ozs7Ozs7OzsyQkFhMEI7Q0FDMUI7d0NBQ3VDOztLQUVuQyxxQkFBcUI7S0FDckIsZUFBZTtLQUNmLGVBQWUifQ==
 
 /***/ }),
 

@@ -31,7 +31,7 @@
 import Lilact from './lilact.jsx';
 
 
-ʔ defineSymbols ( "LILACT", [ "CORE", "COMPONENT", "MEMOIZED"] ) ʔ
+import { CORE, COMPONENT, MEMOIZED } from "./symbols.jsx"
 
 
 const typeOf = (input) => {
@@ -337,9 +337,6 @@ export function toBool(value) {
 
 
 // Internals
-
-/** @ignore */
-export const required_scripts = {};
 
 /** @ignore */
 export let update_timeout = undefined;

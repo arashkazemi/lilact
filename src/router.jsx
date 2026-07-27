@@ -28,7 +28,7 @@
 
 */
 
-ʔ defineSymbols ( "LILACT", [ "CORE", "COMPONENT" ] ) ʔ
+import { CORE, COMPONENT } from "./symbols.jsx"
 
 import {createContext, useContext, useState, useCallback, useEffect} from "./hooks.jsx"
 import {Children} from "./misc.jsx"

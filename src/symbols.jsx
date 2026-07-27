@@ -10,10 +10,10 @@
 	modification, are permitted provided that the following conditions are met:
 
 	* Redistributions of source code must retain the above copyright
-	  notice, this list of conditions and the following disclaimer.
+		notice, this list of conditions and the following disclaimer.
 	* Redistributions in binary form must reproduce the above copyright
-	  notice, this list of conditions and the following disclaimer in the
-	  documentation and/or other materials provided with the distribution.
+		notice, this list of conditions and the following disclaimer in the
+		documentation and/or other materials provided with the distribution.
 
 	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -28,32 +28,37 @@
 
 */
 
-// Loader for JSX transpiler in webpack. Check webpack.config.js for the rules.
 
-const {transpileJSX, transpilerConfig} = require ('./jsx.js');
+export const [ 	
+				CORE,
+				COMPONENT,
+				TEXT,
+				IS_ZOMBIE,
+				IDX,
+				CHILD_CLASS_ADDENDUM,
+				MEMOIZED,
+				LAZY,
 
-module.exports = function loader(source) {
-	
-	const opts = this.getOptions();
+				DUE,
+				REPEAT,
+				CLEARED,
+				INTERVAL,
+				CALLBACK,
+				ARGS 
+			] = 
+			[
+				Symbol.for('LILACT:CORE'),
+				Symbol.for('LILACT:COMPONENT'),
+				Symbol.for('LILACT:TEXT'),
+				Symbol.for('LILACT:IS_ZOMBIE'),
+				Symbol.for('LILACT:IDX'),
+				Symbol.for('LILACT:CHILD_CLASS_ADDENDUM'),
+				Symbol.for('LILACT:MEMOIZED'),
 
-	globalThis.DEBUG = opts.mode!=='production';
-
-	// globalThis.Lilact = Object.assign(globalThis.Lilact || {}, 
-	// 									{
-	// 										transpilerConfig
-	// 									});
-
-	console.log("Transpiling", this.resource);
-	source = transpileJSX(source,
-								{ 
-									path: this.resource,
-									appendSourcemap: DEBUG,
-									//factory: "createComponent", 
-									//mappings: [], 
-									//injectTraceLabels: false,
-									//discardComments: false
-								}
-	);
-
-	return source;
-};
+				Symbol.for('LILACT:TIMERS:DUE'),
+				Symbol.for('LILACT:TIMERS:REPEAT'),
+				Symbol.for('LILACT:TIMERS:CLEARED'),
+				Symbol.for('LILACT:TIMERS:INTERVAL'),
+				Symbol.for('LILACT:TIMERS:CALLBACK'),
+				Symbol.for('LILACT:TIMERS:ARGS')
+			];

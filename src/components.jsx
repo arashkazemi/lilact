@@ -28,9 +28,8 @@
 
 */
 
-ʔ defineSymbols ( "LILACT", [ "CORE", "COMPONENT", "TEXT", "IS_ZOMBIE", "IDX", "CHILD_CLASS_ADDENDUM", "MEMOIZED"] ) ʔ
-
-import {shallowEqual} from "./misc.jsx";
+import { CORE, COMPONENT, TEXT, IS_ZOMBIE, IDX, CHILD_CLASS_ADDENDUM, MEMOIZED } from "./symbols.jsx"
+import { shallowEqual } from "./misc.jsx";
 
 /* 
 ComponentCache is for internal use. It is the heart of the JSX runtime,
@@ -163,7 +162,7 @@ class ComponentCore
 		// }
 
 		/*if(do_rerender)*/ {
-ʔ if(DEBUG) {
+if(DEBUG) {
 
 			if(this.entity?.propTypes) {
 				Lilact.PropTypes.checkPropTypes(this.entity.propTypes, this.props, 'prop', this.entity.name);
@@ -172,7 +171,7 @@ class ComponentCore
 				Lilact.PropTypes.checkPropTypes(this.component.propTypes, this.props, 'prop', this.component.name);
 			}
 
-ʔ }	
+}	
 			if(typeof(next_state)==='function') next_state = next_state(this.state);
 
 			if(this.component.constructor.defaultProps) {
@@ -473,9 +472,9 @@ class ComponentCore
 			this.element.onsubmit = undefined;
 		}
 
-ʔ if(DEBUG) {
+if(DEBUG) {
 		//this.element.setAttribute('key', this.props.key);
-ʔ }		
+}		
 
 		this.updateElementClass(patch);
 	}

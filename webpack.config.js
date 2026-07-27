@@ -34,8 +34,7 @@ import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
 
 import fs from 'fs';
-import 'webpack';
-
+import webpack from 'webpack';
 
 
 export default (env, argv) => {
@@ -118,7 +117,12 @@ export default (env, argv) => {
 				}
 			]
 		},
-		plugins: [{
+		plugins: [
+			new webpack.DefinePlugin({
+		        "DEBUG": mode==='development'
+		      }),
+			
+			{
 			apply: (compiler) => {
 				compiler.hooks.done.tap('license-plugin', (compilation) => {
 					fs.readFile('./dist/' + filename, 'utf8', function(err, jssc) {

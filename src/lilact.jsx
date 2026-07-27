@@ -92,7 +92,7 @@ export {transpileJSX, transpilerConfig} from "./jsx";
 export const Lilact = 
 {	
 
-	VERSION: "beta.14",
+	VERSION: "beta.15",
 	
 	// Configuration
 
@@ -132,16 +132,16 @@ document.addEventListener('DOMContentLoaded', () => {
   Lilact.runScripts();
 });
 
-ʔ if(DEBUG) {
-window.addEventListener('error', (e) => {
-	Lilact.globalErrorHandler(e);
-});
-ʔ }
+if(DEBUG) {
+	window.addEventListener('error', (e) => {
+		Lilact.globalErrorHandler(e);
+	});
+}
 
-ʔ if(DEBUG) {
+if(DEBUG) {
 	console.log(`Lilact (Version: ${Lilact.VERSION}) - Debug Mode`);
 	console.log(`Copyright(C) 2024-2026 Arash Kazemi <contact.arash.kazemi@gmail.com>`);
-ʔ }
+}
 
 export default Lilact;
 

@@ -27,8 +27,11 @@
 	THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
+import { setTimeout, clearTimeout } from "./timers.jsx"
+import { Children } from "./misc.jsx"
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "./hooks.jsx"
 
-ʔ defineSymbols ( "LILACT", [ "CORE", "COMPONENT", "CHILD_CLASS_ADDENDUM" ] ) ʔ
+import { CORE, COMPONENT, CHILD_CLASS_ADDENDUM } from "./symbols.jsx"
 
 /* States */
 const UNMOUNTED = "unmounted";
@@ -37,9 +40,6 @@ const ENTERING =  "entering";
 const ENTERED =   "entered";
 const EXITING =   "exiting";
 
-import { setTimeout, clearTimeout} from "./timers.jsx"
-import { Children } from "./misc.jsx"
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "./hooks.jsx"
 
 /**
  * Transition component that manages enter/exit lifecycle and calls callbacks based on state changes.

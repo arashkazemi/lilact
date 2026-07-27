@@ -29,14 +29,11 @@
 */
 
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, useImperativeHandle } from "./hooks.jsx";
-import { Children, forwardRef } from "./misc.jsx";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, useImperativeHandle, useCallback } from "./hooks.jsx";
+import { Children, forwardRef, isThenable } from "./misc.jsx";
 
-
-import {isThenable} from "./misc.jsx"
 import {setTimeout, clearTimeout} from "./timers.jsx"
 import {Component} from "./components.jsx"
-import {useCallback} from './hooks.jsx'
 import {emotion} from "./lilact.jsx"
 const {css,cx} = emotion;
 
@@ -167,7 +164,7 @@ export class Suspense extends Component
 
 /** @ignore */
 	static getDerivedStateFromError(error) {
-		if (Lilact.isThenable(error)) {
+		if (isThenable(error)) {
 			// signal to call componentDidCatch where we handle the thenable
 			return null;
 		}
@@ -177,7 +174,7 @@ export class Suspense extends Component
 
 /** @ignore */
 	componentDidCatch(error) {
-		if (!Lilact.isThenable(error)) return;
+		if (!isThenable(error)) return;
 
 		const promise = error;
 
@@ -191,10 +188,10 @@ export class Suspense extends Component
 			const delay = Math.max(0, this.props.minDelay);
 			// Ensure no leftover timers
 			if (this._delayTimer) {
-				Lilact.clearTimeout(this._delayTimer);
+				clearTimeout(this._delayTimer);
 				this._delayTimer = null;
 			}
-			this._delayTimer = Lilact.setTimeout(() => {
+			this._delayTimer = setTimeout(() => {
 				this._delayTimer = null;
 				this._fallbackShownAt = Date.now();
 				this.setState({ showingFallback: true });
@@ -211,11 +208,11 @@ export class Suspense extends Component
 /** @ignore */
 	_clearTimers() {
 		if (this._delayTimer) {
-			Lilact.clearTimeout(this._delayTimer);
+			clearTimeout(this._delayTimer);
 			this._delayTimer = null;
 		}
 		if (this._minShowTimer) {
-			Lilact.clearTimeout(this._minShowTimer);
+			clearTimeout(this._minShowTimer);
 			this._minShowTimer = null;
 		}
 	}
@@ -228,10 +225,10 @@ export class Suspense extends Component
 		if (this._pending.size === 1) {
 			const delay = Math.max(0, this.props.minDelay);
 			if (this._delayTimer) {
-				Lilact.clearTimeout(this._delayTimer);
+				clearTimeout(this._delayTimer);
 				this._delayTimer = null;
 			}
-			this._delayTimer = Lilact.setTimeout(() => {
+			this._delayTimer = setTimeout(() => {
 				this._delayTimer = null;
 				this._fallbackShownAt = Date.now();
 				this.setState({ showingFallback: true });
@@ -247,7 +244,7 @@ export class Suspense extends Component
 			if (this._pending.size === 0) {
 				// cancel delay if fallback hasn't shown yet
 				if (this._delayTimer) {
-					Lilact.clearTimeout(this._delayTimer);
+					clearTimeout(this._delayTimer);
 					this._delayTimer = null;
 					// fallback never shown; just ensure state is not showing
 					this.setState({ showingFallback: false });
@@ -262,10 +259,10 @@ export class Suspense extends Component
 					this.setState({ showingFallback: false });
 				} else {
 					if (this._minShowTimer) {
-						Lilact.clearTimeout(this._minShowTimer);
+						clearTimeout(this._minShowTimer);
 						this._minShowTimer = null;
 					}
-					this._minShowTimer = Lilact.setTimeout(() => {
+					this._minShowTimer = setTimeout(() => {
 						this._minShowTimer = null;
 						this.setState({ showingFallback: false });
 					}, remaining);
@@ -279,7 +276,7 @@ export class Suspense extends Component
 
 /** @ignore */
 	componentDidCatch(error, info) {
-		if (!Lilact.isThenable(error)) return;
+		if (!isThenable(error)) return;
 		this._attachPromise(error);
 	}
 

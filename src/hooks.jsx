@@ -28,7 +28,9 @@
 
 */
 
-ʔ defineSymbols ( "LILACT", [ "CORE", "COMPONENT" ] ) ʔ
+import { isEmpty } from "./misc.jsx"
+
+import { CORE, COMPONENT } from "./symbols.jsx"
 
 
 /**
@@ -57,9 +59,9 @@ export function useHook()
  */
 export function useState(initialValue)
 {
-	const hk = Lilact.useHook();
+	const hk = useHook();
 
-	if( Lilact.isEmpty(hk) ) {
+	if( isEmpty(hk) ) {
 		if(typeof(initialValue)==='function') hk.value = initialValue();
 		else hk.value = initialValue;
 		
@@ -88,9 +90,9 @@ export function useCallback(callback, deps=undefined)
 		throw new Error("Callback dependencies must be an array or omitted.");
 	}
 
-	const hk = Lilact.useHook();
+	const hk = useHook();
 
-	if( !Lilact.isEmpty(hk) ) {
+	if( !isEmpty(hk) ) {
 		if(deps!==undefined && hk?.deps!==undefined && Lilact.shallowEqual(deps, hk.deps)) {
 			return hk.callback;
 		}
@@ -154,9 +156,9 @@ export function useContext(context)
  */
 export function useId(prefix="N")
 {
-	const hk = Lilact.useHook();
+	const hk = useHook();
 
-	if( Lilact.isEmpty(hk) ) {
+	if( isEmpty(hk) ) {
 		hk.id = prefix+Lilact.id_num++;
 	}
 
@@ -170,9 +172,9 @@ export function useId(prefix="N")
  */
 export function useTransition()
 {
-	const hk = Lilact.useHook();
+	const hk = useHook();
 
-	if( Lilact.isEmpty(hk) ) {
+	if( isEmpty(hk) ) {
 		hk.count=0;
 
 		hk.func =
@@ -210,7 +212,7 @@ export function useTransition()
 export function useLocalStorage(key, initialValue)
 {
 
-	const hk = Lilact.useHook();
+	const hk = useHook();
 	let val;
 
 	try {
@@ -225,7 +227,7 @@ export function useLocalStorage(key, initialValue)
 		localStorage[key] = JSON.stringify(val);
 	}
 
-	if( Lilact.isEmpty(hk) ) {
+	if( isEmpty(hk) ) {
 		hk.value = val;
 		hk.set_func = function(core, hk, val) {
 
@@ -253,9 +255,9 @@ export function useLocalStorage(key, initialValue)
  */
 export function useRef(initialValue = null)
 {
-	const hk = Lilact.useHook();
+	const hk = useHook();
 
-	if( Lilact.isEmpty(hk) ) {
+	if( isEmpty(hk) ) {
 		hk.current = initialValue;
 	}
 
@@ -275,9 +277,9 @@ export function useLayoutEffect(effect, deps=undefined)
 		throw new Error("Layout effect dependencies must be an array or omitted.");
 	}
 
-	const hk = Lilact.useHook();
+	const hk = useHook();
 
-	if( !Lilact.isEmpty(hk) ) {
+	if( !isEmpty(hk) ) {
 		if(deps!==undefined && hk?.deps!==undefined && Lilact.shallowEqual(deps, hk.deps)) return;
 	}
 
@@ -303,9 +305,9 @@ export function useEffect(effect, deps=undefined)
 		throw new Error("Effect dependencies must be an array or omitted.");
 	}
 
-	const hk = Lilact.useHook();
+	const hk = useHook();
 
-	if( !Lilact.isEmpty(hk) ) {
+	if( !isEmpty(hk) ) {
 		if(deps!==undefined && hk?.deps!==undefined && Lilact.shallowEqual(deps, hk.deps)) return;
 	}
 
@@ -331,9 +333,9 @@ export function useMemo(factory,deps=undefined)
 		throw new Error("Memo dependencies must be an array or omitted.");
 	}
 
-	const hk = Lilact.useHook();
+	const hk = useHook();
 
-	if( !Lilact.isEmpty(hk) ) {
+	if( !isEmpty(hk) ) {
 		if(deps!==undefined && hk?.deps!==undefined && Lilact.shallowEqual(deps, hk.deps)) {
 			return hk.value;
 		}
@@ -354,10 +356,10 @@ export function useMemo(factory,deps=undefined)
  */
 export function useActionState(action, initialState)
 {
-	const hk = Lilact.useHook();
+	const hk = useHook();
 	const [is_pending, tran_start_func] = Lilact.useTransition();
 
-	if( Lilact.isEmpty(hk) ) {
+	if( isEmpty(hk) ) {
 
 		hk.state = initialState;
 
@@ -389,9 +391,9 @@ export function useActionState(action, initialState)
  */
 export function useReducer(reducer, initialArg, init)
 {
-	const hk = Lilact.useHook();
+	const hk = useHook();
 
-	if( Lilact.isEmpty(hk) ) {
+	if( isEmpty(hk) ) {
 		hk.reducer = reducer;
 		hk.state = init?init(initialArg):initialArg;
 		hk.dispatch = function(core, hk, action) {
@@ -400,7 +402,6 @@ export function useReducer(reducer, initialArg, init)
 				hk.state = newst;
 				core.component.forceUpdate();
 			}
-
 		}.bind(undefined, Lilact.current_component[0], hk);
 	}
 

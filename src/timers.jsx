@@ -33,7 +33,7 @@
 //ʔ outputJS('./dist/timers.js');
 
 
-ʔ defineSymbols("LILACT:TIMERS", ["CORE", "IDX", "DUE", "REPEAT", "CLEARED", "INTERVAL", "CALLBACK", "ARGS"] ) ʔ
+import  { IDX, DUE, REPEAT, CLEARED, INTERVAL, CALLBACK, ARGS } from "./symbols.jsx"
 
 /**
  * Timer helpers for a promise-friendly timer framework.
@@ -254,10 +254,10 @@ export function clearInterval(id)
  */
 export function grabTimers()
 {
-	globalThis.setTimeout = this.setTimeout;
-	globalThis.setInterval = this.setInterval;
-	globalThis.clearTimeout = this.clearTimeout;
-	globalThis.clearInterval = this.clearInterval;
+	globalThis.setTimeout = Lilact.setTimeout;
+	globalThis.setInterval = Lilact.setInterval;
+	globalThis.clearTimeout = Lilact.clearTimeout;
+	globalThis.clearInterval = Lilact.clearInterval;
 }
 
 /**
@@ -277,7 +277,7 @@ export function releaseTimers()
  * @param {number} duration - Delay in milliseconds.
  * @returns {Promise} Promise that resolves after the delay.
  */
-export function timeoutPromise(duration=0, timerSource=this) 
+export function timeoutPromise(duration=0, timerSource=Lilact) 
 {	
 	let id, resolve, reject;
 
