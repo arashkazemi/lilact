@@ -10249,7 +10249,7 @@ function run(jsx, path=`InlineJSX-${++_lilact_jsx__WEBPACK_IMPORTED_MODULE_0__["
 			appendSourcemap: false,
 			blocks_info: _lilact_jsx__WEBPACK_IMPORTED_MODULE_0__["default"].blocks_info,
 
-			injectTraceLabels: true,
+			injectTraceLabels: false,
 		} );
 	}
 	catch(e) {

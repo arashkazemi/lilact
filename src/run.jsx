@@ -70,7 +70,7 @@ export function run(jsx, path=`InlineJSX-${++Lilact.eval_num}`, is_inline=true)
 			appendSourcemap: false,
 			blocks_info: Lilact.blocks_info,
 
-			injectTraceLabels: true,
+			injectTraceLabels: false,
 		} );
 	}
 	catch(e) {
