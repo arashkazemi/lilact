@@ -27,6 +27,8 @@
 	THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
+import Lilact from './lilact.jsx';
+
 import { setTimeout, clearTimeout } from "./timers.jsx"
 import { Children } from "./misc.jsx"
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "./hooks.jsx"

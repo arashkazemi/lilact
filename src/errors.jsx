@@ -27,8 +27,11 @@
 	THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
+import Lilact from './lilact.jsx';
 
-
+import { required_scripts } from './run.jsx'
+import { pauseTimers } from './timers.jsx'
+import { css } from "@emotion/css";
 
 // Lilact API
 
@@ -160,7 +163,7 @@ export function traceError(error)
 		let mps;
 
 		if(loc.url) {
-			const rm = Lilact.required_scripts[obj.fileName];
+			const rm = required_scripts[obj.fileName];
 			mps = rm.mappings;
 			
 			const mloc = mapLocation(mps, obj.lineNumber-1, obj.columnNumber-1);
@@ -186,7 +189,7 @@ export function traceError(error)
 				obj.fileName = blk.path;
 				obj.label = blk.label;
 
-				mps = Lilact.required_scripts[blk.path].mappings;
+				mps = required_scripts[blk.path].mappings;
 
 				loc = mapLocation(mps, loc.line-1, loc.col-1);
 
@@ -227,12 +230,11 @@ export function traceError(error)
  */
 export function globalErrorHandler(error)
 {
-	Lilact.pauseTimers();
 	if(error.error) error = error.error;
 
-	error = Lilact.traceError(error);
+	error = traceError(error);
 
-	const cls = Lilact.emotion.css(`
+	const cls = css(`
 			background: linear-gradient(135deg, #fff2f2d4, #ffffffd4);
 			backdrop-filter: blur(10px);
 			border: 1px solid rgba(255,255,255,.25);
@@ -261,7 +263,7 @@ export function globalErrorHandler(error)
 		<b>${error.fileName?'At '+error.fileName:''}
 		${Number.isFinite(error.lineNumber)?": Line "+(error.lineNumber+1):""}</b><br><br>
 		<b>${error.name}</b>:&nbsp;<span>${error.message}</span><br><br>
-		${Lilact.required_scripts[error.fileName]?'<code><pre></pre><pre><red></red></pre><pre></pre></code>':''}
+		${required_scripts[error.fileName]?'<code><pre></pre><pre><red></red></pre><pre></pre></code>':''}
 		${error._error.componentStackLog?'<br>Component Stack:<br><code><pre>'+error._error.componentStackLog+'</pre></code>':''}
 		`;
 
@@ -270,8 +272,8 @@ export function globalErrorHandler(error)
 
 	const pres = el.querySelectorAll('pre');
 
-	if(Lilact.required_scripts[error.fileName]) {
-		const lines = Lilact.required_scripts[error.fileName].code.split("\n");
+	if(required_scripts[error.fileName]) {
+		const lines = required_scripts[error.fileName].code.split("\n");
 
 		if(lines?.[error.lineNumber-1])
 			pres[0].innerText = lines[error.lineNumber-1];

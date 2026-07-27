@@ -28,7 +28,8 @@
 
 */
 
-import { isEmpty } from "./misc.jsx"
+import Lilact from './lilact.jsx';
+import { isEmpty, shallowEqual } from "./misc.jsx"
 
 import { CORE, COMPONENT } from "./symbols.jsx"
 
@@ -93,7 +94,7 @@ export function useCallback(callback, deps=undefined)
 	const hk = useHook();
 
 	if( !isEmpty(hk) ) {
-		if(deps!==undefined && hk?.deps!==undefined && Lilact.shallowEqual(deps, hk.deps)) {
+		if(deps!==undefined && hk?.deps!==undefined && shallowEqual(deps, hk.deps)) {
 			return hk.callback;
 		}
 	}
@@ -280,7 +281,7 @@ export function useLayoutEffect(effect, deps=undefined)
 	const hk = useHook();
 
 	if( !isEmpty(hk) ) {
-		if(deps!==undefined && hk?.deps!==undefined && Lilact.shallowEqual(deps, hk.deps)) return;
+		if(deps!==undefined && hk?.deps!==undefined && shallowEqual(deps, hk.deps)) return;
 	}
 
 	if(hk?.cleanup) {
@@ -308,7 +309,7 @@ export function useEffect(effect, deps=undefined)
 	const hk = useHook();
 
 	if( !isEmpty(hk) ) {
-		if(deps!==undefined && hk?.deps!==undefined && Lilact.shallowEqual(deps, hk.deps)) return;
+		if(deps!==undefined && hk?.deps!==undefined && shallowEqual(deps, hk.deps)) return;
 	}
 
 	if(hk?.cleanup) {
@@ -336,7 +337,7 @@ export function useMemo(factory,deps=undefined)
 	const hk = useHook();
 
 	if( !isEmpty(hk) ) {
-		if(deps!==undefined && hk?.deps!==undefined && Lilact.shallowEqual(deps, hk.deps)) {
+		if(deps!==undefined && hk?.deps!==undefined && shallowEqual(deps, hk.deps)) {
 			return hk.value;
 		}
 	}
@@ -357,7 +358,7 @@ export function useMemo(factory,deps=undefined)
 export function useActionState(action, initialState)
 {
 	const hk = useHook();
-	const [is_pending, tran_start_func] = Lilact.useTransition();
+	const [is_pending, tran_start_func] = useTransition();
 
 	if( isEmpty(hk) ) {
 
@@ -475,7 +476,7 @@ export function useDeferredValue(value, initialValue)
  */
 export function useImperativeHandle(ref, factory, deps=undefined)
 {
-	if(deps!==undefined && ref?.deps!==undefined && Lilact.shallowEqual(deps, ref.deps)) return;
+	if(deps!==undefined && ref?.deps!==undefined && shallowEqual(deps, ref.deps)) return;
 
 	ref.deps = deps;
 

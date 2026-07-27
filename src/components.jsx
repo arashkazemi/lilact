@@ -28,8 +28,12 @@
 
 */
 
+import Lilact from './lilact.jsx';
+
 import { CORE, COMPONENT, TEXT, IS_ZOMBIE, IDX, CHILD_CLASS_ADDENDUM, MEMOIZED } from "./symbols.jsx"
-import { shallowEqual } from "./misc.jsx";
+import { shallowEqual, toBool, isClass } from "./misc.jsx";
+
+import PropTypes from 'prop-types';
 
 /* 
 ComponentCache is for internal use. It is the heart of the JSX runtime,
@@ -165,10 +169,10 @@ class ComponentCore
 if(DEBUG) {
 
 			if(this.entity?.propTypes) {
-				Lilact.PropTypes.checkPropTypes(this.entity.propTypes, this.props, 'prop', this.entity.name);
+				PropTypes.checkPropTypes(this.entity.propTypes, this.props, 'prop', this.entity.name);
 			}
 			else if(this.component?.propTypes) {
-				Lilact.PropTypes.checkPropTypes(this.component.propTypes, this.props, 'prop', this.component.name);
+				PropTypes.checkPropTypes(this.component.propTypes, this.props, 'prop', this.component.name);
 			}
 
 }	
@@ -404,7 +408,7 @@ if(DEBUG) {
 
 			if( !patch.hasOwnProperty(a) ) {
 
-				if( Lilact.events_set.has(al) ) {
+				if( events_set.has(al) ) {
 					this.event_detachers[al]();
 				}
 				else {
@@ -416,17 +420,17 @@ if(DEBUG) {
 		for(let a in patch) {
 			const al = a.toLowerCase();
 
-			if( Lilact.special_attributes.has(al) ) continue;
+			if( special_attributes.has(al) ) continue;
 
 			if( patch===this.props || !Lilact.defaultIsEqual(patch[a], this.props[a]) || force  ) {
 
-				if( Lilact.events_set.has(al) ) {
+				if( events_set.has(al) ) {
 					this.event_detachers ??= {};
 					this.event_detachers[al]?.();
 					this.event_detachers[al] = Lilact.addWrappedEventListener(this.element, al.substring(2), patch[a]);
 				}
-				else if( Lilact.capture_events_set.hasOwnProperty(al) ) {
-					const alc = Lilact.capture_events_set[al];
+				else if( capture_events_set.hasOwnProperty(al) ) {
+					const alc = capture_events_set[al];
 					this.event_detachers ??= {};
 					this.event_detachers[al]?.();
 					this.event_detachers[al] = 
@@ -438,7 +442,7 @@ if(DEBUG) {
 					}
 					else {
 						for(const x in patch[a]) {
-							if( Lilact.length_css_attributes_set.has(x) ) {
+							if( length_css_attributes_set.has(x) ) {
 								if(isFinite(patch[a][x])) {
 									patch[a][x]+='px';
 								}
@@ -447,11 +451,11 @@ if(DEBUG) {
 						Object.assign(this.element.style, patch[a]);
 					}
 				}
-				else if(Lilact.boolean_html_attributes_set.has(a)) { // not lower cased(al), as it is set as a js property
-					this.element[a] = Lilact.toBool(patch[a]);
+				else if(boolean_html_attributes_set.has(a)) { // not lower cased(al), as it is set as a js property
+					this.element[a] = toBool(patch[a]);
 				}
 				else if(a==='autoFocus') { // not lower cased(al), as it is set as a js property
-					this.element['autofocus'] = Lilact.toBool(patch[a]);
+					this.element['autofocus'] = toBool(patch[a]);
 				}
 				else if(a==='htmlFor') { // not lower cased(al), as it is set as a js property
 					this.element.setAttribute('for', patch[a]);
@@ -627,7 +631,7 @@ function constructFunc(core, parent) // returns {text} or component, and not com
 		}
 		else {
 
-			if( Lilact.isClass(core.entity) ) {
+			if( isClass(core.entity) ) {
 				if(core.entity?.defaultProps) {
 					core.props = { ...core.entity.defaultProps, ...core.props };
 				}
@@ -709,19 +713,18 @@ function prepareCore(parent, core)
 function doUpdates()
 {
 	requestAnimationFrame(()=>{
-		let layout_effects = Lilact.layout_effects;
-		let update_cbs = Lilact.update_cbs;
-		let update_set = Lilact.update_set;
+		let _layout_effects = Lilact.layout_effects;
+		let _update_cbs = Lilact.update_cbs;
+		let _update_set = Lilact.update_set;
 
 		Lilact.layout_effects = new Set;
 		Lilact.update_cbs = new Set;
 		Lilact.update_set = new Set;
 
-		for(const le of layout_effects) le();
+		for(const le of _layout_effects) le();
 
-		for(const u of update_set)  u.apply();
-		for(const cb of update_cbs) cb();
-
+		for(const u of _update_set)  u.apply();
+		for(const cb of _update_cbs) cb();
 	});
 }
 
@@ -881,7 +884,7 @@ export class Component
 	{
 		if(this[CORE].entity?.displayName) return this[CORE].entity?.displayName;
 		if(typeof(this[CORE].entity)==='string') return this[CORE].entity;
-		if( Lilact.isClass(this[CORE].entity) ) this[CORE].entity.constructor.name;
+		if( isClass(this[CORE].entity) ) this[CORE].entity.constructor.name;
 		if( typeof(this[CORE].entity)==='function' ) return this[CORE].entity.name;
 		return "Component";
 	}
@@ -1136,3 +1139,61 @@ export function render(component, element)
 
 /** @ignore */
 export const createElement = createComponent;
+
+/** @ignore */
+export let current_component = [];
+/** @ignore */
+
+export let update_set  = new Set;
+/** @ignore */
+export let update_cbs  = new Set;
+/** @ignore */
+export let roots  = new Set;
+/** @ignore */
+export let layout_effects = new Set;
+
+/** @ignore */
+export const special_attributes = new Set([
+		"classname", "ref", "action", "lilact_jsx_loc", "children", "key",
+		"defaultvalue", "defaultchecked"
+	]);
+
+/** @ignore */
+export const events_set = new Set([
+	"onafterprint","onbeforeprint","onbeforeunload","onerror","onhashchange","onload","onmessage",
+	"onoffline","ononline","onpagehide","onpageshow","onpopstate","onresize","onstorage","onunload",
+	"onblur","onchange","oncontextmenu","onfocus","oninput","oninvalid","onreset","onsearch","onselect",
+	"onsubmit",
+	"onkeydown","onkeypress","onkeyup",
+	"onclick","ondblclick","onmousedown","onmousemove","onmouseout","onmouseover","onmouseup","onmousewheel",
+	"onwheel",
+	"ondrag","ondragend","ondragenter","ondragleave","ondragover","ondragstart","ondrop","onscroll",
+	"oncopy","oncut","onpaste",
+	"onabort","oncanplay","oncanplaythrough","oncuechange","ondurationchange","onemptied","onended","onerror",
+	"onloadeddata","onloadedmetadata","onloadstart","onpause","onplay","onplaying","onprogress","onratechange",
+	"onseeked","onseeking","onstalled","onsuspend","ontimeupdate","onvolumechange","onwaiting",
+	"ontoggle",
+	"onpointerdown", "onpointerup", "onpointermove", "onpointercancel", "onpointerover", "onpointerout", 
+	"onpointerenter", "onpointerleave"
+]);
+
+/** @ignore */
+export const capture_events_set = {};
+for (const x of events_set) {
+  capture_events_set[x+"capture"] = x;
+}
+
+/** @ignore */
+export const length_css_attributes_set = new Set([
+	"width","height","minWidth","minHeight","maxWidth","maxHeight","top","right","bottom","left","margin",
+	"marginTop","marginRight","marginBottom","marginLeft","padding","paddingTop","paddingRight","paddingBottom",
+	"paddingLeft","borderWidth","borderTopWidth","borderRightWidth","borderBottomWidth","borderLeftWidth",
+	"outlineWidth","fontSize","lineHeight","letterSpacing","wordSpacing","textIndent","borderRadius",
+	"borderTopLeftRadius","borderTopRightRadius","borderBottomLeftRadius","borderBottomRightRadius",
+	"columnGap","rowGap","gap"
+]);
+
+/** @ignore */
+export const boolean_html_attributes_set = new 
+	Set(["disabled", "readOnly", "required", "checked", "multiple",
+			 "hidden","open","loop","muted","controls","playsInline","allowFullScreen"]);
