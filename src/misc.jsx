@@ -153,11 +153,10 @@ export const Children = {
  */
 export const forwardRef = (render)=>
 {
-	const forwardRef = function(props) { return render({...props, ref: undefined}, props.ref); }
+	const forwarded = function(props, ref) { return render({ ...props, ref: undefined }, ref); }
+	forwarded.displayName = "Forwarded " + render.displayName;
 
-	forwardRef.displayName = "Forwarded " + render.displayName;
-
-	return forwardRef;
+	return forwarded;
 }
 
 

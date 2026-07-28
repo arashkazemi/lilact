@@ -156,8 +156,7 @@ class ComponentCore
 		this.props = props || {};
 	}
 
-	apply(next_props = this.props, next_state = this.next_state || this.state)
-	{
+	/*
 		//let do_rerender = true;
 
 		// if(this.outlet && this.entity[MEMOIZED]) {
@@ -165,7 +164,12 @@ class ComponentCore
 		// 	delete this.entity[MEMOIZED];
 		// }
 
-		/*if(do_rerender)*/ {
+		if(do_rerender) {
+	*/
+	// TODO: should componentDidUpdate be called after arranging/appending the outlet or before?
+	apply(next_props = this.props, next_state = this.next_state || this.state)
+	{
+
 if(DEBUG) {
 
 			if(this.entity?.propTypes) {
@@ -199,21 +203,10 @@ if(DEBUG) {
 
 			if(next_props.ref) {
 				if(typeof(next_props.ref)==='function') {
-					if(this.element) {
-						next_props.ref(this.element);
-					}
-					else {
-						next_props.ref(this.component);
-					}
-
+					next_props.ref(this.element || this.component);
 				}
 				else {
-					if(this.element) {
-						next_props.ref.current = this.element;
-					}
-					else {
-						next_props.ref.current = this.component;
-					}		
+					next_props.ref.current = this.element || this.component;
 				}
 			}
 
@@ -247,7 +240,7 @@ if(DEBUG) {
 				Lilact.current_component = [this, Lilact.current_component];
 
 				try {
-					this.outlet = this.component.render(next_props);
+					this.outlet = this.component.render(next_props, {current: this.element || this.component} );
 				}
 				catch(e) {
 					renderErrorHandler(this, e);
@@ -257,7 +250,7 @@ if(DEBUG) {
 			}
 			else {
 				try {
-					this.outlet = this.component.render();
+					this.outlet = this.component.render({current: this.element || this.component});
 				}
 				catch(e) {
 					renderErrorHandler(this, e);
@@ -309,10 +302,9 @@ if(DEBUG) {
 
 			if(this.cache) this.cache.commit();
 
-		}
+
 		if(this.element) this.arrangeOutlet();
 
-		// TODO: should componentDidUpdate be called after arranging/appending the outlet or before?
 		if(this.component.componentDidUpdate) {
 			this.component.componentDidUpdate(prev_props, prev_state, this.last_snapshot);
 		}

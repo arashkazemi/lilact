@@ -3,7 +3,7 @@ const { useEffect } = Lilact;
 module.exports = function Demo() {
   useEffect(() => {
     // Just to make it obvious in the console that this is running once
-    console.log("Mount");
+    console.log("mount");
   }, []);
 
   return <>
