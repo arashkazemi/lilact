@@ -20,11 +20,11 @@ module.exports = function Demo() {
     childRefs.current[i] = handle;
   };
 
-  const components = [1, 2, 3];
+  const components = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
   return <center>
           <p>This is an example of using forwardRef in combination with 
-             function refs. 
+             function refs. See the console for logs.
            </p>
 
           <div>

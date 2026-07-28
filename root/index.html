@@ -18,7 +18,7 @@
 <script type='text/jsx'>
 	
 const { useRef, useEffect, useState, Suspense, Spinner, run, render } = Lilact;
-const { css,cx,injectGlobal } = Lilact.emotion;
+const { css,cx,keyframes,injectGlobal } = Lilact.emotion;
 
 
 const cache = new Map();
@@ -72,8 +72,8 @@ injectGlobal({
 			overflowWrap: "anywhere" 
 		},
 		p: {padding: "10px"},
-		body: { padding: "20px", background: "#1a2d2c", color: "#e7e7e7" },
-		":visited": {color: "#c16480"},
+		body: { padding: "20px", background: "#434b5f", color: "#fff", textShadow: "0 0 10px #0002", lineHeight: "1.4rem" },
+		":visited": {color: "#fff"},
 
 	});
 
@@ -195,6 +195,17 @@ function DemoBlock({entry})
 					</div>
 }
 
+const glow = keyframes`
+  0% {
+    filter: drop-shadow(rgb(202, 131, 203) 0px 0px 8px);
+  }
+  50% {
+    filter: drop-shadow(rgb(252, 131, 203) 0px 0px 18px);
+  }
+  100% {
+    filter: drop-shadow(rgb(202, 131, 203) 0px 0px 8px);
+  }
+`;
 
 function App()
 {
@@ -234,7 +245,7 @@ function App()
 
 	return<>
 						<center>
-						<img src="icon.png" width="128"/><br/>
+						<img src="icon.png" width="128" style={`animation: ${glow} 5s ease-in-out infinite`}/><br/>
 						<h1>Lilact Examples</h1>
 
 						<p>These scripts are transpiled and run directly in your browser. You have already loaded Lilact completely!</p>
