@@ -480,11 +480,10 @@ export function useImperativeHandle(ref, factory, deps=undefined)
 
 	ref.deps = deps;
 
-	Lilact.setTimeout( ()=>{ 
-		if(typeof ref?.current !== 'object') {
-			ref.current = {};
-		}
-		Object.assign( ref.current, factory(), 0 );	
-	}, 0);
+	if(typeof ref?.current !== 'object') {
+		ref.current = {};
+	}
+	Object.assign( ref.current, factory(), 0 );	
+
 }
 
