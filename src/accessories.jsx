@@ -173,30 +173,9 @@ export class Suspense extends Component
 	}
 
 /** @ignore */
-	componentDidCatch(error) {
+	componentDidCatch(error, info) {
 		if (!isThenable(error)) return;
-
-		const promise = error;
-
-		if (this._pending.has(promise)) return;
-
-		// Add to set of pending promises
-		this._pending.add(promise);
-
-		// Start delay timer only when this is the first pending promise
-		if (this._pending.size === 1) {
-			const delay = Math.max(0, this.props.minDelay);
-			// Ensure no leftover timers
-			if (this._delayTimer) {
-				clearTimeout(this._delayTimer);
-				this._delayTimer = null;
-			}
-			this._delayTimer = setTimeout(() => {
-				this._delayTimer = null;
-				this._fallbackShownAt = Date.now();
-				this.setState({ showingFallback: true });
-			}, delay);
-		}
+		this._attachPromise(error);
 	}
 
 /** @ignore */
@@ -274,11 +253,6 @@ export class Suspense extends Component
 		promise.then(onSettled, onSettled);
 	}
 
-/** @ignore */
-	componentDidCatch(error, info) {
-		if (!isThenable(error)) return;
-		this._attachPromise(error);
-	}
 
 /** @ignore */
 	render() {

@@ -4,12 +4,11 @@
     "checkJs": false
   },
   "include": [
-    ".tmp/**/*.js"
+    ".tmp/src/**/*"
   ],
   "exclude": [
     "**/node_modules",
     "**/dist",
     "**/build",
-    "**/src"
   ]
 }

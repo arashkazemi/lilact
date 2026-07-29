@@ -30,21 +30,82 @@
 */
 
 const path = require("path");
-const webpack = require("webpack");
+const esbuild = require("esbuild");
+
+const { createLilactJsxPlugin } = require("../scripts/esbuild-preprocessor-plugin.cjs");
+
+
+const licenseBanner = `/*!
+Lilact
+Copyright (C) 2024-2026 Arash Kazemi <contact.arash.kazemi@gmail.com>
+All rights reserved.
+
+BSD-2-Clause
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+* Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+* Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+
+--------------------------------------------------------------------------------
+
+Lilact also includes the following libraries accessible as members of 
+the Lilact object:
+
+@emotion/css:
+Copyright (c) Emotion team and other contributors
+MIT License
+
+redux:
+Copyright (c) 2015-present Dan Abramov
+MIT License
+
+
+* MIT License Notice:
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+--------------------------------------------------------------------------------
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+`;
+
 
 function parseArgs(argv) {
 	const args = {};
 	for (let i = 2; i < argv.length; i++) {
 		const k = argv[i];
-		if (!k.startsWith("--")) continue;
+		if (!k || !k.startsWith("--")) continue;
 		const key = k.slice(2);
-		if(key==='watch') {
+
+		if (key === "watch") {
 			args[key] = true;
+			continue;
 		}
-		else {
-			const v = argv[++i];
-			args[key] = v;
-		}
+
+		args[key] = argv[++i];
 	}
 	return args;
 }
@@ -52,77 +113,104 @@ function parseArgs(argv) {
 async function run() {
 	const args = parseArgs(process.argv);
 
-	const userProjectRoot = process.cwd(); // MUST be user's project root
+	const userProjectRoot = process.cwd();
 	const userEntry = args.entry ? path.resolve(userProjectRoot, args.entry) : null;
 
 	if (!userEntry) {
 		console.error(
-			"Usage: lilact-bundler --watch --entry ./path/to/entry.js --mode production --out ./dist/out --name bundle.js"
-		);
+			"Usage: lilact-bundler --watch --entry ./path/to/entry.js --mode production --out ./dist --name bundle.js"
+			);
 		process.exit(1);
 	}
 
 	const name = args.name ?? "bundle.js";
 	const mode = args.mode ?? "production";
-	const watch = args?.watch===true;
-
-	const lilactRoot = path.dirname(require.resolve("lilact/package.json"));
-	const configFactoryPath = path.join(lilactRoot, "webpack.config.factory.cjs");
-	const configFactory = require(configFactoryPath);
+	const watch = args.watch === true;
 
 	const userOutDir = args.out
-		? path.resolve(userProjectRoot, args.out)
-		: path.resolve(userProjectRoot, "dist");
+	? path.resolve(userProjectRoot, args.out)
+	: path.resolve(userProjectRoot, "dist");
 
-	const baseConfig = configFactory({
-		entry: userEntry,
-		outputPath: userOutDir,
-		userProjectRoot,
-		mode,
-		name
-	});
+	const outFile = path.join(userOutDir, name);
 
-	// ---- Critical: ensure resolution happens from user's project ----
-	baseConfig.context = userProjectRoot;
-	baseConfig.resolve = baseConfig.resolve || {};
-	baseConfig.resolve.modules = [path.join(userProjectRoot, "node_modules"), "node_modules"];
+	const define = {
+		DEBUG: JSON.stringify(mode === "development"),
+	};
 
-	const compiler = webpack(baseConfig);
 
-	const watching = compiler.watch(
-		{
-			// You can tweak these; leaving as defaults usually works.
-			// aggregateTimeout: 300,
-			// poll: 1000
+
+	const logOnBuildPlugin = {
+	  name: "log-on-build",
+	  setup(build) {
+	    build.onStart(() => {
+	      console.log(`Rebuilt: ${outFile} (${new Date().toISOString()})`);
+	    });
+	  },
+	};
+
+	const ctx = await esbuild.context({
+		entryPoints: [userEntry],
+		bundle: true,
+		format: "esm",
+		platform: "browser",
+
+		outfile: outFile,
+		sourcemap: mode === "development",
+		target: ["es2018"],
+
+		minify: mode === "production",
+		define,
+
+		absWorkingDir: userProjectRoot,
+
+		resolveExtensions: [".js", ".jsx", ".json"],
+
+		loader: {
+			".js": "js",
+			".jsx": "jsx",
+			".css": "css",
 		},
-		(err, stats) => {
-			if (err) {
-				console.error(err);
-				return; // keep watching
-			}
 
-			if (stats?.hasErrors?.()) {
-				console.error(stats.toString("errors-only"));
-				return; // keep watching
-			}
+		plugins: [
+			createLilactJsxPlugin({ mode }),
+			logOnBuildPlugin
+		],
+	});
 
-			console.log(
-				stats?.toString?.({
-					colors: true,
-					chunks: false
-				}) || "Build finished."
-			);
+	const buildOpts = {
+		entryPoints: [userEntry],
+		bundle: true,
+		format: "esm",
+		platform: "browser",
+		outfile: outFile,
+		sourcemap: mode === "development",
+		target: ["es2018"],
+		minify: mode === "production",
+		define,
+		loader: { ".js": "js", ".jsx": "jsx", ".css": "css" },
+		resolveExtensions: [".js", ".jsx", ".json"],
+		absWorkingDir: userProjectRoot,
+		plugins: [createLilactJsxPlugin({ mode })],
+  		banner: { js: licenseBanner },
+	};
 
-			if(!watch) process.exit(1);
+	if (watch) {
+		await ctx.watch();
+		console.log(`Watching... output: ${outFile}`);
+	} else {
+		await ctx.rebuild();
+	}
+	
+	const shutdown = async () => {
+		try {
+			await ctx.dispose();
+		} finally {
+			process.exit(0);
 		}
-	);
+	};
 
-	process.on("SIGINT", () => {
-		watching.close(() => process.exit(0));
-	});
-	process.on("SIGTERM", () => {
-		watching.close(() => process.exit(0));
-	});
+	process.on("SIGINT", shutdown);
+	process.on("SIGTERM", shutdown);
 }
 
 run().catch((e) => {

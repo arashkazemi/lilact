@@ -33,7 +33,7 @@ import Lilact from './lilact.jsx';
 import { CORE, COMPONENT, TEXT, IS_ZOMBIE, IDX, CHILD_CLASS_ADDENDUM, MEMOIZED } from "./symbols.jsx"
 import { shallowEqual, toBool, isClass } from "./misc.jsx";
 
-import PropTypes from 'prop-types';
+import { PropTypes } from './proptypes.jsx';
 
 /* 
 ComponentCache is for internal use. It is the heart of the JSX runtime,

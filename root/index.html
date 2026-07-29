@@ -155,6 +155,7 @@ function DemoView({ entry })
 	const resource = createResource("demos/"+entry[0]);
 	const code = resource.read(); // Suspense will handle the promise
 
+	//console.log(code);
 	if(isOpen) {
 		useEffect(() => {
 			const Comp = run(code, "demos/"+entry[0]);
@@ -188,6 +189,7 @@ function DemoView({ entry })
 function DemoBlock({entry}) 
 {
 	if(typeof(entry)==='string') return <h3><br/><center>{entry}</center></h3>;
+
 	return <div key={entry[0]} className={demobox}>
 							<Suspense fallback={<Spinner/>}>
 								<DemoView entry={entry} />

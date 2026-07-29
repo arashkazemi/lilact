@@ -29,7 +29,7 @@ If you find Lilact useful, please consider sponsoring. Your support funds ongoin
 
 ## Overview
 
-`Lilact` is a very lightweight implementation of the React API designed to run in the browser. It can be used as a single script that is around `98kb` minified and around `32kb` gzipped, and includes its whole API.
+`Lilact` is a very lightweight implementation of the React API designed to run in the browser. It can be used as a single script that is around `90kb` minified and around `32kb` gzipped, and includes its whole API.
 
 `Lilact` is very fast, uses minimal resources, and handles memory very efficiently.
 
@@ -51,7 +51,7 @@ There is a `transpile.js` helper in the `bin` directory to demonstrate how to us
 
 `Lilact` implements both the **legacy class-based** API and the **modern hook-based** API, and it includes almost everything you need.
 
-In addition to the API itself, it bundles the official `Redux` and `PropTypes` libraries (see the `redux.jsx` and `proptypes.jsx` demos). As a result, it has Redux support and provides many functions and hooks, including `connect` and `useDispatch`.
+In addition to the API itself, it bundles the official `Redux` library (see the `redux.jsx` example). As a result, it has Redux support and provides all necessary functions and hooks for working with it.
 
 It also includes the amazing `@emotion/css` library to ease working with styles. You can access it via `Lilact.emotion`.
 
@@ -62,6 +62,7 @@ For convenience, it already includes components such as:
 - `Suspense`
 - `CSSTransition`
 - `SwitchTransition`
+- `PropTypes`
 
 and helper components like:
 
@@ -78,15 +79,15 @@ Note: modules are separated in the documentation to improve structure, but in pr
 
 ---
 
-## Webpack-based Bundler
+## ESBuild-based Bundler
 
-A `webpack` based bundler is available in the `bin` directory. It can be used like this:
+A `ESBuild` based bundler is available in the `bin` directory. It can be used like this:
 
 ```bash
 npx lilact-bundle --entry client/App.jsx --mode production --name bundle.js --out public/dist
 ```
 
-If you add a `--watch` argument, the bundler will not exit and keep watching the input file(s),
+If you add a `--watch` argument, the bundler will stay running and keep watching the input file(s),
 and update the bundle if any file is changed.
 
 ---
@@ -196,10 +197,10 @@ render(<App/>, document.body);
 
 ---
 
-## Learn More / Demos / Beta Status
+## Learn More / Examples / Beta Status
 
 To know more about using `Lilact`, see the included examples:  
-[Lilact Demo Examples](https://arashkazemi.github.io/lilact/static)
+[Lilact Examples](https://arashkazemi.github.io/lilact/static)
 
 For the details, see the documentation.
 

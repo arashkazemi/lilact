@@ -50,7 +50,7 @@
 
 import * as redux from "redux";
 import * as emotion from "@emotion/css";
-import PropTypes from 'prop-types';
+import { PropTypes } from './proptypes.jsx';
 
 import * as components from './components.jsx';
 import * as hooks from './hooks.jsx';
@@ -92,7 +92,7 @@ export {transpileJSX, transpilerConfig} from "./jsx";
 export const Lilact = 
 {	
 
-	VERSION: "beta.15",
+	VERSION: "beta.16",
 	
 	// Configuration
 
@@ -124,6 +124,7 @@ export const Lilact =
 	emotion,
 
 }
+
 globalThis.Lilact = Lilact;
 globalThis.createComponent = Lilact.createComponent;
 globalThis.Fragment = Lilact.Fragment;
