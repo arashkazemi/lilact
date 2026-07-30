@@ -284,7 +284,7 @@ export class Suspense extends Component
  * @param {string} [props.className] Optional CSS class applied to the wrapper element. 
  * A `.dragging` class will be also applied when dragging.
  * 
- * @param {React.ReactNode} [props.children] Content rendered inside the handle.
+ * @param {Component} [props.children] Content rendered inside the handle.
  */
 
 export function DragHandle({
@@ -387,12 +387,6 @@ export function DragHandle({
 }
 
 
-
-const clamp = (n, min, max) => {
-  if (!Number.isFinite(n)) return n;
-  return Math.min(max, Math.max(min, n));
-};
-
 /**
  * A split-pane container with a draggable splitter, supporting both horizontal and vertical layouts.
  *
@@ -430,7 +424,7 @@ const clamp = (n, min, max) => {
  * @param leftPaneStyle - Optional styles applied to the left pane (or top pane in vertical mode).
  * @param rightPaneStyle - Optional styles applied to the right pane (or bottom pane in vertical mode).
  * @param splitterStyle - Optional styles applied to the splitter element.
- * @param children - React children to be rendered into the two pane containers.
+ * @param children - Children to be rendered into the two pane containers.
  *
  * @example
  * ```tsx
@@ -448,10 +442,11 @@ const clamp = (n, min, max) => {
  * </SplitPane>
  * ```
  */
+
 export const SplitPane = forwardRef(function SplitPane(
   {
     mode = "horizontal",
-    position, // controlled: number | undefined/null
+    position,
     defaultPosition = 0.5,
     min = 0.1,
     max = 0.9,
@@ -459,165 +454,33 @@ export const SplitPane = forwardRef(function SplitPane(
     onSizeChange,
     style,
     className,
-    leftPaneStyle,
-    rightPaneStyle,
+    firstPaneStyle,
+    secondPaneStyle,
     splitterStyle,
     children,
   },
   ref
 ) {
-  const containerRef = useRef(null);
-  const panes = Children.toArray(children);
-  const leftChild = panes[0] ?? null;
-  const rightChild = panes[1] ?? null;
+  const initialMode = mode === "vertical" ? "vertical" : "horizontal";
+  const [internalMode, setInternalMode] = useState(initialMode);
 
-  const isControlled = position != null;
-
-  const [internalMode, setInternalMode] = useState(mode);
-
-  const [posUncontrolled, setPosUncontrolled] = useState(() =>
-    clamp(
-      position ?? defaultPosition,
-      min,
-      max
-    )
-  );
+  const [internalPos, setInternalPos] = useState(clamp(defaultPosition, min, max));
+  const posResolved = position == null ? internalPos : clamp(position, min, max);
 
   useEffect(() => {
-    if (mode != null) setInternalMode(mode);
+    if (position == null) return;
+    setInternalPos(clamp(position, min, max));
+  }, [position, min, max]);
+
+  useEffect(() => {
+    setInternalMode(mode === "vertical" ? "vertical" : "horizontal");
   }, [mode]);
-
-  // keep internal position clamped if min/max change (uncontrolled only)
-  useLayoutEffect(() => {
-    if (isControlled) return;
-    setPosUncontrolled((p) => clamp(p, min, max));
-  }, [min, max, isControlled]);
-
-  const posResolved = isControlled ? clamp(position, min, max) : posUncontrolled;
 
   const setPosition = (next) => {
     const clamped = clamp(next, min, max);
-    if (!isControlled) setPosUncontrolled(clamped);
+    if (position == null) setInternalPos(clamped);
     onSizeChange?.(clamped);
   };
-
-  const draggingRef = useRef(false);
-  const pointerIdRef = useRef(null);
-
-  const updateFromClient = (clientX, clientY) => {
-    const el = containerRef.current;
-    if (!el) return;
-
-    const rect = el.getBoundingClientRect();
-
-    if (internalMode === "horizontal") {
-      const usable = rect.width;
-      if (!Number.isFinite(usable) || usable <= 0) return; // no jump on init
-      const raw = (clientX - rect.left) / usable;
-      if (!Number.isFinite(raw)) return;
-      setPosition(raw);
-    } else {
-      const usable = rect.height;
-      if (!Number.isFinite(usable) || usable <= 0) return; // no jump on init
-      const raw = (clientY - rect.top) / usable;
-      if (!Number.isFinite(raw)) return;
-      setPosition(raw);
-    }
-  };
-
-  // stable global listeners: only act while draggingRef.current === true
-  useEffect(() => {
-    const onMove = (e) => {
-      if (!draggingRef.current) return;
-      if (pointerIdRef.current != null && e.pointerId !== pointerIdRef.current) return;
-      updateFromClient(e.clientX, e.clientY);
-    };
-
-    const stop = (e) => {
-      if (!draggingRef.current) return;
-      if (pointerIdRef.current != null && e.pointerId !== pointerIdRef.current) return;
-      draggingRef.current = false;
-      pointerIdRef.current = null;
-    };
-
-    window.addEventListener("pointermove", onMove, { passive: true });
-    window.addEventListener("pointerup", stop, { passive: true });
-    window.addEventListener("pointercancel", stop, { passive: true });
-
-    return () => {
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", stop);
-      window.removeEventListener("pointercancel", stop);
-    };
-  }, [internalMode]); // updateFromClient uses internalMode
-
-  const onPointerDown = (e) => {
-    if (e.button != null && e.button !== 0) return;
-    e.preventDefault();
-
-    draggingRef.current = true;
-    pointerIdRef.current = e.pointerId;
-
-    try {
-      e.currentTarget.setPointerCapture?.(e.pointerId);
-    } catch {}
-
-    updateFromClient(e.clientX, e.clientY); // first update only if rect is sane
-  };
-
-  const onKeyDown = (e) => {
-    const step = 0.02;
-    let delta = 0;
-
-    if (internalMode === "horizontal") {
-      if (e.key === "ArrowLeft") delta = -step;
-      if (e.key === "ArrowRight") delta = step;
-    } else {
-      if (e.key === "ArrowUp") delta = -step;
-      if (e.key === "ArrowDown") delta = step;
-    }
-
-    if (delta !== 0) {
-      e.preventDefault();
-      setPosition(posResolved + delta);
-    }
-  };
-
-  const sizes = useMemo(() => {
-    const leftPct = `${posResolved * 100}%`;
-    const rightCalc = `calc(${100 - posResolved * 100}% - ${splitterSize}px)`;
-    return { leftPct, rightCalc };
-  }, [posResolved, splitterSize]);
-
-  const rootStyle = {
-    display: "flex",
-    width: "100%",
-    height: "100%",
-    overflow: "hidden",
-    touchAction: "none",
-    ...(style || {}),
-    flexDirection: internalMode === "horizontal" ? "row" : "column",
-  };
-
-  const leftPaneComputed =
-    internalMode === "horizontal"
-      ? { width: sizes.leftPct, flex: `0 0 ${sizes.leftPct}`, overflow: "auto", ...(leftPaneStyle || {}) }
-      : { height: sizes.leftPct, flex: `0 0 ${sizes.leftPct}`, overflow: "auto", ...(leftPaneStyle || {}) };
-
-  const rightPaneComputed =
-    internalMode === "horizontal"
-      ? { width: sizes.rightCalc, flex: "1 1 auto", overflow: "auto", ...(rightPaneStyle || {}) }
-      : { height: sizes.rightCalc, flex: "1 1 auto", overflow: "auto", ...(rightPaneStyle || {}) };
-
-  const splitterComputed =
-    internalMode === "horizontal"
-      ? { width: `${splitterSize}px`, transform: "translateX(-50%)", height: '100%', flex: `0 0 ${splitterSize}px`, background: "rgba(0,0,0,0.08)", cursor: "col-resize", ...(splitterStyle || {}) }
-      : { height: `${splitterSize}px`, transform: "translateY(-50%)", width: '100%', flex: `0 0 ${splitterSize}px`, background: "rgba(0,0,0,0.08)", cursor: "row-resize", ...(splitterStyle || {}) };
-
-  const dividerVisualStyle =
-    internalMode === "horizontal"
-      ? { height: "100%", width: "100%" }
-      : { width: "100%", height: "100%" };
 
   useImperativeHandle(ref, () => ({
     setPosition,
@@ -626,31 +489,157 @@ export const SplitPane = forwardRef(function SplitPane(
     getMode: () => internalMode,
   }));
 
+  const containerRef = useRef(null);
+  const sizeRef = useRef({ w: 0, h: 0 });
+
+  useLayoutEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const ro = new ResizeObserver(() => {
+      const rect = el.getBoundingClientRect();
+      sizeRef.current = { w: rect.width, h: rect.height };
+    });
+
+    ro.observe(el);
+    const rect = el.getBoundingClientRect();
+    sizeRef.current = { w: rect.width, h: rect.height };
+
+    return () => ro.disconnect();
+  }, []);
+
+  const startPosRef = useRef(posResolved);
+  const [dragging, setDragging] = useState(false);
+
+  const handleStart = () => {
+    setDragging(true);
+    startPosRef.current = posResolved;
+  };
+
+  const handleDelta = (x, y, _data) => {
+    const { w, h } = sizeRef.current;
+    if (internalMode === "horizontal") {
+      setPosition(startPosRef.current + x / (w || 1));
+    } else {
+      setPosition(startPosRef.current + y / (h || 1));
+    }
+  };
+
+  const handleEnd = () => setDragging(false);
+
+  const arr = Children.toArray(children);
+  const firstChild = arr[0];
+  const secondChild = arr[1];
+
+  const p = posResolved;
+
+  const pane1StyleAbs =
+    internalMode === "horizontal"
+      ? {
+          position: "absolute",
+          top: 0,
+          bottom: 0,
+          left: 0,
+          width: `calc(${p} * (100% - ${splitterSize}px))`,
+          overflow: "auto",
+          ...(firstPaneStyle || {}),
+        }
+      : {
+          position: "absolute",
+          left: 0,
+          right: 0,
+          top: 0,
+          height: `calc(${p} * (100% - ${splitterSize}px))`,
+          overflow: "auto",
+          ...(firstPaneStyle || {}),
+        };
+
+  const pane2StyleAbs =
+    internalMode === "horizontal"
+      ? {
+          position: "absolute",
+          top: 0,
+          bottom: 0,
+          left: `calc(${p} * (100% - ${splitterSize}px) + ${splitterSize}px)`,
+          right: 0,
+          overflow: "auto",
+          ...(secondPaneStyle || {}),
+        }
+      : {
+          position: "absolute",
+          left: 0,
+          right: 0,
+          top: `calc(${p} * (100% - ${splitterSize}px) + ${splitterSize}px)`,
+          bottom: 0,
+          overflow: "auto",
+          ...(secondPaneStyle || {}),
+        };
+
+  // Basic visible default for splitter (so it doesn't "disappear" on mode switch).
+  // Also give zIndex + background and keep pointer events enabled.
+  const splitterBase = {
+    background: "rgba(0,0,0,0.08)",
+    boxShadow: "inset 0 0 2px rgba(0,0,0,0.25)",
+    zIndex: 10,
+  };
+
+  const splitterAbsStyle =
+    internalMode === "horizontal"
+      ? {
+          position: "absolute",
+          top: 0,
+          bottom: 0,
+          left: `calc(${p} * (100% - ${splitterSize}px))`,
+          width: splitterSize,
+          height: "100%",
+
+          cursor: dragging ? "col-resize" : "col-resize",
+          touchAction: "none",
+          pointerEvents: "auto",
+
+          ...splitterBase,
+          ...(splitterStyle || {}),
+        }
+      : {
+          position: "absolute",
+          left: 0,
+          right: 0,
+          top: `calc(${p} * (100% - ${splitterSize}px))`,
+          height: splitterSize,
+          width: "100%",
+
+          cursor: dragging ? "row-resize" : "row-resize",
+          touchAction: "none",
+          pointerEvents: "auto",
+
+          ...splitterBase,
+          ...(splitterStyle || {}),
+        };
+
   return (
-    <div ref={containerRef} className={className} style={rootStyle}>
-      <div style={leftPaneComputed}>{leftChild}</div>
+    <div
+      ref={containerRef}
+      className={className}
+      style={{
+        position: "relative",
+        width: "100%",
+        height: "100%",
+        overflow: "hidden",
+        ...(style || {}),
+      }}
+    >
+      <div style={pane1StyleAbs}>{firstChild}</div>
+      <div style={pane2StyleAbs}>{secondChild}</div>
 
-      <div
-        role="separator"
-        aria-orientation={internalMode === "horizontal" ? "vertical" : "horizontal"}
-        aria-valuemin={min}
-        aria-valuemax={max}
-        aria-valuenow={posResolved}
-        tabIndex={0}
-        onPointerDown={onPointerDown}
-        onPointerCancel={() => {
-          draggingRef.current = false;
-          pointerIdRef.current = null;
-        }}
-        onKeyDown={onKeyDown}
-        style={splitterComputed}
-      >
-        <div style={dividerVisualStyle} />
-      </div>
-
-      <div style={rightPaneComputed}>{rightChild}</div>
+      <DragHandle
+        onStart={handleStart}
+        onDelta={handleDelta}
+        onEnd={handleEnd}
+        style={splitterAbsStyle}
+      />
     </div>
   );
 });
 
 
+const clamp = (v, min, max) => Math.max(min, Math.min(max, v));

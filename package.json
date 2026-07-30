@@ -1,6 +1,6 @@
 {
   "name": "lilact",
-  "version": "0.16.1",
+  "version": "0.16.2",
   "description": "A Little React/JSX Runtime Implementation for Browser",
   "repository": "github:arashkazemi/lilact",
   "homepage": "https://arashkazemi.github.io/lilact/",
@@ -19,8 +19,8 @@
   "main": "src/lilact.jsx",
   "type": "module",
   "scripts": {
-    "http": "http-server root",
-    "doc": "cross-env MODE=development MINIFY=false node scripts/preprocess.mjs && node scripts/copy-dist-to-root.mjs && npx typedoc --out docs --tsconfig tsconfig.json && bin/copy-demo.js",
+    "examples": "http-server examples",
+    "doc": "cross-env MODE=development MINIFY=false node scripts/preprocess.mjs && node scripts/copy-dist-to-examples.mjs && npx typedoc --out docs --tsconfig tsconfig.json && bin/copy-demo.js",
     "build:debug": "cross-env MODE=development MINIFY=false node scripts/preprocess.mjs && cross-env MODE=development MINIFY=false node scripts/build.mjs",
     "build:release": "cross-env MODE=production MINIFY=false node scripts/preprocess.mjs && cross-env MODE=production MINIFY=false node scripts/build.mjs",
     "build:debug.min": "cross-env MODE=development MINIFY=true node scripts/preprocess.mjs && cross-env MODE=development MINIFY=true node scripts/build.mjs",

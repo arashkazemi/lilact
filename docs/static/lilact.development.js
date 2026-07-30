@@ -4697,14 +4697,9 @@ function DragHandle({
   }, [endDrag]);
   return createComponent("div", { "role": "button", "tabIndex": 0, "style": { ...style, touchAction: "none" }, "className": cx2(className, isDragging ? "dragging" : ""), "onPointerDown": onPointerDown, "onPointerMove": onPointerMove, "onPointerUp": onPointerUp, "onPointerCancel": onPointerCancel }, children);
 }
-var clamp = (n, min, max) => {
-  if (!Number.isFinite(n)) return n;
-  return Math.min(max, Math.max(min, n));
-};
 var SplitPane = forwardRef(function SplitPane2({
   mode = "horizontal",
   position: position2,
-  // controlled: number | undefined/null
   defaultPosition = 0.5,
   min = 0.1,
   max = 0.9,
@@ -4712,135 +4707,139 @@ var SplitPane = forwardRef(function SplitPane2({
   onSizeChange,
   style,
   className,
-  leftPaneStyle,
-  rightPaneStyle,
+  firstPaneStyle,
+  secondPaneStyle,
   splitterStyle,
   children
 }, ref) {
-  var _a, _b;
-  const containerRef = useRef(null);
-  const panes = Children.toArray(children);
-  const leftChild = (_a = panes[0]) != null ? _a : null;
-  const rightChild = (_b = panes[1]) != null ? _b : null;
-  const isControlled = position2 != null;
-  const [internalMode, setInternalMode] = useState(mode);
-  const [posUncontrolled, setPosUncontrolled] = useState(
-    () => clamp(
-      position2 != null ? position2 : defaultPosition,
-      min,
-      max
-    )
-  );
+  const initialMode = mode === "vertical" ? "vertical" : "horizontal";
+  const [internalMode, setInternalMode] = useState(initialMode);
+  const [internalPos, setInternalPos] = useState(clamp(defaultPosition, min, max));
+  const posResolved = position2 == null ? internalPos : clamp(position2, min, max);
   useEffect(() => {
-    if (mode != null) setInternalMode(mode);
+    if (position2 == null) return;
+    setInternalPos(clamp(position2, min, max));
+  }, [position2, min, max]);
+  useEffect(() => {
+    setInternalMode(mode === "vertical" ? "vertical" : "horizontal");
   }, [mode]);
-  useLayoutEffect(() => {
-    if (isControlled) return;
-    setPosUncontrolled((p) => clamp(p, min, max));
-  }, [min, max, isControlled]);
-  const posResolved = isControlled ? clamp(position2, min, max) : posUncontrolled;
   const setPosition = (next2) => {
     const clamped = clamp(next2, min, max);
-    if (!isControlled) setPosUncontrolled(clamped);
+    if (position2 == null) setInternalPos(clamped);
     onSizeChange == null ? void 0 : onSizeChange(clamped);
   };
-  const draggingRef = useRef(false);
-  const pointerIdRef = useRef(null);
-  const updateFromClient = (clientX, clientY) => {
-    const el = containerRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    if (internalMode === "horizontal") {
-      const usable = rect.width;
-      if (!Number.isFinite(usable) || usable <= 0) return;
-      const raw = (clientX - rect.left) / usable;
-      if (!Number.isFinite(raw)) return;
-      setPosition(raw);
-    } else {
-      const usable = rect.height;
-      if (!Number.isFinite(usable) || usable <= 0) return;
-      const raw = (clientY - rect.top) / usable;
-      if (!Number.isFinite(raw)) return;
-      setPosition(raw);
-    }
-  };
-  useEffect(() => {
-    const onMove = (e) => {
-      if (!draggingRef.current) return;
-      if (pointerIdRef.current != null && e.pointerId !== pointerIdRef.current) return;
-      updateFromClient(e.clientX, e.clientY);
-    };
-    const stop = (e) => {
-      if (!draggingRef.current) return;
-      if (pointerIdRef.current != null && e.pointerId !== pointerIdRef.current) return;
-      draggingRef.current = false;
-      pointerIdRef.current = null;
-    };
-    window.addEventListener("pointermove", onMove, { passive: true });
-    window.addEventListener("pointerup", stop, { passive: true });
-    window.addEventListener("pointercancel", stop, { passive: true });
-    return () => {
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", stop);
-      window.removeEventListener("pointercancel", stop);
-    };
-  }, [internalMode]);
-  const onPointerDown = (e) => {
-    var _a2, _b2;
-    if (e.button != null && e.button !== 0) return;
-    e.preventDefault();
-    draggingRef.current = true;
-    pointerIdRef.current = e.pointerId;
-    try {
-      (_b2 = (_a2 = e.currentTarget).setPointerCapture) == null ? void 0 : _b2.call(_a2, e.pointerId);
-    } catch (e2) {
-    }
-    updateFromClient(e.clientX, e.clientY);
-  };
-  const onKeyDown = (e) => {
-    const step = 0.02;
-    let delta = 0;
-    if (internalMode === "horizontal") {
-      if (e.key === "ArrowLeft") delta = -step;
-      if (e.key === "ArrowRight") delta = step;
-    } else {
-      if (e.key === "ArrowUp") delta = -step;
-      if (e.key === "ArrowDown") delta = step;
-    }
-    if (delta !== 0) {
-      e.preventDefault();
-      setPosition(posResolved + delta);
-    }
-  };
-  const sizes = useMemo(() => {
-    const leftPct = `${posResolved * 100}%`;
-    const rightCalc = `calc(${100 - posResolved * 100}% - ${splitterSize}px)`;
-    return { leftPct, rightCalc };
-  }, [posResolved, splitterSize]);
-  const rootStyle = {
-    display: "flex",
-    width: "100%",
-    height: "100%",
-    overflow: "hidden",
-    touchAction: "none",
-    ...style || {},
-    flexDirection: internalMode === "horizontal" ? "row" : "column"
-  };
-  const leftPaneComputed = internalMode === "horizontal" ? { width: sizes.leftPct, flex: `0 0 ${sizes.leftPct}`, overflow: "auto", ...leftPaneStyle || {} } : { height: sizes.leftPct, flex: `0 0 ${sizes.leftPct}`, overflow: "auto", ...leftPaneStyle || {} };
-  const rightPaneComputed = internalMode === "horizontal" ? { width: sizes.rightCalc, flex: "1 1 auto", overflow: "auto", ...rightPaneStyle || {} } : { height: sizes.rightCalc, flex: "1 1 auto", overflow: "auto", ...rightPaneStyle || {} };
-  const splitterComputed = internalMode === "horizontal" ? { width: `${splitterSize}px`, transform: "translateX(-50%)", height: "100%", flex: `0 0 ${splitterSize}px`, background: "rgba(0,0,0,0.08)", cursor: "col-resize", ...splitterStyle || {} } : { height: `${splitterSize}px`, transform: "translateY(-50%)", width: "100%", flex: `0 0 ${splitterSize}px`, background: "rgba(0,0,0,0.08)", cursor: "row-resize", ...splitterStyle || {} };
-  const dividerVisualStyle = internalMode === "horizontal" ? { height: "100%", width: "100%" } : { width: "100%", height: "100%" };
   useImperativeHandle(ref, () => ({
     setPosition,
     setMode: (nextMode) => setInternalMode(nextMode === "vertical" ? "vertical" : "horizontal"),
     getPosition: () => posResolved,
     getMode: () => internalMode
   }));
-  return createComponent("div", { "ref": containerRef, "className": className, "style": rootStyle }, createComponent("div", { "style": leftPaneComputed }, leftChild), createComponent("div", { "role": "separator", "aria-orientation": internalMode === "horizontal" ? "vertical" : "horizontal", "aria-valuemin": min, "aria-valuemax": max, "aria-valuenow": posResolved, "tabIndex": 0, "onPointerDown": onPointerDown, "onPointerCancel": () => {
-    draggingRef.current = false;
-    pointerIdRef.current = null;
-  }, "onKeyDown": onKeyDown, "style": splitterComputed }, createComponent("div", { "style": dividerVisualStyle })), createComponent("div", { "style": rightPaneComputed }, rightChild));
+  const containerRef = useRef(null);
+  const sizeRef = useRef({ w: 0, h: 0 });
+  useLayoutEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      const rect2 = el.getBoundingClientRect();
+      sizeRef.current = { w: rect2.width, h: rect2.height };
+    });
+    ro.observe(el);
+    const rect = el.getBoundingClientRect();
+    sizeRef.current = { w: rect.width, h: rect.height };
+    return () => ro.disconnect();
+  }, []);
+  const startPosRef = useRef(posResolved);
+  const [dragging, setDragging] = useState(false);
+  const handleStart = () => {
+    setDragging(true);
+    startPosRef.current = posResolved;
+  };
+  const handleDelta = (x, y, _data) => {
+    const { w, h } = sizeRef.current;
+    if (internalMode === "horizontal") {
+      setPosition(startPosRef.current + x / (w || 1));
+    } else {
+      setPosition(startPosRef.current + y / (h || 1));
+    }
+  };
+  const handleEnd = () => setDragging(false);
+  const arr = Children.toArray(children);
+  const firstChild = arr[0];
+  const secondChild = arr[1];
+  const p = posResolved;
+  const pane1StyleAbs = internalMode === "horizontal" ? {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: 0,
+    width: `calc(${p} * (100% - ${splitterSize}px))`,
+    overflow: "auto",
+    ...firstPaneStyle || {}
+  } : {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 0,
+    height: `calc(${p} * (100% - ${splitterSize}px))`,
+    overflow: "auto",
+    ...firstPaneStyle || {}
+  };
+  const pane2StyleAbs = internalMode === "horizontal" ? {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: `calc(${p} * (100% - ${splitterSize}px) + ${splitterSize}px)`,
+    right: 0,
+    overflow: "auto",
+    ...secondPaneStyle || {}
+  } : {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: `calc(${p} * (100% - ${splitterSize}px) + ${splitterSize}px)`,
+    bottom: 0,
+    overflow: "auto",
+    ...secondPaneStyle || {}
+  };
+  const splitterBase = {
+    background: "rgba(0,0,0,0.08)",
+    boxShadow: "inset 0 0 2px rgba(0,0,0,0.25)",
+    zIndex: 10
+  };
+  const splitterAbsStyle = internalMode === "horizontal" ? {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: `calc(${p} * (100% - ${splitterSize}px))`,
+    width: splitterSize,
+    height: "100%",
+    cursor: dragging ? "col-resize" : "col-resize",
+    touchAction: "none",
+    pointerEvents: "auto",
+    ...splitterBase,
+    ...splitterStyle || {}
+  } : {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: `calc(${p} * (100% - ${splitterSize}px))`,
+    height: splitterSize,
+    width: "100%",
+    cursor: dragging ? "row-resize" : "row-resize",
+    touchAction: "none",
+    pointerEvents: "auto",
+    ...splitterBase,
+    ...splitterStyle || {}
+  };
+  return createComponent("div", { "ref": containerRef, "className": className, "style": {
+    position: "relative",
+    width: "100%",
+    height: "100%",
+    overflow: "hidden",
+    ...style || {}
+  } }, createComponent("div", { "style": pane1StyleAbs }, firstChild), createComponent("div", { "style": pane2StyleAbs }, secondChild), createComponent(DragHandle, { "onStart": handleStart, "onDelta": handleDelta, "onEnd": handleEnd, "style": splitterAbsStyle }));
 });
+var clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
 // .tmp/src/vlq.js
 var char_to_integer = {};

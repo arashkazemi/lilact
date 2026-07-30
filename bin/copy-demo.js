@@ -19,7 +19,7 @@ function copyDirRecursive(src, dest) {
 }
 
 const typedocOut = process.env.TYPEDOC_OUT || 'docs';
-const from = path.resolve(__dirname, '..', 'root');
+const from = path.resolve(__dirname, '..', 'examples');
 const to = path.resolve(__dirname, '..', typedocOut, 'static');
 
 copyDirRecursive(from, to);

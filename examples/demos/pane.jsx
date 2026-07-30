@@ -11,8 +11,9 @@ module.exports = function Demo() {
         Toggle mode
       </button>
       <button onClick={() => ref.current?.setPosition(0.5)}>Center</button>
+      <span>Position:{" "}{position.toFixed(2)}</span>
 
-      <div  style={{ height: "calc(100% - 2em)", width: "calc(100% - 2em)", border: "1px solid" }}>
+      <div  style={{ height: "calc(100% - 4em)", width: "calc(100% - 1rem)", margin: "10px auto 0", border: "1px solid"}}>
         <SplitPane
           ref={ref}
           mode={mode}

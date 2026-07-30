@@ -15,7 +15,7 @@
     ".tmp/src/hooks.jsx",
     ".tmp/src/misc.jsx",
     ".tmp/src/run.jsx",
-    //".tmp/src/jsxx.jsx",
+    //".tmp/src/jsx.jsx",
     ".tmp/src/redux.jsx",
     ".tmp/src/timers.jsx",
     ".tmp/src/transition.jsx",
