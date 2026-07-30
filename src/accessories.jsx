@@ -51,44 +51,44 @@ const {css,cx} = emotion;
  */
 
 export function Spinner({
-  size = 48,
-  className,
-  style,
-  color = "currentColor",
-  strokeWidth = 3,
-  "aria-label": ariaLabel = "Loading",
+	size = 48,
+	className,
+	style,
+	color = "currentColor",
+	strokeWidth = 3,
+	"aria-label": ariaLabel = "Loading",
 }) {
-  const s = Math.max(1, size)+"px";
+	const s = Math.max(1, size)+"px";
 
-  return (
-    <div
-      className={className}
-      style={{
-        width: "100%",
-        height: "100%",
-        display: "grid",
-        placeItems: "center",
-        ...style,
-      }}
-      aria-label={ariaLabel}
-      role="status"
-    >
-      <div
-        style={{
-          width: s,
-          height: s,
-          borderRadius: "50%",
-          border: `${strokeWidth}px solid rgba(0,0,0,0.15)`,
-          borderTopColor: color,
-          animation: "ddSpinnerSpin 0.9s linear infinite",
-          boxSizing: "border-box",
-        }}
-      />
-      <style>{`
-        @keyframes ddSpinnerSpin { to { transform: rotate(360deg); } }
-      `}</style>
-    </div>
-  );
+	return (
+		<div
+			className={className}
+			style={{
+				width: "100%",
+				height: "100%",
+				display: "grid",
+				placeItems: "center",
+				...style,
+			}}
+			aria-label={ariaLabel}
+			role="status"
+		>
+			<div
+				style={{
+					width: s,
+					height: s,
+					borderRadius: "50%",
+					border: `${strokeWidth}px solid rgba(0,0,0,0.15)`,
+					borderTopColor: color,
+					animation: "ddSpinnerSpin 0.9s linear infinite",
+					boxSizing: "border-box",
+				}}
+			/>
+			<style>{`
+				@keyframes ddSpinnerSpin { to { transform: rotate(360deg); } }
+			`}</style>
+		</div>
+	);
 }
 
 
@@ -444,201 +444,202 @@ export function DragHandle({
  */
 
 export const SplitPane = forwardRef(function SplitPane(
-  {
-    mode = "horizontal",
-    position,
-    defaultPosition = 0.5,
-    min = 0.1,
-    max = 0.9,
-    splitterSize = 8,
-    onSizeChange,
-    style,
-    className,
-    firstPaneStyle,
-    secondPaneStyle,
-    splitterStyle,
-    children,
-  },
-  ref
+	{
+		mode = "horizontal",
+		position,
+		defaultPosition = 0.5,
+		min = 0.1,
+		max = 0.9,
+		splitterSize = 8,
+		onSizeChange,
+		style,
+		className,
+		firstPaneStyle,
+		secondPaneStyle,
+		splitterStyle,
+		children,
+	},
+	ref
 ) {
-  const initialMode = mode === "vertical" ? "vertical" : "horizontal";
-  const [internalMode, setInternalMode] = useState(initialMode);
+	const initialMode = mode === "vertical" ? "vertical" : "horizontal";
+	const [internalMode, setInternalMode] = useState(initialMode);
 
-  const [internalPos, setInternalPos] = useState(clamp(defaultPosition, min, max));
-  const posResolved = position == null ? internalPos : clamp(position, min, max);
+	const [internalPos, setInternalPos] = useState(clamp(defaultPosition, min, max));
+	const posResolved = position == null ? internalPos : clamp(position, min, max);
 
-  useEffect(() => {
-    if (position == null) return;
-    setInternalPos(clamp(position, min, max));
-  }, [position, min, max]);
+	useEffect(() => {
+		if (position == null) return;
+		setInternalPos(clamp(position, min, max));
+	}, [position, min, max]);
 
-  useEffect(() => {
-    setInternalMode(mode === "vertical" ? "vertical" : "horizontal");
-  }, [mode]);
+	useEffect(() => {
+		setInternalMode(mode === "vertical" ? "vertical" : "horizontal");
+	}, [mode]);
 
-  const setPosition = (next) => {
-    const clamped = clamp(next, min, max);
-    if (position == null) setInternalPos(clamped);
-    onSizeChange?.(clamped);
-  };
+	const setPosition = (next) => {
+		const clamped = clamp(next, min, max);
+		if (position == null) setInternalPos(clamped);
+		onSizeChange?.(clamped);
+	};
 
-  useImperativeHandle(ref, () => ({
-    setPosition,
-    setMode: (nextMode) => setInternalMode(nextMode === "vertical" ? "vertical" : "horizontal"),
-    getPosition: () => posResolved,
-    getMode: () => internalMode,
-  }));
+	useImperativeHandle(ref, () => ({
+		setPosition,
+		setMode: (nextMode) => setInternalMode(nextMode === "vertical" ? "vertical" : "horizontal"),
+		getPosition: () => posResolved,
+		getMode: () => internalMode,
+	}));
 
-  const containerRef = useRef(null);
-  const sizeRef = useRef({ w: 0, h: 0 });
+	const containerRef = useRef(null);
+	const sizeRef = useRef({ w: 0, h: 0 });
 
-  useLayoutEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
+	useLayoutEffect(() => {
+		const el = containerRef.current;
+		if (!el) return;
 
-    const ro = new ResizeObserver(() => {
-      const rect = el.getBoundingClientRect();
-      sizeRef.current = { w: rect.width, h: rect.height };
-    });
+		const ro = new ResizeObserver(() => {
+			const rect = el.getBoundingClientRect();
+			sizeRef.current = { w: rect.width, h: rect.height };
+		});
 
-    ro.observe(el);
-    const rect = el.getBoundingClientRect();
-    sizeRef.current = { w: rect.width, h: rect.height };
+		ro.observe(el);
+		const rect = el.getBoundingClientRect();
+		sizeRef.current = { w: rect.width, h: rect.height };
 
-    return () => ro.disconnect();
-  }, []);
+		return () => ro.disconnect();
+	}, []);
 
-  const startPosRef = useRef(posResolved);
-  const [dragging, setDragging] = useState(false);
+	const startPosRef = useRef(posResolved);
+	const [dragging, setDragging] = useState(false);
 
-  const handleStart = () => {
-    setDragging(true);
-    startPosRef.current = posResolved;
-  };
+	const handleStart = () => {
+		setDragging(true);
+		startPosRef.current = posResolved;
+	};
 
-  const handleDelta = (x, y, _data) => {
-    const { w, h } = sizeRef.current;
-    if (internalMode === "horizontal") {
-      setPosition(startPosRef.current + x / (w || 1));
-    } else {
-      setPosition(startPosRef.current + y / (h || 1));
-    }
-  };
+	const handleDelta = (x, y, _data) => {
+		const { w, h } = sizeRef.current;
+		if (internalMode === "horizontal") {
+			setPosition(startPosRef.current + x / (w || 1));
+		} else {
+			setPosition(startPosRef.current + y / (h || 1));
+		}
+	};
 
-  const handleEnd = () => setDragging(false);
+	const handleEnd = () => setDragging(false);
 
-  const arr = Children.toArray(children);
-  const firstChild = arr[0];
-  const secondChild = arr[1];
+	const arr = Children.toArray(children);
+	const firstChild = arr[0];
+	const secondChild = arr[1];
 
-  const p = posResolved;
+	const p = posResolved;
 
-  const pane1StyleAbs =
-    internalMode === "horizontal"
-      ? {
-          position: "absolute",
-          top: 0,
-          bottom: 0,
-          left: 0,
-          width: `calc(${p} * (100% - ${splitterSize}px))`,
-          overflow: "auto",
-          ...(firstPaneStyle || {}),
-        }
-      : {
-          position: "absolute",
-          left: 0,
-          right: 0,
-          top: 0,
-          height: `calc(${p} * (100% - ${splitterSize}px))`,
-          overflow: "auto",
-          ...(firstPaneStyle || {}),
-        };
+	const pane1StyleAbs =
+		internalMode === "horizontal"
+			? {
+					position: "absolute",
+					top: 0,
+					bottom: 0,
+					left: 0,
+					width: `calc(${p} * (100% - ${splitterSize}px))`,
+					overflow: "auto",
+					...(firstPaneStyle || {}),
+				}
+			: {
+					position: "absolute",
+					left: 0,
+					right: 0,
+					top: 0,
+					height: `calc(${p} * (100% - ${splitterSize}px))`,
+					overflow: "auto",
+					...(firstPaneStyle || {}),
+				};
 
-  const pane2StyleAbs =
-    internalMode === "horizontal"
-      ? {
-          position: "absolute",
-          top: 0,
-          bottom: 0,
-          left: `calc(${p} * (100% - ${splitterSize}px) + ${splitterSize}px)`,
-          right: 0,
-          overflow: "auto",
-          ...(secondPaneStyle || {}),
-        }
-      : {
-          position: "absolute",
-          left: 0,
-          right: 0,
-          top: `calc(${p} * (100% - ${splitterSize}px) + ${splitterSize}px)`,
-          bottom: 0,
-          overflow: "auto",
-          ...(secondPaneStyle || {}),
-        };
+	const pane2StyleAbs =
+		internalMode === "horizontal"
+			? {
+					position: "absolute",
+					top: 0,
+					bottom: 0,
+					left: `calc(${p} * (100% - ${splitterSize}px) + ${splitterSize}px)`,
+					right: 0,
+					overflow: "auto",
+					...(secondPaneStyle || {}),
+				}
+			: {
+					position: "absolute",
+					left: 0,
+					right: 0,
+					top: `calc(${p} * (100% - ${splitterSize}px) + ${splitterSize}px)`,
+					bottom: 0,
+					overflow: "auto",
+					...(secondPaneStyle || {}),
+				};
 
-  // Basic visible default for splitter (so it doesn't "disappear" on mode switch).
-  // Also give zIndex + background and keep pointer events enabled.
-  const splitterBase = {
-    background: "rgba(0,0,0,0.08)",
-    boxShadow: "inset 0 0 2px rgba(0,0,0,0.25)",
-    zIndex: 10,
-  };
+	// Basic visible default for splitter (so it doesn't "disappear" on mode switch).
+	// Also give zIndex + background and keep pointer events enabled.
+	const splitterBase = {
+		background: "rgba(0,0,0,0.08)",
+		boxShadow: "inset 0 0 2px rgba(0,0,0,0.25)",
+		zIndex: 10,
+	};
 
-  const splitterAbsStyle =
-    internalMode === "horizontal"
-      ? {
-          position: "absolute",
-          top: 0,
-          bottom: 0,
-          left: `calc(${p} * (100% - ${splitterSize}px))`,
-          width: splitterSize,
-          height: "100%",
+	const splitterAbsStyle =
+		internalMode === "horizontal"
+			? {
+					position: "absolute",
+					top: 0,
+					bottom: 0,
+					left: `calc(${p} * (100% - ${splitterSize}px))`,
+					width: splitterSize,
+					height: "100%",
 
-          cursor: dragging ? "col-resize" : "col-resize",
-          touchAction: "none",
-          pointerEvents: "auto",
+					cursor: dragging ? "col-resize" : "col-resize",
+					touchAction: "none",
+					pointerEvents: "auto",
 
-          ...splitterBase,
-          ...(splitterStyle || {}),
-        }
-      : {
-          position: "absolute",
-          left: 0,
-          right: 0,
-          top: `calc(${p} * (100% - ${splitterSize}px))`,
-          height: splitterSize,
-          width: "100%",
+					...splitterBase,
+					...(splitterStyle || {}),
+				}
+			: {
+					position: "absolute",
+					left: 0,
+					right: 0,
+					top: `calc(${p} * (100% - ${splitterSize}px))`,
+					height: splitterSize,
+					width: "100%",
 
-          cursor: dragging ? "row-resize" : "row-resize",
-          touchAction: "none",
-          pointerEvents: "auto",
+					cursor: dragging ? "row-resize" : "row-resize",
+					touchAction: "none",
+					pointerEvents: "auto",
 
-          ...splitterBase,
-          ...(splitterStyle || {}),
-        };
+					...splitterBase,
+					...(splitterStyle || {}),
+				};
 
-  return (
-    <div
-      ref={containerRef}
-      className={className}
-      style={{
-        position: "relative",
-        width: "100%",
-        height: "100%",
-        overflow: "hidden",
-        ...(style || {}),
-      }}
-    >
-      <div style={pane1StyleAbs}>{firstChild}</div>
-      <div style={pane2StyleAbs}>{secondChild}</div>
+	return (
+		<div
+			ref={containerRef}
+			className={className}
+			style={{
+				position: "relative",
+				width: "100%",
+				height: "100%",
+				overflow: "hidden",
+				...(style || {}),
+			}}
+		>
+			<div style={pane1StyleAbs}>{firstChild}</div>
+			<div style={pane2StyleAbs}>{secondChild}</div>
 
-      <DragHandle
-        onStart={handleStart}
-        onDelta={handleDelta}
-        onEnd={handleEnd}
-        style={splitterAbsStyle}
-      />
-    </div>
-  );
+			<DragHandle
+				onStart={handleStart}
+				onDelta={handleDelta}
+				onEnd={handleEnd}
+				style={splitterAbsStyle}
+				className="splitter"
+			/>
+		</div>
+	);
 });
 
 

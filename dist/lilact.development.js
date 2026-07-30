@@ -2431,7 +2431,7 @@ var ComponentCore = class {
     }
   }
   updateElementProps(patch, force = false) {
-    var _a, _b, _c, _d, _e, _f;
+    var _a, _b, _c, _d, _e, _f, _g;
     if (this.entity === "input") {
       if (!(patch == null ? void 0 : patch.type)) patch.type = "text";
       if (patch.type !== this.element.type) {
@@ -2473,18 +2473,29 @@ var ComponentCore = class {
           (_d = this.event_detachers) != null ? _d : this.event_detachers = {};
           (_f = (_e = this.event_detachers)[al]) == null ? void 0 : _f.call(_e);
           this.event_detachers[al] = lilact_default.addWrappedEventListener(this.element, alc.substring(2), patch[a], { capture: true });
-        } else if (al === "style") {
-          if (typeof patch[a] === "string") {
-            this.element.style = patch[a];
+        } else if (a === "style") {
+          if (typeof patch.style === "string") {
+            this.element.style = patch.style;
           } else {
-            for (const x in patch[a]) {
-              if (length_css_attributes_set.has(x)) {
-                if (isFinite(patch[a][x])) {
-                  patch[a][x] += "px";
+            if ((_g = this.props) == null ? void 0 : _g.style) {
+              if (typeof this.props.style === "string") {
+                this.element.style = "";
+              } else {
+                for (let p in this.props.style) {
+                  if (!patch.style.hasOwnProperty(p)) {
+                    this.element.style[p] = "";
+                  }
                 }
               }
             }
-            Object.assign(this.element.style, patch[a]);
+            for (const x in patch.style) {
+              if (length_css_attributes_set.has(x)) {
+                if (isFinite(patch.style[x])) {
+                  patch.style[x] += "px";
+                }
+              }
+            }
+            Object.assign(this.element.style, patch.style);
           }
         } else if (boolean_html_attributes_set.has(a)) {
           this.element[a] = toBool(patch[a]);
@@ -4510,8 +4521,8 @@ function Spinner({
     animation: "ddSpinnerSpin 0.9s linear infinite",
     boxSizing: "border-box"
   } }), createComponent("style", {}, `
-        @keyframes ddSpinnerSpin { to { transform: rotate(360deg); } }
-      `));
+				@keyframes ddSpinnerSpin { to { transform: rotate(360deg); } }
+			`));
 }
 var ErrorBoundary = class extends Component {
   constructor() {
@@ -4837,7 +4848,7 @@ var SplitPane = forwardRef(function SplitPane2({
     height: "100%",
     overflow: "hidden",
     ...style || {}
-  } }, createComponent("div", { "style": pane1StyleAbs }, firstChild), createComponent("div", { "style": pane2StyleAbs }, secondChild), createComponent(DragHandle, { "onStart": handleStart, "onDelta": handleDelta, "onEnd": handleEnd, "style": splitterAbsStyle }));
+  } }, createComponent("div", { "style": pane1StyleAbs }, firstChild), createComponent("div", { "style": pane2StyleAbs }, secondChild), createComponent(DragHandle, { "onStart": handleStart, "onDelta": handleDelta, "onEnd": handleEnd, "style": splitterAbsStyle, "className": "splitter" }));
 });
 var clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 

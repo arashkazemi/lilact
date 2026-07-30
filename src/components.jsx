@@ -428,19 +428,31 @@ if(DEBUG) {
 					this.event_detachers[al] = 
 						Lilact.addWrappedEventListener(this.element, alc.substring(2), patch[a], {capture: true});
 				}
-				else if(al==='style') {
-					if(typeof(patch[a])==='string') {
-						this.element.style = patch[a];
+				else if(a==='style') {
+					if(typeof(patch.style)==='string') {
+						this.element.style = patch.style;
 					}
 					else {
-						for(const x in patch[a]) {
+						if(this.props?.style) {
+							if(typeof(this.props.style)==='string') {
+								this.element.style = "";
+							}
+							else {
+								for(let p in this.props.style) {
+									if( !patch.style.hasOwnProperty(p) ) {
+										this.element.style[p] = "";
+									}
+								}
+							}
+						}						
+						for(const x in patch.style) {
 							if( length_css_attributes_set.has(x) ) {
-								if(isFinite(patch[a][x])) {
-									patch[a][x]+='px';
+								if(isFinite(patch.style[x])) {
+									patch.style[x]+='px';
 								}
 							}
 						}
-						Object.assign(this.element.style, patch[a]);
+						Object.assign(this.element.style, patch.style);
 					}
 				}
 				else if(boolean_html_attributes_set.has(a)) { // not lower cased(al), as it is set as a js property
