@@ -100,7 +100,7 @@ function parseArgs(argv) {
 		if (!k || !k.startsWith("--")) continue;
 		const key = k.slice(2);
 
-		if (key === "watch") {
+		if (key === "watch" || key === "minify") {
 			args[key] = true;
 			continue;
 		}
@@ -118,18 +118,19 @@ async function run() {
 
 	if (!userEntry) {
 		console.error(
-			"Usage: lilact-bundler --watch --entry ./path/to/entry.js --mode production --out ./dist --name bundle.js"
+			"Usage: lilact-bundler --watch --minify --entry ./path/to/entry.js --mode production --out ./dist --name bundle.js"
 			);
 		process.exit(1);
 	}
 
 	const name = args.name ?? "bundle.js";
 	const mode = args.mode ?? "production";
-	const watch = args.watch === true;
+	const watch = args?.watch === true;
+	const minify = args?.minify === true;
 
 	const userOutDir = args.out
-	? path.resolve(userProjectRoot, args.out)
-	: path.resolve(userProjectRoot, "dist");
+			? path.resolve(userProjectRoot, args.out)
+			: path.resolve(userProjectRoot, "dist");
 
 	const outFile = path.join(userOutDir, name);
 
@@ -155,10 +156,10 @@ async function run() {
 		platform: "browser",
 
 		outfile: outFile,
-		sourcemap: mode === "development",
+		sourcemap: true,
 		target: ["es2018"],
 
-		minify: mode === "production",
+		minify: minify,
 		define,
 
 		absWorkingDir: userProjectRoot,
@@ -177,15 +178,23 @@ async function run() {
 		],
 	});
 
+	const shutdown = async () => {
+		try {
+			await ctx.dispose();
+		} finally {
+			process.exit(0);
+		}
+	};
+
 	const buildOpts = {
 		entryPoints: [userEntry],
 		bundle: true,
 		format: "esm",
 		platform: "browser",
 		outfile: outFile,
-		sourcemap: mode === "development",
+		sourcemap: true,
 		target: ["es2018"],
-		minify: mode === "production",
+		minify: minify,
 		define,
 		loader: { ".js": "js", ".jsx": "jsx", ".css": "css" },
 		resolveExtensions: [".js", ".jsx", ".json"],
@@ -199,15 +208,9 @@ async function run() {
 		console.log(`Watching... output: ${outFile}`);
 	} else {
 		await ctx.rebuild();
+		await shutdown();
 	}
 	
-	const shutdown = async () => {
-		try {
-			await ctx.dispose();
-		} finally {
-			process.exit(0);
-		}
-	};
 
 	process.on("SIGINT", shutdown);
 	process.on("SIGTERM", shutdown);

@@ -29,7 +29,7 @@ If you find Lilact useful, please consider sponsoring. Your support funds ongoin
 
 ## Overview
 
-`Lilact` is a very lightweight implementation of the React API designed to run in the browser. It can be used as a single script that is around `90kb` minified and around `32kb` gzipped, and includes its whole API.
+`Lilact` is a very lightweight implementation of the React API designed to run in the browser. It can be used as a single script that is around `90kb` minified and around `32kb` gzipped and includes its whole API.
 
 `Lilact` is very fast, uses minimal resources, and handles memory very efficiently.
 
@@ -81,14 +81,14 @@ Note: modules are separated in the documentation to improve structure, but in pr
 
 ## ESBuild-based Bundler
 
-A `ESBuild` based bundler is available in the `bin` directory. It can be used like this:
+An `ESBuild` based bundler is available in the `bin` directory. It can be used like this:
 
 ```bash
-npx lilact-bundle --entry client/App.jsx --mode production --name bundle.js --out public/dist
+npx lilact-bundle --watch --minify --entry client/App.jsx --mode production --name bundle.js --out public/dist
 ```
 
 If you add a `--watch` argument, the bundler will stay running and keep watching the input file(s),
-and update the bundle if any file is changed.
+and update the bundle if any file is changed. 
 
 ---
 

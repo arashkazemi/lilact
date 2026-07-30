@@ -20,7 +20,7 @@
 <a href="https://github.com/sponsors/arashkazemi">Sponsor me on GitHub</a></p>
 <hr>
 <h2 id="overview" class="tsd-anchor-link">Overview<a href="#overview" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
-<p><code>Lilact</code> is a very lightweight implementation of the React API designed to run in the browser. It can be used as a single script that is around <code>90kb</code> minified and around <code>32kb</code> gzipped, and includes its whole API.</p>
+<p><code>Lilact</code> is a very lightweight implementation of the React API designed to run in the browser. It can be used as a single script that is around <code>90kb</code> minified and around <code>32kb</code> gzipped and includes its whole API.</p>
 <p><code>Lilact</code> is very fast, uses minimal resources, and handles memory very efficiently.</p>
 <p>In a Node.js environment, <code>Lilact</code> can be incorporated and imported similarly to React, and it can also be used as a static library in other platforms.</p>
 <hr>
@@ -54,8 +54,8 @@
 <p>Note: modules are separated in the documentation to improve structure, but in practice all members and methods are accessible directly via the <code>Lilact</code> object.</p>
 <hr>
 <h2 id="esbuild-based-bundler" class="tsd-anchor-link">ESBuild-based Bundler<a href="#esbuild-based-bundler" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
-<p>A <code>ESBuild</code> based bundler is available in the <code>bin</code> directory. It can be used like this:</p>
-<pre><code class="bash"><span class="hl-0">npx</span><span class="hl-1"> </span><span class="hl-2">lilact-bundle</span><span class="hl-1"> </span><span class="hl-3">--entry</span><span class="hl-1"> </span><span class="hl-2">client/App.jsx</span><span class="hl-1"> </span><span class="hl-3">--mode</span><span class="hl-1"> </span><span class="hl-2">production</span><span class="hl-1"> </span><span class="hl-3">--name</span><span class="hl-1"> </span><span class="hl-2">bundle.js</span><span class="hl-1"> </span><span class="hl-3">--out</span><span class="hl-1"> </span><span class="hl-2">public/dist</span>
+<p>An <code>ESBuild</code> based bundler is available in the <code>bin</code> directory. It can be used like this:</p>
+<pre><code class="bash"><span class="hl-0">npx</span><span class="hl-1"> </span><span class="hl-2">lilact-bundle</span><span class="hl-1"> </span><span class="hl-3">--watch</span><span class="hl-1"> </span><span class="hl-3">--minify</span><span class="hl-1"> </span><span class="hl-3">--entry</span><span class="hl-1"> </span><span class="hl-2">client/App.jsx</span><span class="hl-1"> </span><span class="hl-3">--mode</span><span class="hl-1"> </span><span class="hl-2">production</span><span class="hl-1"> </span><span class="hl-3">--name</span><span class="hl-1"> </span><span class="hl-2">bundle.js</span><span class="hl-1"> </span><span class="hl-3">--out</span><span class="hl-1"> </span><span class="hl-2">public/dist</span>
 </code><button type="button">Copy</button></pre>
 
 <p>If you add a <code>--watch</code> argument, the bundler will stay running and keep watching the input file(s),

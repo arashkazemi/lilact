@@ -5301,10 +5301,10 @@ function parseXML(code2, index2, container2, look_behind = false) {
         if (res2[0] > index2) index2 = res2[0];
         else index2++;
         break;
-      case ">": {
-        const i3 = parseXMLContent(code2, index2, b2);
-        if (i3 === null) return;
-        if (i3 > index2) index2 = i3;
+      case ">":
+        const j = parseXMLContent(code2, index2, b2);
+        if (j === null) return;
+        if (j > index2) index2 = j;
         else index2++;
         if (b2.end) {
           if (container2) container2.children.push(b2);
@@ -5313,7 +5313,6 @@ function parseXML(code2, index2, container2, look_behind = false) {
           index2++;
         }
         break;
-      }
       case " ":
       case "	":
       case "\n":

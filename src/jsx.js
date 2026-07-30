@@ -583,25 +583,23 @@ function parseXML(code, index, container, look_behind=false)
 			break;
 
 		case '>':
-			{
-				const i = parseXMLContent(code, index, b);
+			const j = parseXMLContent(code, index, b);
 
-				// not xml
-				// todo: side effects must be checked
-				if(i===null) return;
+			// not xml
+			// todo: side effects must be checked
+			if(j===null) return;
 
-				if(i>index) index = i;
-				else index++;
+			if(j>index) index = j;
+			else index++;
 
-				if(b.end) {
-					if(container) container.children.push(b);
-					return b;
-				}
-				else {
-					index++;
-				}
-				break;
+			if(b.end) {
+				if(container) container.children.push(b);
+				return b;
 			}
+			else {
+				index++;
+			}
+			break;
 
 		case ' ':
 		case '\t':

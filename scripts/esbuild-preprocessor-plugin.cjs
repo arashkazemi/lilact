@@ -19,9 +19,6 @@ function createLilactJsxPlugin({ mode }) {
 
         return { contents: out, loader: "js" };
       });
-
-      // Optional: if you want .js files through your transpiler too, add another onLoad:
-      // build.onLoad({ filter: /\.js$/ }, async (args) => { ... })
     },
   };
 }
