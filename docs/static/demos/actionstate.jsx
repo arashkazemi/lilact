@@ -1,4 +1,4 @@
-const { useActionState } = Lilact;
+const { useActionState, Spinner } = Lilact;
 
 async function addToCart(prevState, queryData) {
 
@@ -23,7 +23,7 @@ function AddToCartForm({itemID, itemTitle}) {
 			<h2>{itemTitle}</h2>
 			<input type="hidden" name="itemID" value={itemID} />
 			<button type="submit">Add to Cart </button>
-			{isPending ? "Loading..." : message}
+			{isPending ? <Spinner size={24} style={ {display:"inline-block", transform: "translateY(7px)", width:24}}/> : message}
 		</form>
 		);
 }

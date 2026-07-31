@@ -94,7 +94,12 @@ class ComponentCache
 	{
 		this.current_map.forEach( (arr)=>{
 			arr.slice(arr[IDX]).forEach((ex)=>{
-				if(ex.cleanup) ex.cleanup();
+				if(ex.cleanup) {
+					ex.cleanup();
+				}
+				else if(ex.element) {
+					ex.element.parentElement.removeChild(ex.element);
+				}
 			});
 		});
 
@@ -716,22 +721,57 @@ function prepareCore(parent, core)
 
 function doUpdates()
 {
-	requestAnimationFrame(()=>{
-		let _layout_effects = Lilact.layout_effects;
-		let _update_cbs = Lilact.update_cbs;
-		let _update_set = Lilact.update_set;
+	/*
+	Priority:
 
-		Lilact.layout_effects = new Set;
-		Lilact.update_cbs = new Set;
-		Lilact.update_set = new Set;
+	- Render + enqueue DOM work (runs in the same task where you schedule the update).
+	- Apply DOM updates (do this synchronously before you schedule any effects that must happen before paint).
+	- Insertion effects (run immediately after DOM is in place, still before paint).
+	- Layout effects (run immediately after insertion effects, still before paint).
+	- Passive effects (useEffect)
 
-		for(const le of _layout_effects) le();
+    schedule them for after paint using requestAnimationFrame, typically:
+        run the “after paint” work in the next frame or in a callback scheduled such that it runs after the browser has performed the paint.
 
-		for(const u of _update_set)  u.apply();
-		for(const cb of _update_cbs) cb();
-	});
+
+	Current task: render → DOM updates → insertion effects → layout effects
+	Next paint timing boundary: requestAnimationFrame callback → passive effects (useEffect)
+	*/
+
+
+	clearTimeout(Lilact.effect_timeout);
+
+	const _update_set = Lilact.update_set;
+	const _update_cbs = Lilact.update_cbs;
+	Lilact.update_set = new Set;
+	Lilact.update_cbs = new Set;
+
+	for(const u of _update_set)  u.apply();
+	for(const cb of _update_cbs)  cb();
+	processEffects();
+
 }
 
+
+/** @ignore */
+export function processEffects()
+{
+	const _insertion_effects = Lilact.insertion_effects;
+	const _layout_effects = Lilact.layout_effects;
+	const _passive_effects = Lilact.passive_effects;
+
+	Lilact.insertion_effects = new Set;
+	Lilact.layout_effects = new Set;
+	Lilact.passive_effects = new Set;
+
+	for(const ie of _insertion_effects) ie();
+	for(const le of _layout_effects) le();
+
+	requestAnimationFrame(()=>{
+		for(const pe of _passive_effects) pe();
+	});
+
+}
 
 function decode(html) 
 {
@@ -1049,7 +1089,7 @@ export class RootComponent extends HTMLComponent
 
 export function createComponent(entity, props={}, ...children)
 {
-	if(entity!==undefined && typeof(entity)!=='string' && typeof(entity)!=='function') {
+	if(typeof(entity)!=='string' && typeof(entity)!=='function') {
 		throw new Error("Invalid entity for createComponent.");		
 	}
 
@@ -1141,6 +1181,7 @@ export function render(component, element)
 	return createRoot(element).render(component);
 }
 
+
 /** @ignore */
 export const createElement = createComponent;
 
@@ -1155,6 +1196,18 @@ export let update_cbs  = new Set;
 export let roots  = new Set;
 /** @ignore */
 export let layout_effects = new Set;
+/** @ignore */
+export let insertion_effects = new Set;
+/** @ignore */
+export let passive_effects = new Set;
+
+
+/** @ignore */
+export let update_timeout = undefined;
+/** @ignore */
+export let effect_timeout = undefined;
+/** @ignore */
+export let update_interval_margin = 0;
 
 /** @ignore */
 export const special_attributes = new Set([
@@ -1201,3 +1254,5 @@ export const length_css_attributes_set = new Set([
 export const boolean_html_attributes_set = new 
 	Set(["disabled", "readOnly", "required", "checked", "multiple",
 			 "hidden","open","loop","muted","controls","playsInline","allowFullScreen"]);
+
+

@@ -1977,14 +1977,20 @@ __export(components_exports, {
   createElement: () => createElement,
   createRoot: () => createRoot,
   current_component: () => current_component,
+  effect_timeout: () => effect_timeout,
   events_set: () => events_set,
+  insertion_effects: () => insertion_effects,
   layout_effects: () => layout_effects,
   length_css_attributes_set: () => length_css_attributes_set,
+  passive_effects: () => passive_effects,
+  processEffects: () => processEffects,
   render: () => render,
   roots: () => roots,
   special_attributes: () => special_attributes,
   update_cbs: () => update_cbs,
-  update_set: () => update_set
+  update_interval_margin: () => update_interval_margin,
+  update_set: () => update_set,
+  update_timeout: () => update_timeout
 });
 
 // .tmp/src/symbols.jsx
@@ -2036,11 +2042,10 @@ __export(misc_exports, {
   isEmpty: () => isEmpty,
   isError: () => isError2,
   isThenable: () => isThenable,
+  isValidComponent: () => isValidComponent,
   isValidElement: () => isValidElement,
   shallowEqual: () => shallowEqual,
-  toBool: () => toBool,
-  update_interval_margin: () => update_interval_margin,
-  update_timeout: () => update_timeout
+  toBool: () => toBool
 });
 var typeOf = (input) => {
   const rawObject = Object.prototype.toString.call(input).toLowerCase();
@@ -2048,9 +2053,10 @@ var typeOf = (input) => {
   const type = typeOfRegex.exec(rawObject)[1];
   return type;
 };
-var isValidElement = (value) => {
+var isValidComponent = (value) => {
   return value[CORE] !== void 0 || value[TEXT] !== void 0;
 };
+var isValidElement = isValidComponent;
 var findDOMNode = (component) => {
   var _a, _b;
   if (!((_b = (_a = component[CORE]) == null ? void 0 : _a.element) == null ? void 0 : _b.parentNode)) throw new Error("findDOMNode only works on mounted components.");
@@ -2193,8 +2199,6 @@ function toBool(value) {
   }
   return Boolean(value);
 }
-var update_timeout = void 0;
-var update_interval_margin = 0;
 var id_num = Math.floor(Math.random() * 1e4);
 var eval_num = 0;
 
@@ -2239,7 +2243,11 @@ var ComponentCache = class {
   commit() {
     this.current_map.forEach((arr) => {
       arr.slice(arr[IDX]).forEach((ex) => {
-        if (ex.cleanup) ex.cleanup();
+        if (ex.cleanup) {
+          ex.cleanup();
+        } else if (ex.element) {
+          ex.element.parentElement.removeChild(ex.element);
+        }
       });
     });
     this.current_map = this.new_map;
@@ -2680,16 +2688,26 @@ function prepareCore(parent, core) {
   }
 }
 function doUpdates() {
+  clearTimeout(lilact_default.effect_timeout);
+  const _update_set = lilact_default.update_set;
+  const _update_cbs = lilact_default.update_cbs;
+  lilact_default.update_set = /* @__PURE__ */ new Set();
+  lilact_default.update_cbs = /* @__PURE__ */ new Set();
+  for (const u of _update_set) u.apply();
+  for (const cb of _update_cbs) cb();
+  processEffects();
+}
+function processEffects() {
+  const _insertion_effects = lilact_default.insertion_effects;
+  const _layout_effects = lilact_default.layout_effects;
+  const _passive_effects = lilact_default.passive_effects;
+  lilact_default.insertion_effects = /* @__PURE__ */ new Set();
+  lilact_default.layout_effects = /* @__PURE__ */ new Set();
+  lilact_default.passive_effects = /* @__PURE__ */ new Set();
+  for (const ie of _insertion_effects) ie();
+  for (const le of _layout_effects) le();
   requestAnimationFrame(() => {
-    let _layout_effects = lilact_default.layout_effects;
-    let _update_cbs = lilact_default.update_cbs;
-    let _update_set = lilact_default.update_set;
-    lilact_default.layout_effects = /* @__PURE__ */ new Set();
-    lilact_default.update_cbs = /* @__PURE__ */ new Set();
-    lilact_default.update_set = /* @__PURE__ */ new Set();
-    for (const le of _layout_effects) le();
-    for (const u of _update_set) u.apply();
-    for (const cb of _update_cbs) cb();
+    for (const pe of _passive_effects) pe();
   });
 }
 var generateComponentKey = (entity, props) => {
@@ -2885,7 +2903,7 @@ var RootComponent = class extends HTMLComponent {
   }
 };
 function createComponent2(entity, props = {}, ...children) {
-  if (entity !== void 0 && typeof entity !== "string" && typeof entity !== "function") {
+  if (typeof entity !== "string" && typeof entity !== "function") {
     throw new Error("Invalid entity for createComponent.");
   }
   for (let i2 = 0; i2 < children.length; i2++) {
@@ -2941,6 +2959,11 @@ var update_set = /* @__PURE__ */ new Set();
 var update_cbs = /* @__PURE__ */ new Set();
 var roots = /* @__PURE__ */ new Set();
 var layout_effects = /* @__PURE__ */ new Set();
+var insertion_effects = /* @__PURE__ */ new Set();
+var passive_effects = /* @__PURE__ */ new Set();
+var update_timeout = void 0;
+var effect_timeout = void 0;
+var update_interval_margin = 0;
 var special_attributes = /* @__PURE__ */ new Set([
   "classname",
   "ref",
@@ -3097,14 +3120,17 @@ var boolean_html_attributes_set = /* @__PURE__ */ new Set([
 var hooks_exports = {};
 __export(hooks_exports, {
   createContext: () => createContext,
+  startTransition: () => startTransition,
   useActionState: () => useActionState,
   useCallback: () => useCallback,
   useContext: () => useContext,
+  useDebugValue: () => useDebugValue,
   useDeferredValue: () => useDeferredValue,
   useEffect: () => useEffect,
   useHook: () => useHook,
   useId: () => useId,
   useImperativeHandle: () => useImperativeHandle,
+  useInsertionEffect: () => useInsertionEffect,
   useLayoutEffect: () => useLayoutEffect,
   useLocalStorage: () => useLocalStorage,
   useMemo: () => useMemo,
@@ -3183,10 +3209,10 @@ function useTransition() {
   if (isEmpty(hk)) {
     hk.count = 0;
     hk.func = (async function(core, hk2, fn) {
-      hk2.count++;
-      if (hk2.count === 1) {
+      if (hk2.count === 0) {
         core.component.forceUpdate();
       }
+      hk2.count++;
       await fn();
       hk2.count--;
       if (hk2.count === 0) {
@@ -3229,7 +3255,7 @@ function useRef(initialValue = null) {
 }
 function useLayoutEffect(effect, deps = void 0) {
   if (deps !== void 0 && (typeof deps !== "object" || deps.constructor.name !== "Array")) {
-    throw new Error("Layout effect dependencies must be an array or omitted.");
+    throw new Error("Layout effect dependencies must be an array, object or omitted.");
   }
   const hk = useHook();
   if (!isEmpty(hk)) {
@@ -3242,11 +3268,12 @@ function useLayoutEffect(effect, deps = void 0) {
   lilact_default.layout_effects.add(() => {
     hk.cleanup = effect();
   });
-  lilact_default.current_component[0].component.forceUpdate();
+  lilact_default.clearTimeout(lilact_default.effect_timeout);
+  lilact_default.setTimeout(lilact_default.processEffects, 0);
 }
 function useEffect(effect, deps = void 0) {
   if (deps !== void 0 && (typeof deps !== "object" || deps.constructor.name !== "Array")) {
-    throw new Error("Effect dependencies must be an array or omitted.");
+    throw new Error("Effect dependencies must be an array, object or omitted.");
   }
   const hk = useHook();
   if (!isEmpty(hk)) {
@@ -3256,9 +3283,29 @@ function useEffect(effect, deps = void 0) {
     hk.cleanup();
   }
   hk.deps = deps;
-  lilact_default.setTimeout(() => {
+  lilact_default.passive_effects.add(() => {
     hk.cleanup = effect();
-  }, 0);
+  });
+  lilact_default.clearTimeout(lilact_default.effect_timeout);
+  lilact_default.setTimeout(lilact_default.processEffects, 0);
+}
+function useInsertionEffect(effect, deps = void 0) {
+  if (deps !== void 0 && (typeof deps !== "object" || deps.constructor.name !== "Array")) {
+    throw new Error("Insertion effect dependencies must be an array, object, or omitted.");
+  }
+  const hk = useHook();
+  if (!isEmpty(hk)) {
+    if (deps !== void 0 && (hk == null ? void 0 : hk.deps) !== void 0 && shallowEqual(deps, hk.deps)) return;
+  }
+  if (hk == null ? void 0 : hk.cleanup) {
+    hk.cleanup();
+  }
+  hk.deps = deps;
+  lilact_default.insertion_effects.add(() => {
+    hk.cleanup = effect();
+  });
+  lilact_default.clearTimeout(lilact_default.effect_timeout);
+  lilact_default.setTimeout(lilact_default.processEffects, 0);
 }
 function useMemo(factory, deps = void 0) {
   if (deps !== void 0 && (typeof deps !== "object" || deps.constructor.name !== "Array")) {
@@ -3345,6 +3392,14 @@ function useImperativeHandle(ref, factory, deps = void 0) {
     ref.current = {};
   }
   Object.assign(ref.current, factory(), 0);
+}
+function useDebugValue(val, formatter = (x) => x) {
+  if (true) {
+    console.log(formatter(val));
+  }
+}
+function startTransition(transition) {
+  transition();
 }
 
 // .tmp/src/run.jsx
@@ -3494,7 +3549,7 @@ var timers_exports = {};
 __export(timers_exports, {
   animationFramePromise: () => animationFramePromise,
   clearInterval: () => clearInterval,
-  clearTimeout: () => clearTimeout,
+  clearTimeout: () => clearTimeout2,
   grabTimers: () => grabTimers,
   pauseTimers: () => pauseTimers,
   releaseTimers: () => releaseTimers,
@@ -3603,7 +3658,7 @@ function setTimeout2(callback, delay, ...args) {
 function setInterval(callback, interval, ...args) {
   return add_timer({ [CALLBACK]: callback, [INTERVAL]: interval, [DUE]: Date.now() + interval, [REPEAT]: true, [ARGS]: args });
 }
-function clearTimeout(id) {
+function clearTimeout2(id) {
   if (all_timers[id]) all_timers[id][CLEARED] = true;
 }
 function clearInterval(id) {
@@ -3686,14 +3741,14 @@ function Transition({
     } else this[CORE].mount_state = EXITED;
   }
   useEffect(() => {
-    return () => clearTimeout(this[CORE].timer);
+    return () => clearTimeout2(this[CORE].timer);
   }, []);
   useEffect(() => {
     if (!this[CORE].is_appeared && appear && this[CORE].mount_state === ENTERING && inProp) {
       onEnter == null ? void 0 : onEnter();
       requestAnimationFrame(() => {
         onEntering == null ? void 0 : onEntering(!this[CORE].is_appeared);
-        clearTimeout(this[CORE].timer);
+        clearTimeout2(this[CORE].timer);
         this[CORE].timer = setTimeout2(() => {
           this[CORE].mount_state = ENTERED;
           this.forceUpdate();
@@ -3711,7 +3766,7 @@ function Transition({
       this[CORE].mount_state = ENTERING;
       this.forceUpdate(() => {
         onEntering == null ? void 0 : onEntering(!this[CORE].is_appeared);
-        clearTimeout(this[CORE].timer);
+        clearTimeout2(this[CORE].timer);
         this[CORE].timer = setTimeout2(() => {
           this[CORE].mount_state = ENTERED;
           this.forceUpdate();
@@ -3725,7 +3780,7 @@ function Transition({
       this[CORE].mount_state = EXITING;
       this.forceUpdate(() => {
         onExiting == null ? void 0 : onExiting();
-        clearTimeout(this[CORE].timer);
+        clearTimeout2(this[CORE].timer);
         this[CORE].timer = setTimeout2(() => {
           this[CORE].mount_state = EXITED;
           this.forceUpdate();
@@ -4578,11 +4633,11 @@ var Suspense = class extends Component {
   /** @ignore */
   _clearTimers() {
     if (this._delayTimer) {
-      clearTimeout(this._delayTimer);
+      clearTimeout2(this._delayTimer);
       this._delayTimer = null;
     }
     if (this._minShowTimer) {
-      clearTimeout(this._minShowTimer);
+      clearTimeout2(this._minShowTimer);
       this._minShowTimer = null;
     }
   }
@@ -4593,7 +4648,7 @@ var Suspense = class extends Component {
     if (this._pending.size === 1) {
       const delay = Math.max(0, this.props.minDelay);
       if (this._delayTimer) {
-        clearTimeout(this._delayTimer);
+        clearTimeout2(this._delayTimer);
         this._delayTimer = null;
       }
       this._delayTimer = setTimeout2(() => {
@@ -4608,7 +4663,7 @@ var Suspense = class extends Component {
       }
       if (this._pending.size === 0) {
         if (this._delayTimer) {
-          clearTimeout(this._delayTimer);
+          clearTimeout2(this._delayTimer);
           this._delayTimer = null;
           this.setState({ showingFallback: false });
           return;
@@ -4619,7 +4674,7 @@ var Suspense = class extends Component {
           this.setState({ showingFallback: false });
         } else {
           if (this._minShowTimer) {
-            clearTimeout(this._minShowTimer);
+            clearTimeout2(this._minShowTimer);
             this._minShowTimer = null;
           }
           this._minShowTimer = setTimeout2(() => {
@@ -5760,7 +5815,7 @@ function transpileJSX(jsx2, {
 
 // .tmp/src/lilact.jsx
 var Lilact2 = {
-  VERSION: "beta.16",
+  VERSION: "beta.17",
   // Configuration
   defaultTransitionTimeout: 300,
   defaultIsEqual: Object.is,
@@ -5829,7 +5884,7 @@ export {
   boolean_html_attributes_set,
   capture_events_set,
   clearInterval,
-  clearTimeout,
+  clearTimeout2 as clearTimeout,
   combineReducers2 as combineReducers,
   connect,
   createComponent2 as createComponent,
@@ -5840,6 +5895,7 @@ export {
   current_component,
   deepEqual,
   lilact_default as default,
+  effect_timeout,
   emotion_css_esm_exports as emotion,
   error,
   eval_num,
@@ -5850,16 +5906,20 @@ export {
   globalErrorHandler,
   grabTimers,
   id_num,
+  insertion_effects,
   isAsync,
   isClass,
   isEmpty,
   isError2 as isError,
   isThenable,
+  isValidComponent,
   isValidElement,
   layout_effects,
   lazy,
   length_css_attributes_set,
+  passive_effects,
   pauseTimers,
+  processEffects,
   redux_exports as redux,
   releaseSyntheticEvent,
   releaseTimers,
@@ -5876,6 +5936,7 @@ export {
   setTimeout2 as setTimeout,
   shallowEqual,
   special_attributes,
+  startTransition,
   timeoutPromise,
   toBool,
   traceError,
@@ -5888,12 +5949,14 @@ export {
   useActionState,
   useCallback,
   useContext,
+  useDebugValue,
   useDeferredValue,
   useDispatch,
   useEffect,
   useHook,
   useId,
   useImperativeHandle,
+  useInsertionEffect,
   useLayoutEffect,
   useLocalStorage,
   useLocation,

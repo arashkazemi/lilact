@@ -54,9 +54,17 @@ const typeOf = (input) => {
  * @param value - Value to inspect.
  * @returns True if the value is a class component; otherwise false.
  */
-export const isValidElement = (value) => {
+export const isValidComponent = (value) => {
 	return value[CORE]!==undefined || value[TEXT]!==undefined;
 }
+
+/**
+ * Checks whether a value is a Lilact component. It is the same as `isValidComponent`.
+ *
+ * @param value - Value to inspect.
+ * @returns True if the value is a class component; otherwise false.
+ */
+export const isValidElement = isValidComponent
 
 /**
  * Utility to find the underlying DOM node for a mounted Lilact component.
@@ -337,10 +345,6 @@ export function toBool(value) {
 
 // Internals
 
-/** @ignore */
-export let update_timeout = undefined;
-/** @ignore */
-export let update_interval_margin = 0;
 /** @ignore */
 export let id_num = Math.floor(Math.random()*10000);
 /** @ignore */

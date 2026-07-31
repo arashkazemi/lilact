@@ -182,11 +182,11 @@ export function useTransition()
 
 		(async function(core, hk, fn) {
 
-			hk.count++;
-
-			if(hk.count===1) {
+			if(hk.count===0) {
 				core.component.forceUpdate();
 			}
+
+			hk.count++;
 
 			await fn();
 
@@ -269,13 +269,13 @@ export function useRef(initialValue = null)
  * Runs an effect synchronously after all DOM mutations but before the browser paints.
  *
  * @param {Function} effect - Effect callback.
- * @param {Array<any>} [deps] - Dependency list.
+ * @param deps - Optional dependency list (or an object for shallow comparison) used to determine when to re-run the effect.
  * @returns {void}
  */
 export function useLayoutEffect(effect, deps=undefined)
 {
 	if( deps!==undefined && (typeof(deps)!=='object' || deps.constructor.name!=='Array') ) {
-		throw new Error("Layout effect dependencies must be an array or omitted.");
+		throw new Error("Layout effect dependencies must be an array, object or omitted.");
 	}
 
 	const hk = useHook();
@@ -290,20 +290,22 @@ export function useLayoutEffect(effect, deps=undefined)
 
 	hk.deps = deps;
 	Lilact.layout_effects.add( ()=>{ hk.cleanup = effect(); });
-	Lilact.current_component[0].component.forceUpdate();
+	
+	Lilact.clearTimeout( Lilact.effect_timeout );
+	Lilact.setTimeout( Lilact.processEffects, 0 );
 }
 
 /**
  * Runs a side effect after render commits.
  *
- * @param {Function} effect - Effect callback.
- * @param {Array<any>} [deps] - Dependency list.
+ * @param effect - Callback invoked.
+ * @param deps - Optional dependency list (or an object for shallow comparison) used to determine when to re-run the effect.
  * @returns {void}
  */
 export function useEffect(effect, deps=undefined)
 {
 	if( deps!==undefined && (typeof(deps)!=='object' || deps.constructor.name!=='Array') ) {
-		throw new Error("Effect dependencies must be an array or omitted.");
+		throw new Error("Effect dependencies must be an array, object or omitted.");
 	}
 
 	const hk = useHook();
@@ -317,15 +319,49 @@ export function useEffect(effect, deps=undefined)
 	}
 
 	hk.deps = deps;
-	Lilact.setTimeout( ()=>{ hk.cleanup = effect(); }, 0 );
+	Lilact.passive_effects.add( ()=>{ hk.cleanup = effect(); });
 
+	Lilact.clearTimeout( Lilact.effect_timeout );
+	Lilact.setTimeout( Lilact.processEffects, 0 );
 }
+
+
+/**
+ * Executes a side effect after the DOM updates have been committed.
+ *
+ * @param effect - Callback invoked after render commit.
+ * @param deps - Optional dependency list (or an object for shallow comparison) used to determine when to re-run the effect.
+ * @returns void
+ */
+export function useInsertionEffect(effect, deps=undefined)
+{
+	if( deps!==undefined && (typeof(deps)!=='object' || deps.constructor.name!=='Array') ) {
+		throw new Error("Insertion effect dependencies must be an array, object, or omitted.");
+	}
+
+	const hk = useHook();
+
+	if( !isEmpty(hk) ) {
+		if(deps!==undefined && hk?.deps!==undefined && shallowEqual(deps, hk.deps)) return;
+	}
+
+	if(hk?.cleanup) {
+		hk.cleanup();
+	}
+
+	hk.deps = deps;
+	Lilact.insertion_effects.add( ()=>{ hk.cleanup = effect(); });
+
+	Lilact.clearTimeout( Lilact.effect_timeout );
+	Lilact.setTimeout( Lilact.processEffects, 0 );
+}
+
 
 /**
  * Memoizes a computed value until dependencies change.
  *
  * @param {Function} factory - Function that creates the value.
- * @param {Array<any>} deps - Dependency list.
+ * @param deps - Optional dependency list (or an object for shallow comparison) used to determine when to re-run the effect.
  * @returns {any} Memoized value.
  */
 export function useMemo(factory,deps=undefined)
@@ -485,5 +521,38 @@ export function useImperativeHandle(ref, factory, deps=undefined)
 	}
 	Object.assign( ref.current, factory(), 0 );	
 
+}
+
+
+/**
+ * A hook for debug purposes. At the moment it only logs the output, but it can be overrided
+ * for each development environment.
+ *
+ * @param {any} val
+ *   The debug value.
+ * @param {function(): any} formatter
+ *   Function that creates a representation of the value.
+ * @returns {void}
+ */
+export function useDebugValue(val, formatter=(x)=>x)
+{
+	if(DEBUG) {	
+		console.log(formatter(val));
+	}
+}
+
+
+/**
+ * Schedule a state update as a low-priority transition.
+ *
+ * Updates triggered inside the transition callback are treated as lower priority than
+ * updates outside of it.
+ *
+ * @param transition - Function that performs the state updates for the transition.
+ * @returns void
+ */
+export function startTransition(transition)
+{
+	transition();
 }
 
