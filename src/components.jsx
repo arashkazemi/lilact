@@ -162,18 +162,22 @@ class ComponentCore
 	}
 
 	/*
-		//let do_rerender = true;
-
-		// if(this.outlet && this.entity[MEMOIZED]) {
-		// 	if(shallowEqual(this.props, next_props)) do_rerender=false;
-		// 	delete this.entity[MEMOIZED];
-		// }
-
-		if(do_rerender) {
 	*/
 	// TODO: should componentDidUpdate be called after arranging/appending the outlet or before?
 	apply(next_props = this.props, next_state = this.next_state || this.state)
 	{
+
+		let do_rerender = true;
+
+		if(this.outlet && this?.[MEMOIZED]) {
+
+			if( shallowEqual(this.props, next_props, "children") && 
+				shallowEqual(this.props?.children, next_props?.children) ) {
+					do_rerender=false;
+			}
+		}
+
+		if(do_rerender) {
 
 if(DEBUG) {
 
@@ -308,13 +312,14 @@ if(DEBUG) {
 			if(this.cache) this.cache.commit();
 
 
-		if(this.element) this.arrangeOutlet();
+			if(this.element) this.arrangeOutlet();
 
-		if(this.component.componentDidUpdate) {
-			this.component.componentDidUpdate(prev_props, prev_state, this.last_snapshot);
+			if(this.component.componentDidUpdate) {
+				this.component.componentDidUpdate(prev_props, prev_state, this.last_snapshot);
+			}
+
+			if(this.last_snapshot) delete this.last_snapshot;
 		}
-
-		if(this.last_snapshot) delete this.last_snapshot;
 
 	}
 
@@ -635,17 +640,25 @@ function constructFunc(core, parent) // returns {text} or component, and not com
 		// do nothing...
 	}
 	else {
-		if(typeof(core.entity)==='string') {
-			comp = new HTMLComponent(core.entity, core.props);
+		let entity = core.entity;
+		let memoized = false;
+
+		if(typeof(entity)==='object' && entity[MEMOIZED]) {
+			memoized = true;
+			entity = entity[MEMOIZED];
+		}
+
+		if(typeof(entity)==='string') {
+			comp = new HTMLComponent(entity, core.props);
 		}
 		else {
 
-			if( isClass(core.entity) ) {
-				if(core.entity?.defaultProps) {
-					core.props = { ...core.entity.defaultProps, ...core.props };
+			if( isClass(entity) ) {
+				if(entity?.defaultProps) {
+					core.props = { ...entity.defaultProps, ...core.props };
 				}
 
-				comp = new core.entity(core.props);
+				comp = new entity(core.props);
 
 				const desc = Object.getOwnPropertyDescriptor(comp, "state");
 				if(desc) {
@@ -667,35 +680,35 @@ function constructFunc(core, parent) // returns {text} or component, and not com
 					}
 				}
 			}
-			else if(typeof(core.entity)==='function') {
+			else if(typeof(entity)==='function') {
 
-				if(core.entity?.defaultProps) {
-					core.props = { ...core.entity.defaultProps, ...core.props };
+				if(entity?.defaultProps) {
+					core.props = { ...entity.defaultProps, ...core.props };
 				}
 
 				comp = new Component(core.props);
 
 				// the binding is not necessary and is not according to the specs, 
 				// probably not even recommended! but helpful.
-				comp.render = core.entity.bind(comp); 
+				comp.render = entity.bind(comp); 
 				comp[CORE].hooks = [];
 				comp[CORE].hook_index = 0;
 			}
 			else {
-				throw new Error("Invalid entity for createComponent.");
+				throw new Error("Error in constructing component.");
 			}
 
-			comp[CORE].entity = core.entity;
+			comp[CORE].entity = entity;
 
 			if(core.container) {
 				comp[CORE].container = core.container;
 			}
 		}
 
+		if(memoized) comp[CORE][MEMOIZED] = true;
 	}
 
 	if(parent instanceof ComponentCore) comp[CORE].parent = parent;
-
 	return comp;
 }
 
@@ -1089,8 +1102,12 @@ export class RootComponent extends HTMLComponent
 
 export function createComponent(entity, props={}, ...children)
 {
-	if(typeof(entity)!=='string' && typeof(entity)!=='function') {
-		throw new Error("Invalid entity for createComponent.");		
+
+	if (typeof(entity)!=='string' && typeof(entity)!=='function' )
+	{
+		if(typeof(entity)!=='object' || !entity[MEMOIZED]) {
+			throw new Error("Invalid entity for createComponent.");		
+		}
 	}
 
 	for(let i=0; i<children.length; i++) {
@@ -1179,6 +1196,20 @@ export function render(component, element)
 		throw new Error("Component is already in use");
 	}
 	return createRoot(element).render(component);
+}
+
+/**
+ * Memoizes the given component. The memoized component will only rerender if its props or children are modified.
+ * Unlike React, Lilact memo also works on class components.
+ * 
+ * @param {Object} component - Component instance to render.
+ *
+ * @returns {component} - Memoized component.
+ */
+
+export function memo(component)
+{
+	return { [MEMOIZED]: component }
 }
 
 

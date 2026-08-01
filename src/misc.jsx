@@ -220,9 +220,10 @@ export function isEmpty(value)  {
  *
  * @param source - First object to compare.
  * @param target - Second object to compare.
+ * @param ignore - specific property/index to be ignored in comparison.
  * @returns True if shallowly equal; otherwise false.
  */
-export const shallowEqual = (source, target) => {
+export const shallowEqual = (source, target, ignore) => {
 	if (typeOf(source) !== typeOf(target)) {
 		return false;
 	}
@@ -231,9 +232,9 @@ export const shallowEqual = (source, target) => {
 		if (source.length !== target.length) {
 			return false;
 		}
-		return source.every((el, index) => el === target[index]);
+		return source.every((el, index) => el === target[index] || index===ignore );
 	} else if (typeOf(source) === "object") {
-		return Object.keys(source).every((key) => source[key] === target[key]);
+		return Object.keys(source).every((key) => source[key] === target[key] || key===ignore );
 	} else if (typeOf(source) === "date") {
 		return source.getTime() === target.getTime();
 	}

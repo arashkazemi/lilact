@@ -1982,6 +1982,7 @@ __export(components_exports, {
   insertion_effects: () => insertion_effects,
   layout_effects: () => layout_effects,
   length_css_attributes_set: () => length_css_attributes_set,
+  memo: () => memo,
   passive_effects: () => passive_effects,
   processEffects: () => processEffects,
   render: () => render,
@@ -2136,7 +2137,7 @@ function isEmpty(value) {
   for (let i2 in value) return false;
   return true;
 }
-var shallowEqual = (source, target) => {
+var shallowEqual = (source, target, ignore) => {
   if (typeOf(source) !== typeOf(target)) {
     return false;
   }
@@ -2144,9 +2145,9 @@ var shallowEqual = (source, target) => {
     if (source.length !== target.length) {
       return false;
     }
-    return source.every((el, index2) => el === target[index2]);
+    return source.every((el, index2) => el === target[index2] || index2 === ignore);
   } else if (typeOf(source) === "object") {
-    return Object.keys(source).every((key) => source[key] === target[key]);
+    return Object.keys(source).every((key) => source[key] === target[key] || key === ignore);
   } else if (typeOf(source) === "date") {
     return source.getTime() === target.getTime();
   }
@@ -2285,116 +2286,116 @@ var ComponentCore = class {
     this.props = props || {};
   }
   /*
-  		//let do_rerender = true;
-  
-  		// if(this.outlet && this.entity[MEMOIZED]) {
-  		// 	if(shallowEqual(this.props, next_props)) do_rerender=false;
-  		// 	delete this.entity[MEMOIZED];
-  		// }
-  
-  		if(do_rerender) {
-  	*/
+  */
   // TODO: should componentDidUpdate be called after arranging/appending the outlet or before?
   apply(next_props = this.props, next_state = this.next_state || this.state) {
-    var _a, _b, _c, _d;
-    if (true) {
-      if ((_a = this.entity) == null ? void 0 : _a.propTypes) {
-        PropTypes.checkPropTypes(this.entity.propTypes, this.props, "prop", this.entity.name);
-      } else if ((_b = this.component) == null ? void 0 : _b.propTypes) {
-        PropTypes.checkPropTypes(this.component.propTypes, this.props, "prop", this.component.name);
+    var _a, _b, _c, _d, _e;
+    let do_rerender = true;
+    if (this.outlet && (this == null ? void 0 : this[MEMOIZED])) {
+      if (shallowEqual(this.props, next_props, "children") && shallowEqual((_a = this.props) == null ? void 0 : _a.children, next_props == null ? void 0 : next_props.children)) {
+        do_rerender = false;
       }
     }
-    if (typeof next_state === "function") next_state = next_state(this.state);
-    if (this.component.constructor.defaultProps) {
-      next_props = { ...this.component.constructor.defaultProps, ...next_props };
-    }
-    if (this.component.shouldComponentUpdate && !this.component.shouldComponentUpdate(next_state, next_props, this.context)) return;
-    if (typeof this.entity === "string") {
-      if (!(this.element instanceof Element)) {
-        this.element = document.createElement(this.entity);
-        if (next_props == null ? void 0 : next_props.defaultValue) this.element.value = String(next_props.defaultValue).slice(0, next_props == null ? void 0 : next_props.maxLength);
-        if (next_props == null ? void 0 : next_props.defaultChecked) this.element.checked = next_props.defaultChecked;
+    if (do_rerender) {
+      if (true) {
+        if ((_b = this.entity) == null ? void 0 : _b.propTypes) {
+          PropTypes.checkPropTypes(this.entity.propTypes, this.props, "prop", this.entity.name);
+        } else if ((_c = this.component) == null ? void 0 : _c.propTypes) {
+          PropTypes.checkPropTypes(this.component.propTypes, this.props, "prop", this.component.name);
+        }
       }
-      this.element[COMPONENT] = this.component;
-    }
-    if (next_props.ref) {
-      if (typeof next_props.ref === "function") {
-        next_props.ref(this.element || this.component);
-      } else {
-        next_props.ref.current = this.element || this.component;
+      if (typeof next_state === "function") next_state = next_state(this.state);
+      if (this.component.constructor.defaultProps) {
+        next_props = { ...this.component.constructor.defaultProps, ...next_props };
       }
-    }
-    if (next_props !== void 0 && this.component.componentWillReceiveProps) {
-      this.component.componentWillReceiveProps(next_props);
-    }
-    if (this.component.componentWillUpdate) {
-      this.component.componentWillUpdate(next_props, next_state);
-    }
-    const prev_state = this.state, prev_props = this.props;
-    if (this.element) {
-      this.updateElementProps(next_props);
-    }
-    this.props = next_props;
-    if (typeof this.next_state === "object") {
-      if (!this.state) this.state = { ...next_state };
-      else Object.assign(this.state, next_state);
-    } else if (this.next_state !== void 0) throw new Error("Component.setState only accepts objects or functions is new state.");
-    if (this.next_state) delete this.next_state;
-    if (this.hooks !== void 0) {
-      this.hook_index = 0;
-      lilact_default.current_component = [this, lilact_default.current_component];
-      try {
-        this.outlet = this.component.render(next_props, { current: this.element || this.component });
-      } catch (e) {
-        renderErrorHandler(this, e);
+      if (this.component.shouldComponentUpdate && !this.component.shouldComponentUpdate(next_state, next_props, this.context)) return;
+      if (typeof this.entity === "string") {
+        if (!(this.element instanceof Element)) {
+          this.element = document.createElement(this.entity);
+          if (next_props == null ? void 0 : next_props.defaultValue) this.element.value = String(next_props.defaultValue).slice(0, next_props == null ? void 0 : next_props.maxLength);
+          if (next_props == null ? void 0 : next_props.defaultChecked) this.element.checked = next_props.defaultChecked;
+        }
+        this.element[COMPONENT] = this.component;
       }
-      lilact_default.current_component = lilact_default.current_component[1];
-    } else {
-      try {
-        this.outlet = this.component.render({ current: this.element || this.component });
-      } catch (e) {
-        renderErrorHandler(this, e);
-      }
-    }
-    if (((_d = (_c = this.outlet) == null ? void 0 : _c.constructor) == null ? void 0 : _d.name) !== "Array") {
-      this.outlet = [this.outlet];
-    }
-    this.outlet = [...this.outlet];
-    for (let i2 = 0; i2 < this.outlet.length; i2++) {
-      let item = this.outlet[i2];
-      if (item === void 0 || item === null || typeof item === "boolean") {
-        this.outlet.splice(i2, 1);
-        i2--;
-      } else if (typeof item === "function") {
-        const res2 = this.childFunctionHandler(item);
-        this.outlet.splice(i2, 1, res2);
-        i2--;
-      } else if (item.constructor.name === "Array") {
-        this.outlet.splice(i2, 1, ...item);
-        i2--;
-      } else {
-        const core = prepareCore(this, item);
-        this.outlet[i2] = core;
-        if (core[TEXT2] === void 0) {
-          core.container = this.element ? this : this.container;
-          core.apply(item.props);
+      if (next_props.ref) {
+        if (typeof next_props.ref === "function") {
+          next_props.ref(this.element || this.component);
         } else {
-          if (!core.element) {
-            core.element = document.createTextNode(item[TEXT2]);
-            core[TEXT2] = item[TEXT2];
-          } else if (core[TEXT2] !== item[TEXT2]) {
-            core.element.textContent = item[TEXT2];
-            core[TEXT2] = item[TEXT2];
+          next_props.ref.current = this.element || this.component;
+        }
+      }
+      if (next_props !== void 0 && this.component.componentWillReceiveProps) {
+        this.component.componentWillReceiveProps(next_props);
+      }
+      if (this.component.componentWillUpdate) {
+        this.component.componentWillUpdate(next_props, next_state);
+      }
+      const prev_state = this.state, prev_props = this.props;
+      if (this.element) {
+        this.updateElementProps(next_props);
+      }
+      this.props = next_props;
+      if (typeof this.next_state === "object") {
+        if (!this.state) this.state = { ...next_state };
+        else Object.assign(this.state, next_state);
+      } else if (this.next_state !== void 0) throw new Error("Component.setState only accepts objects or functions is new state.");
+      if (this.next_state) delete this.next_state;
+      if (this.hooks !== void 0) {
+        this.hook_index = 0;
+        lilact_default.current_component = [this, lilact_default.current_component];
+        try {
+          this.outlet = this.component.render(next_props, { current: this.element || this.component });
+        } catch (e) {
+          renderErrorHandler(this, e);
+        }
+        lilact_default.current_component = lilact_default.current_component[1];
+      } else {
+        try {
+          this.outlet = this.component.render({ current: this.element || this.component });
+        } catch (e) {
+          renderErrorHandler(this, e);
+        }
+      }
+      if (((_e = (_d = this.outlet) == null ? void 0 : _d.constructor) == null ? void 0 : _e.name) !== "Array") {
+        this.outlet = [this.outlet];
+      }
+      this.outlet = [...this.outlet];
+      for (let i2 = 0; i2 < this.outlet.length; i2++) {
+        let item = this.outlet[i2];
+        if (item === void 0 || item === null || typeof item === "boolean") {
+          this.outlet.splice(i2, 1);
+          i2--;
+        } else if (typeof item === "function") {
+          const res2 = this.childFunctionHandler(item);
+          this.outlet.splice(i2, 1, res2);
+          i2--;
+        } else if (item.constructor.name === "Array") {
+          this.outlet.splice(i2, 1, ...item);
+          i2--;
+        } else {
+          const core = prepareCore(this, item);
+          this.outlet[i2] = core;
+          if (core[TEXT2] === void 0) {
+            core.container = this.element ? this : this.container;
+            core.apply(item.props);
+          } else {
+            if (!core.element) {
+              core.element = document.createTextNode(item[TEXT2]);
+              core[TEXT2] = item[TEXT2];
+            } else if (core[TEXT2] !== item[TEXT2]) {
+              core.element.textContent = item[TEXT2];
+              core[TEXT2] = item[TEXT2];
+            }
           }
         }
       }
+      if (this.cache) this.cache.commit();
+      if (this.element) this.arrangeOutlet();
+      if (this.component.componentDidUpdate) {
+        this.component.componentDidUpdate(prev_props, prev_state, this.last_snapshot);
+      }
+      if (this.last_snapshot) delete this.last_snapshot;
     }
-    if (this.cache) this.cache.commit();
-    if (this.element) this.arrangeOutlet();
-    if (this.component.componentDidUpdate) {
-      this.component.componentDidUpdate(prev_props, prev_state, this.last_snapshot);
-    }
-    if (this.last_snapshot) delete this.last_snapshot;
   }
   async cleanup() {
     var _a, _b, _c;
@@ -2622,18 +2623,23 @@ var renderErrorHandler = (c, e) => {
   } else throw e;
 };
 function constructFunc(core, parent) {
-  var _a, _b;
   let comp = core;
   if (core[TEXT2] !== void 0) {
   } else {
-    if (typeof core.entity === "string") {
-      comp = new HTMLComponent(core.entity, core.props);
+    let entity = core.entity;
+    let memoized = false;
+    if (typeof entity === "object" && entity[MEMOIZED]) {
+      memoized = true;
+      entity = entity[MEMOIZED];
+    }
+    if (typeof entity === "string") {
+      comp = new HTMLComponent(entity, core.props);
     } else {
-      if (isClass(core.entity)) {
-        if ((_a = core.entity) == null ? void 0 : _a.defaultProps) {
-          core.props = { ...core.entity.defaultProps, ...core.props };
+      if (isClass(entity)) {
+        if (entity == null ? void 0 : entity.defaultProps) {
+          core.props = { ...entity.defaultProps, ...core.props };
         }
-        comp = new core.entity(core.props);
+        comp = new entity(core.props);
         const desc = Object.getOwnPropertyDescriptor(comp, "state");
         if (desc) {
           if (typeof desc.get !== "function" && typeof desc.set !== "function") {
@@ -2652,22 +2658,23 @@ function constructFunc(core, parent) {
             });
           }
         }
-      } else if (typeof core.entity === "function") {
-        if ((_b = core.entity) == null ? void 0 : _b.defaultProps) {
-          core.props = { ...core.entity.defaultProps, ...core.props };
+      } else if (typeof entity === "function") {
+        if (entity == null ? void 0 : entity.defaultProps) {
+          core.props = { ...entity.defaultProps, ...core.props };
         }
         comp = new Component(core.props);
-        comp.render = core.entity.bind(comp);
+        comp.render = entity.bind(comp);
         comp[CORE].hooks = [];
         comp[CORE].hook_index = 0;
       } else {
-        throw new Error("Invalid entity for createComponent.");
+        throw new Error("Error in constructing component.");
       }
-      comp[CORE].entity = core.entity;
+      comp[CORE].entity = entity;
       if (core.container) {
         comp[CORE].container = core.container;
       }
     }
+    if (memoized) comp[CORE][MEMOIZED] = true;
   }
   if (parent instanceof ComponentCore) comp[CORE].parent = parent;
   return comp;
@@ -2904,7 +2911,9 @@ var RootComponent = class extends HTMLComponent {
 };
 function createComponent2(entity, props = {}, ...children) {
   if (typeof entity !== "string" && typeof entity !== "function") {
-    throw new Error("Invalid entity for createComponent.");
+    if (typeof entity !== "object" || !entity[MEMOIZED]) {
+      throw new Error("Invalid entity for createComponent.");
+    }
   }
   for (let i2 = 0; i2 < children.length; i2++) {
     let ch2 = children[i2];
@@ -2952,6 +2961,9 @@ function render(component, element) {
     throw new Error("Component is already in use");
   }
   return createRoot(element).render(component);
+}
+function memo(component) {
+  return { [MEMOIZED]: component };
 }
 var createElement = createComponent2;
 var current_component = [];
@@ -5815,7 +5827,7 @@ function transpileJSX(jsx2, {
 
 // .tmp/src/lilact.jsx
 var Lilact2 = {
-  VERSION: "beta.17",
+  VERSION: "beta.18",
   // Configuration
   defaultTransitionTimeout: 300,
   defaultIsEqual: Object.is,
@@ -5917,6 +5929,7 @@ export {
   layout_effects,
   lazy,
   length_css_attributes_set,
+  memo,
   passive_effects,
   pauseTimers,
   processEffects,

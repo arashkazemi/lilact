@@ -269,7 +269,8 @@ export function useRef(initialValue = null)
  * Runs an effect synchronously after all DOM mutations but before the browser paints.
  *
  * @param {Function} effect - Effect callback.
- * @param deps - Optional dependency list (or an object for shallow comparison) used to determine when to re-run the effect.
+ * @param {Array<any>} [deps] Optional dependency list (or an object for shallow comparison)
+ * 						used to determine when to re-run the effect.
  * @returns {void}
  */
 export function useLayoutEffect(effect, deps=undefined)
@@ -299,7 +300,8 @@ export function useLayoutEffect(effect, deps=undefined)
  * Runs a side effect after render commits.
  *
  * @param effect - Callback invoked.
- * @param deps - Optional dependency list (or an object for shallow comparison) used to determine when to re-run the effect.
+ * @param {Array<any>} [deps] Optional dependency list (or an object for shallow comparison)
+ * 						used to determine when to re-run the effect.
  * @returns {void}
  */
 export function useEffect(effect, deps=undefined)
@@ -330,7 +332,8 @@ export function useEffect(effect, deps=undefined)
  * Executes a side effect after the DOM updates have been committed.
  *
  * @param effect - Callback invoked after render commit.
- * @param deps - Optional dependency list (or an object for shallow comparison) used to determine when to re-run the effect.
+ * @param {Array<any>} [deps] Optional dependency list (or an object for shallow comparison)
+ * 						used to determine when to re-run the effect.
  * @returns void
  */
 export function useInsertionEffect(effect, deps=undefined)
@@ -361,7 +364,8 @@ export function useInsertionEffect(effect, deps=undefined)
  * Memoizes a computed value until dependencies change.
  *
  * @param {Function} factory - Function that creates the value.
- * @param deps - Optional dependency list (or an object for shallow comparison) used to determine when to re-run the effect.
+ * @param {Array<any>} [deps] Optional dependency list (or an object for shallow comparison)
+ * 						used to determine when to recompute the value.
  * @returns {any} Memoized value.
  */
 export function useMemo(factory,deps=undefined)
@@ -525,8 +529,8 @@ export function useImperativeHandle(ref, factory, deps=undefined)
 
 
 /**
- * A hook for debug purposes. At the moment it only logs the output, but it can be overrided
- * for each development environment.
+ * A hook for debug purposes. By default it only logs the output to console, but it can be overrided
+ * for the development environment.
  *
  * @param {any} val
  *   The debug value.
