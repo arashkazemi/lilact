@@ -97,7 +97,7 @@ class ComponentCache
 				if(ex.cleanup) {
 					ex.cleanup();
 				}
-				else if(ex.element) {
+				else if(ex.element && !ex.portal) {
 					ex.element.parentElement.removeChild(ex.element);
 				}
 			});
@@ -209,7 +209,6 @@ if(DEBUG) {
 				this.element[COMPONENT] = this.component;
 			}
 
-
 			if(next_props.ref) {
 				if(typeof(next_props.ref)==='function') {
 					next_props.ref(this.element || this.component);
@@ -265,6 +264,12 @@ if(DEBUG) {
 					renderErrorHandler(this, e);
 				}
 			}
+
+
+			if( this?.portal ) {
+				this.element = this.portal;
+			}
+
 
 			if(this.outlet?.constructor?.name!=='Array') {
 				this.outlet = [this.outlet];
@@ -341,7 +346,7 @@ if(DEBUG) {
 				this.component.componentWillUnmount();
 			}
 
-			if(this?.element?.parentElement) {
+			if(this?.element?.parentElement && !this.portal) {
 				this.element.parentElement.removeChild( this.element );
 			}
 
@@ -538,6 +543,8 @@ if(DEBUG) {
 
 	appendElement(core)
 	{
+		if(core.portal) return;
+
 		this.scanZombies(core.container, core.element);
 
 		if(core?.element.parentNode===null) {
@@ -643,9 +650,14 @@ function constructFunc(core, parent) // returns {text} or component, and not com
 		let entity = core.entity;
 		let memoized = false;
 
-		if(typeof(entity)==='object' && entity[MEMOIZED]) {
-			memoized = true;
-			entity = entity[MEMOIZED];
+		if(typeof(entity)==='object') {
+			if( entity[MEMOIZED] )  {
+				memoized = entity[MEMOIZED];
+				entity = entity.component;
+			}
+			else {
+				throw new Error("Invalid component.");
+			}
 		}
 
 		if(typeof(entity)==='string') {
@@ -1131,8 +1143,6 @@ export function createComponent(entity, props={}, ...children)
 		}
 	}
 
-	//if(entity===null) return children; // <> style fragment
-
 	props.key = generateComponentKey(entity, props);
 	props.children = children;
 
@@ -1180,6 +1190,27 @@ export function createRoot(element)
 }
 
 /**
+ * Creates a portal — a way to render children into a DOM node
+ * that exists outside the current component hierarchy.
+ * 
+ * Note: In React, events from portals propagate according to the React tree rather 
+ * than the DOM tree. For example, if you click inside a portal, and the portal is 
+ * wrapped in `<div onClick>`, that onClick handler will fire. Lilact doesn't act
+ * this way. In Lilact, event propagation follows DOM tree, while the ownership
+ * follow the JSX structure.
+ *
+ * @param {Component} children - The component(s) to render into the portal.
+ * @param {Element} element - The DOM node that will receive the portal content.
+ * @returns {Component} A portal object that can be rendered.
+ */
+
+export function createPortal(children, element)
+{
+	return <Lilact.Portal view={element}>{children}</Lilact.Portal>;
+}
+
+
+/**
  * Renders a component into a target DOM element.
  * If the component maintains internal state, this typically mounts it (or updates the existing tree) under `element`.
  *
@@ -1209,7 +1240,13 @@ export function render(component, element)
 
 export function memo(component)
 {
-	return { [MEMOIZED]: component }
+	if(typeof(component)==='object') {
+		component[MEMOIZED] = true;
+	}
+	else {
+		component = { component, [MEMOIZED]: true };
+	}
+	return component;
 }
 
 

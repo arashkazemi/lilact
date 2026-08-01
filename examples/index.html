@@ -13,7 +13,10 @@
 
 </head>
 
-<body></body>
+<body>
+      <div id="app-root"></div>	
+      <div id="modal-root"></div>	
+</body>
 
 <script type='text/jsx'>
 	
@@ -233,6 +236,7 @@ function App()
 		"Components",
 		['router.jsx',					'( HashRouter, NavLink, Routes, Route, useNavigate, useLocation )'],
 		['modal.jsx',						'( useEffect, useRef, useState )'],
+		['portal.jsx',						'(createPortal, useState )'],
 		['pane.jsx',						'( useRef, useState, SplitPane )'],
 		['css-transition.jsx',		'( CSSTransition, useState, useRef )'],
 		['switch-transition.jsx',		'( SwitchTransition )'],
@@ -275,7 +279,7 @@ function App()
 					</>
 }
 
-render(<App/>, document.body);
+render(<App/>, document.getElementById("app-root"));
 
 </script>
 

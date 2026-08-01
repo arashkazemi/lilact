@@ -1975,6 +1975,7 @@ __export(components_exports, {
   capture_events_set: () => capture_events_set,
   createComponent: () => createComponent2,
   createElement: () => createElement,
+  createPortal: () => createPortal,
   createRoot: () => createRoot,
   current_component: () => current_component,
   effect_timeout: () => effect_timeout,
@@ -2032,6 +2033,7 @@ var misc_exports = {};
 __export(misc_exports, {
   Children: () => Children,
   Fragment: () => Fragment2,
+  Portal: () => Portal,
   deepEqual: () => deepEqual,
   eval_num: () => eval_num,
   findDOMNode: () => findDOMNode,
@@ -2063,10 +2065,15 @@ var findDOMNode = (component) => {
   if (!((_b = (_a = component[CORE]) == null ? void 0 : _a.element) == null ? void 0 : _b.parentNode)) throw new Error("findDOMNode only works on mounted components.");
   return component[CORE].element;
 };
-var Fragment2 = function({ children }) {
+function Fragment2({ children }) {
   return children;
-};
+}
 Fragment2.displayName = "Fragment";
+function Portal({ children, view }) {
+  this[CORE].portal = view;
+  return children;
+}
+Portal.displayName = "Portal";
 var Children = {
   /**
    * Returns the only child from a children collection.
@@ -2246,7 +2253,7 @@ var ComponentCache = class {
       arr.slice(arr[IDX]).forEach((ex) => {
         if (ex.cleanup) {
           ex.cleanup();
-        } else if (ex.element) {
+        } else if (ex.element && !ex.portal) {
           ex.element.parentElement.removeChild(ex.element);
         }
       });
@@ -2356,6 +2363,9 @@ var ComponentCore = class {
           renderErrorHandler(this, e);
         }
       }
+      if (this == null ? void 0 : this.portal) {
+        this.element = this.portal;
+      }
       if (((_e = (_d = this.outlet) == null ? void 0 : _d.constructor) == null ? void 0 : _e.name) !== "Array") {
         this.outlet = [this.outlet];
       }
@@ -2411,7 +2421,7 @@ var ComponentCore = class {
       if (this.component.componentWillUnmount) {
         this.component.componentWillUnmount();
       }
-      if ((_b = this == null ? void 0 : this.element) == null ? void 0 : _b.parentElement) {
+      if (((_b = this == null ? void 0 : this.element) == null ? void 0 : _b.parentElement) && !this.portal) {
         this.element.parentElement.removeChild(this.element);
       }
       if (this.outlet !== void 0) {
@@ -2559,6 +2569,7 @@ var ComponentCore = class {
   }
   appendElement(core) {
     var _a;
+    if (core.portal) return;
     this.scanZombies(core.container, core.element);
     if ((core == null ? void 0 : core.element.parentNode) === null) {
       core.container.element.insertBefore(
@@ -2628,9 +2639,13 @@ function constructFunc(core, parent) {
   } else {
     let entity = core.entity;
     let memoized = false;
-    if (typeof entity === "object" && entity[MEMOIZED]) {
-      memoized = true;
-      entity = entity[MEMOIZED];
+    if (typeof entity === "object") {
+      if (entity[MEMOIZED]) {
+        memoized = entity[MEMOIZED];
+        entity = entity.component;
+      } else {
+        throw new Error("Invalid component.");
+      }
     }
     if (typeof entity === "string") {
       comp = new HTMLComponent(entity, core.props);
@@ -2956,6 +2971,9 @@ function createRoot(element) {
     }
   };
 }
+function createPortal(children, element) {
+  return createComponent2(lilact_default.Portal, { "view": element }, children);
+}
 function render(component, element) {
   if (component[CORE] && (component[CORE].container || component[CORE].parent)) {
     throw new Error("Component is already in use");
@@ -2963,7 +2981,12 @@ function render(component, element) {
   return createRoot(element).render(component);
 }
 function memo(component) {
-  return { [MEMOIZED]: component };
+  if (typeof component === "object") {
+    component[MEMOIZED] = true;
+  } else {
+    component = { component, [MEMOIZED]: true };
+  }
+  return component;
 }
 var createElement = createComponent2;
 var current_component = [];
@@ -5827,7 +5850,7 @@ function transpileJSX(jsx2, {
 
 // .tmp/src/lilact.jsx
 var Lilact2 = {
-  VERSION: "beta.18",
+  VERSION: "beta.19",
   // Configuration
   defaultTransitionTimeout: 300,
   defaultIsEqual: Object.is,
@@ -5879,6 +5902,7 @@ export {
   Lilact2 as Lilact,
   Link,
   NavLink,
+  Portal,
   PropTypes,
   Provider,
   RootComponent,
@@ -5902,6 +5926,7 @@ export {
   createComponent2 as createComponent,
   createContext,
   createElement,
+  createPortal,
   createRoot,
   createSyntheticEvent,
   current_component,

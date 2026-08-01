@@ -95,8 +95,25 @@ export const findDOMNode = (component)=>{
  *
  * @param children - The nodes to group without adding an extra DOM element.
  */
-export const Fragment = function ({children}) { return children };
+export function Fragment({children}) 
+{
+	return children;
+};
 Fragment.displayName = "Fragment";
+
+/**
+ * Portal helper/utility.
+ *
+ * @param view - The DOM node that will receive the portal content.
+ * @param children - The nodes to put in the portal element.
+ */
+export function Portal({children, view}) 
+{
+	this[CORE].portal = view;
+
+	return children;
+};
+Portal.displayName = "Portal";
 
 /**
  * Children namespace for utilities that operate on `props.children`. `Children` is deprecated
