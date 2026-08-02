@@ -116,55 +116,173 @@ export function Portal({children, view})
 Portal.displayName = "Portal";
 
 /**
- * Children namespace for utilities that operate on `props.children`. `Children` is deprecated
- * and not recommended by React documentation itself. But `only` and `toArray` are used 
- * extensively everywhere, so I included them.
+ * Children namespace for utilities that operate on `props.children`.
  *
- * @property only - Filters to the single child (or returns null/throws based on count).
- * @property toArray - Converts children to a flat array.
+ * - Flattens nested arrays recursively.
+ * - Omits `null` and `undefined` items (common React-like behavior).
  */
 export const Children = {
-	
-/**
- * Returns the only child from a children collection.
- *
- * @param children - The children to read.
- * @returns The single child (or null/exception based on the number of children).
- */
-	only(children) {
-		children = [...children];
-		let i=0;
-		while(i<children.length) {
-			if(children[i]?.constructor?.name==='Array') {
-				children.splice(i, 1, ...children[i]);
-				i--;
-			}
-			else if(children[i]===null || children[i]===undefined) {
-				children.splice(i, 1);
-				i--;
-			}
-			if(i>1) {
-				throw new Error("No child or child is not the only one");
-			}
-			i++;
-		}
-		if(children.length===1) return children[0];
+  /**
+   * @param {any} x
+   * @returns {boolean}
+   */
+  _isNil(x) {
+    return x === null || x === undefined;
+  },
 
-	},
+  /**
+   * Recursively flattens nested arrays into `out`, omitting null/undefined.
+   * @param {Array<any>} out
+   * @param {any} input
+   */
+  _flattenInto(out, input) {
+    if (this._isNil(input)) return;
 
-/**
- * Converts component children into a flat array.
- *
- * @param children - The children to convert.
- * @returns An array representation of the children.
- */
-	toArray(children) {
-		if(children) {
-			if(children?.constructor?.name==='Array') return [...children];
-			return [children];
-		}
-		return [];
-	}
+    if (Array.isArray(input)) {
+      for (const v of input) this._flattenInto(out, v);
+      return;
+    }
+
+    out.push(input);
+  },
+
+  /**
+   * Converts an iterable children collection into a flat array,
+   * omitting `null`/`undefined`.
+   *
+   * @param {Iterable<any>} children
+   * @returns {Array<any>}
+   */
+  toArray(children) {
+    const out = [];
+    // Per your rule, children is always iterable (often []), but keep it robust anyway.
+    if (!children) return out;
+
+    for (const item of children) {
+      this._flattenInto(out, item);
+    }
+    return out;
+  },
+
+  /**
+   * Returns the number of non-null/undefined children (after flattening).
+   * @param {Iterable<any>} children
+   * @returns {number}
+   */
+  count(children) {
+    return this.toArray(children).length;
+  },
+
+  /**
+   * Returns the single child from a children collection (after flattening & omitting nil),
+   * or throws if the remaining count is not exactly 1.
+   *
+   * @param {Iterable<any>} children
+   * @returns {any}
+   */
+  only(children) {
+    const arr = this.toArray(children);
+    if (arr.length !== 1) {
+      throw new Error(
+        arr.length === 0
+          ? "Expected exactly one child, but received none."
+          : "Expected exactly one child, but received more than one."
+      );
+    }
+    return arr[0];
+  },
+
+  /**
+   * Maps over children (after flattening & omitting nil).
+   *
+   * @param {Iterable<any>} children
+   * @param {(child:any, index:number)=>any} fn
+   * @returns {Array<any>}
+   */
+  map(children, fn) {
+    const arr = this.toArray(children);
+    const out = [];
+    for (let i = 0; i < arr.length; i++) out.push(fn(arr[i], i));
+    return out;
+  },
+
+  /**
+   * Iterates over children (after flattening & omitting nil).
+   * @param {Iterable<any>} children
+   * @param {(child:any, index:number)=>void} fn
+   */
+  forEach(children, fn) {
+    const arr = this.toArray(children);
+    for (let i = 0; i < arr.length; i++) fn(arr[i], i);
+  },
+
+  /**
+   * Finds the first child for which predicate returns true.
+   *
+   * @param {Iterable<any>} children
+   * @param {(child:any, index:number)=>boolean} predicate
+   * @returns {any|undefined}
+   */
+  find(children, predicate) {
+    const arr = this.toArray(children);
+    for (let i = 0; i < arr.length; i++) {
+      if (predicate(arr[i], i)) return arr[i];
+    }
+    return undefined;
+  },
+
+  /**
+   * Finds exactly one matching child.
+   * Throws if matched count is not exactly 1.
+   *
+   * @param {Iterable<any>} children
+   * @param {(child:any, index:number)=>boolean} predicate
+   * @returns {any}
+   */
+  pickOne(children, predicate) {
+    const arr = this.toArray(children);
+
+    let found;
+    let matches = 0;
+
+    for (let i = 0; i < arr.length; i++) {
+      if (predicate(arr[i], i)) {
+        matches++;
+        found = arr[i];
+        if (matches > 1) break;
+      }
+    }
+
+    if (matches !== 1) {
+      throw new Error(
+        matches === 0
+          ? "pickOne expected exactly one matching child, but matched none."
+          : "pickOne expected exactly one matching child, but matched multiple."
+      );
+    }
+
+    return found;
+  },
+
+  /**
+   * Returns the first non-nil child (after flattening), or undefined.
+   * @param {Iterable<any>} children
+   * @returns {any|undefined}
+   */
+  first(children) {
+    const arr = this.toArray(children);
+    return arr[0];
+  },
+
+  /**
+   * Returns the last non-nil child (after flattening), or undefined.
+   * @param {Iterable<any>} children
+   * @returns {any|undefined}
+   */
+  last(children) {
+    const arr = this.toArray(children);
+    return arr.length ? arr[arr.length - 1] : undefined;
+  }
 };
 
 
