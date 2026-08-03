@@ -198,7 +198,7 @@ if(DEBUG) {
 			if(this?.parent?.component?.context || this?.parent?.component?.getChildContext ) {
 				this.context = { ...this.parent.component.context, ...this.parent.component.getChildContext?.() };
 
-				if(this.component.constructor.contextTypes) {
+				if(DEBUG && this.component.constructor.contextTypes) {
 					PropTypes.checkPropTypes(this.component.constructor.contextTypes, this.context, 'context', this.entity.name);
 				}
 			}

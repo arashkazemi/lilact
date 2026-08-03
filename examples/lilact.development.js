@@ -2991,7 +2991,7 @@ var Component = class {
   	componentWillUnmount			 () {}
   	getSnapshotBeforeUpdate			 (prevProps, prevState) {}
   	shouldComponentUpdate			 (nextProps, nextState) {}
-  	getChildContext()
+  	getChildContext					 ()
   
   	static getDerivedStateFromError	 (error) {}
   	static getDerivedStateFromProps	 (props, state) {}
