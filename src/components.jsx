@@ -195,6 +195,14 @@ if(DEBUG) {
 				next_props = {...this.component.constructor.defaultProps, ...next_props};
 			}
 
+			if(this?.parent?.component?.context || this?.parent?.component?.getChildContext ) {
+				this.context = { ...this.parent.component.context, ...this.parent.component.getChildContext?.() };
+
+				if(this.component.constructor.contextTypes) {
+					PropTypes.checkPropTypes(this.component.constructor.contextTypes, this.context, 'context', this.entity.name);
+				}
+			}
+
 			if( this.component.shouldComponentUpdate && 
 				!this.component.shouldComponentUpdate
 					(next_state, next_props, this.context) ) return;
@@ -878,7 +886,9 @@ const generateComponentKey = (entity, props)=> {
 *	componentWillUnmount () 
 *	getSnapshotBeforeUpdate (prevProps, prevState) 
 *	shouldComponentUpdate (nextProps, nextState) 
-*
+*	getChildContext()
+* 
+*	static contextTypes
 *	static getDerivedStateFromError (error) {}
 *	static getDerivedStateFromProps (props, state) {}
 * 
@@ -1008,20 +1018,11 @@ export class Component
 	componentWillUnmount			 () {}
 	getSnapshotBeforeUpdate			 (prevProps, prevState) {}
 	shouldComponentUpdate			 (nextProps, nextState) {}
+	getChildContext					 ()
 
 	static getDerivedStateFromError	 (error) {}
 	static getDerivedStateFromProps	 (props, state) {}
-
-
-	*/	
-	/* // todo: maybe 
-	static get contextType() {  }
-	static set contextType(ctxt) {  } 
-
-	static get childContextTypes()  {}
-	static set childContextTypes(ctxt) {  } 
-
-	getChildContext()
+	static contextType
 	*/
 }
 

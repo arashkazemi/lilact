@@ -2396,7 +2396,7 @@ var ComponentCore = class {
   */
   // TODO: should componentDidUpdate be called after arranging/appending the outlet or before?
   apply(next_props = this.props, next_state = this.next_state || this.state) {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
     let do_rerender = true;
     if (this.outlet && (this == null ? void 0 : this[MEMOIZED])) {
       if (shallowEqual(this.props, next_props, "children") && shallowEqual((_a = this.props) == null ? void 0 : _a.children, next_props == null ? void 0 : next_props.children)) {
@@ -2414,6 +2414,12 @@ var ComponentCore = class {
       if (typeof next_state === "function") next_state = next_state(this.state);
       if (this.component.constructor.defaultProps) {
         next_props = { ...this.component.constructor.defaultProps, ...next_props };
+      }
+      if (((_e = (_d = this == null ? void 0 : this.parent) == null ? void 0 : _d.component) == null ? void 0 : _e.context) || ((_g = (_f = this == null ? void 0 : this.parent) == null ? void 0 : _f.component) == null ? void 0 : _g.getChildContext)) {
+        this.context = { ...this.parent.component.context, ...(_i = (_h = this.parent.component).getChildContext) == null ? void 0 : _i.call(_h) };
+        if (this.component.constructor.contextTypes) {
+          PropTypes.checkPropTypes(this.component.constructor.contextTypes, this.context, "context", this.entity.name);
+        }
       }
       if (this.component.shouldComponentUpdate && !this.component.shouldComponentUpdate(next_state, next_props, this.context)) return;
       if (typeof this.entity === "string") {
@@ -2466,7 +2472,7 @@ var ComponentCore = class {
       if (this == null ? void 0 : this.portal) {
         this.element = this.portal;
       }
-      if (((_e = (_d = this.outlet) == null ? void 0 : _d.constructor) == null ? void 0 : _e.name) !== "Array") {
+      if (((_k = (_j = this.outlet) == null ? void 0 : _j.constructor) == null ? void 0 : _k.name) !== "Array") {
         this.outlet = [this.outlet];
       }
       this.outlet = [...this.outlet];
@@ -2985,20 +2991,11 @@ var Component = class {
   	componentWillUnmount			 () {}
   	getSnapshotBeforeUpdate			 (prevProps, prevState) {}
   	shouldComponentUpdate			 (nextProps, nextState) {}
+  	getChildContext()
   
   	static getDerivedStateFromError	 (error) {}
   	static getDerivedStateFromProps	 (props, state) {}
-  
-  
-  	*/
-  /* // todo: maybe 
-  	static get contextType() {  }
-  	static set contextType(ctxt) {  } 
-  
-  	static get childContextTypes()  {}
-  	static set childContextTypes(ctxt) {  } 
-  
-  	getChildContext()
+  	static contextType
   	*/
 };
 var HTMLComponent = class extends Component {
@@ -5950,7 +5947,7 @@ function transpileJSX(jsx2, {
 
 // .tmp/src/lilact.jsx
 var Lilact2 = {
-  VERSION: "beta.20",
+  VERSION: "beta.21",
   // Configuration
   defaultTransitionTimeout: 300,
   defaultIsEqual: Object.is,
