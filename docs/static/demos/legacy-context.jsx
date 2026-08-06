@@ -1,11 +1,4 @@
-// Legacy context merge/override test (JSX + your fiber)
-// - static childContextTypes
-// - getChildContext()
-// - static contextTypes
-// - instance.context available during render
-
 import { Component, PropTypes, render } from "lilact";
-
 
 // ----- Consumer -----
 class Consumer extends Component {

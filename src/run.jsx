@@ -147,18 +147,19 @@ if(DEBUG) {
  * @param path - The path to the required file. Must be either absolute path or relative to the current 
  * module or document’s URL (the page/location that initiated the request).
  * 
- * @param [forceUpdate] - Force re-run module. By default an imported module is only run once.
- * 
- * @param [checkExport] - An array of module properties to be checked upon import. This is used for import error detection.
- * 
- * @param [isLazy] - if loading is should be async. Returns a promise if true.
- * 
- * @param [requirer] - The module that is importing the other module. This is used internally to resolve relative paths.
- * 
  * @returns An array representation of the children.
  */
-export function require(path, {forceUpdate, checkExport, requirer, isLazy})
+export function require(path)
 {
+	let forceUpdate, checkExport, requirer, isLazy;
+
+	// note: instead of named props, just to bypass typedoc.
+	if(arguments.length===2 && typeof(arguments[1]==='object')) {
+		forceUpdate = arguments[1]?.forceUpdate;
+		checkExport = arguments[1]?.checkExport;
+		requirer = arguments[1]?.requirer;
+		isLazy = arguments[1]?.isLazy;
+	}
 
 	if(Lilact.importObjectPaths?.[path]) return Lilact.importObjectPaths[path];
 	if(required_scripts[path] && !forceUpdate) return required_scripts[path].exports;

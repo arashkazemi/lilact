@@ -53,7 +53,7 @@ There is a `transpile.js` helper in the `bin` directory to demonstrate how to us
 
 In addition to the API itself, it bundles the official `Redux` library (see the `redux.jsx` example). As a result, it has Redux support and provides all necessary functions and hooks for working with it.
 
-It also includes the amazing `@emotion/css` library to ease working with styles. You can access it via `Lilact.emotion`.
+It also includes the amazing `@emotion/css` library to ease working with styles. You can access it via `Lilact.emotion` or by importing `@emotion/css`.
 
 For convenience, it already includes components such as:
 
@@ -106,7 +106,7 @@ import App from './App.jsx'; // imports the default export
 or
 
 ```js
-const { useState, useRef, render, require } = Lilact;
+const { useState, useRef, render } = Lilact;
 
 const App = require('./App.jsx');
 ```
@@ -121,7 +121,7 @@ export default ...
 or
 
 ```js
-module.exports = ...
+module.exports.default = ...
 ```
 
 Bundled projects can also be used statically on other backends. However, bundling is not required: JSX files can be served and transpiled live.
@@ -197,7 +197,7 @@ render(<App/>, document.body);
 </head>
 <body></body>
 <script type='text/jsx'>
-  const { render } = Lilact;
+  import { render } from "lilact";
 
   function App() {
     return <div>Hello World</div>;

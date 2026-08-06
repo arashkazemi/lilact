@@ -1,4 +1,4 @@
-import {Suspense, Spinner, lazy } from "lilact";
+import { Suspense, Spinner, lazy } from "lilact";
 
 const StopWatch = lazy( () => require('./stopwatch.jsx') );
 

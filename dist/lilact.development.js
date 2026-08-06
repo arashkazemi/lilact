@@ -3612,9 +3612,16 @@ function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, is_inline = t
     throw e;
   }
 }
-function require2(path2, { forceUpdate, checkExport, requirer, isLazy }) {
-  var _a, _b;
-  if ((_a = lilact_default.importObjectPaths) == null ? void 0 : _a[path2]) return lilact_default.importObjectPaths[path2];
+function require2(path2) {
+  var _a, _b, _c, _d, _e, _f;
+  let forceUpdate, checkExport, requirer, isLazy;
+  if (arguments.length === 2 && typeof (arguments[1] === "object")) {
+    forceUpdate = (_a = arguments[1]) == null ? void 0 : _a.forceUpdate;
+    checkExport = (_b = arguments[1]) == null ? void 0 : _b.checkExport;
+    requirer = (_c = arguments[1]) == null ? void 0 : _c.requirer;
+    isLazy = (_d = arguments[1]) == null ? void 0 : _d.isLazy;
+  }
+  if ((_e = lilact_default.importObjectPaths) == null ? void 0 : _e[path2]) return lilact_default.importObjectPaths[path2];
   if (required_scripts[path2] && !forceUpdate) return required_scripts[path2].exports;
   if (path2[0] === "#") {
     const el = document.getElementById(path2);
@@ -3625,7 +3632,7 @@ function require2(path2, { forceUpdate, checkExport, requirer, isLazy }) {
     if (requirer && requirer.path) {
       path2 = joinPaths(requirer.path, path2);
     }
-    if (((_b = lilact_default) == null ? void 0 : _b[LAZY]) || isLazy) {
+    if (((_f = lilact_default) == null ? void 0 : _f[LAZY]) || isLazy) {
       lilact_default[LAZY] = false;
       return fetch(path2).then((res2) => {
         if (!res2.ok) throw new Error(`HTTP ${res2.status}`);

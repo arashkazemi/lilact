@@ -142,8 +142,8 @@ const pane = css({ flex: "1 1 0",
 						}
 					});
 
-const left = css({ float: "left" });
-const right = css({ float: "right" });
+const left = css({ float: "left", textAlign: "left" });
+const right = css({ float: "right", textAlign: "right" });
 const demobox = css({ background: "#fff3", borderRadius: "15px", padding: "4px 2px", margin: "4px"});
 
 
@@ -231,7 +231,7 @@ function App()
 		['lazy.jsx',						'Lazy Loading ( lazy, require, Suspene, Spinner )'],
 		['proptypes.jsx',				'PropTypes Validation'],
 		['legacy-context.jsx',				'Legacy Context API'],
-		['redux.jsx',						'Redux and Despatch ( Provider, useSelector, useDispatch, connect ), redux:( createStore )'],
+		['redux.jsx',						'Redux and Dispatch ( Provider, useSelector, useDispatch, connect ), redux:( createStore )'],
 		['transition.jsx',			'Transition States ( useState, Transition )'],
 		['cloneelement.jsx',			'Cloning Components ( cloneElement, import as React )'],
 
