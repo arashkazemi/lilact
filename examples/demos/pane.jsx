@@ -1,6 +1,6 @@
-const { useRef, useState, SplitPane } = Lilact;
+import { useRef, useState, SplitPane } from "lilact";
 
-module.exports = function Demo() {
+export default function Demo() {
   const ref = useRef(null);
   const [mode, setMode] = useState("horizontal");
   const [position, setPosition] = useState(0.35);

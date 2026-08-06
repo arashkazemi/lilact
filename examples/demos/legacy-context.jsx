@@ -4,7 +4,7 @@
 // - static contextTypes
 // - instance.context available during render
 
-const { Component, PropTypes, render } = Lilact;
+import { Component, PropTypes, render } from "lilact";
 
 
 // ----- Consumer -----
@@ -74,6 +74,6 @@ function Demo() {
          </>
 }
 
-module.exports = Demo;
+export default Demo;
 
 

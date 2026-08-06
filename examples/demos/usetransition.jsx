@@ -1,5 +1,5 @@
-const { useTransition, useState, useCallback, useId } = Lilact;
-const { css, cx } = Lilact.emotion;
+import { useTransition, useState, useCallback, useId } from "lilact";
+import { css, cx } from "@emotion/css";
 
 const Demo = ()=>{
 
@@ -32,4 +32,4 @@ const Demo = ()=>{
 	);
 };
 
-module.exports = Demo;
+export default Demo;

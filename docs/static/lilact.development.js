@@ -3543,18 +3543,35 @@ __export(run_exports, {
   run: () => run,
   runScripts: () => runScripts
 });
+function joinPaths(basePath, relativePath) {
+  const isAbs = relativePath.startsWith("/");
+  const stack = [];
+  const parts = (isAbs ? "" : basePath).split("/").filter(Boolean);
+  for (const p of parts) stack.push(p);
+  if (!basePath.endsWith("/")) stack.pop();
+  const relParts = relativePath.split("/");
+  for (const p of relParts) {
+    if (p === "" || p === ".") continue;
+    if (p === "..") {
+      if (stack.length > 0) stack.pop();
+    } else {
+      stack.push(p);
+    }
+  }
+  return (isAbs ? "/" : "") + stack.join("/");
+}
 var required_scripts = {};
 function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, is_inline = true) {
   const mappings = [];
-  const module = { exports: {} };
-  let processed;
-  required_scripts[path] = {
+  const module = {
     mappings,
-    module,
     is_inline,
     path,
-    code: jsx
+    code: jsx,
+    exports: {}
   };
+  let processed;
+  required_scripts[path] = module;
   try {
     processed = lilact_default.transpileJSX(
       jsx,
@@ -3564,7 +3581,8 @@ function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, is_inline = t
         factory: "createComponent",
         appendSourcemap: false,
         blocks_info: lilact_default.blocks_info,
-        injectTraceLabels: true
+        injectTraceLabels: true,
+        produceCJS: true
       }
     );
   } catch (e) {
@@ -3588,32 +3606,38 @@ function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, is_inline = t
     throw e;
   }
 }
-function require2(path2, forceUpdate) {
-  var _a;
-  if (required_scripts[path2] && !forceUpdate) return required_scripts[path2].module.exports;
+function require2(path2, { forceUpdate, checkExport, requirer, isLazy }) {
+  var _a, _b;
+  if ((_a = lilact_default.importObjectPaths) == null ? void 0 : _a[path2]) return lilact_default.importObjectPaths[path2];
+  if (required_scripts[path2] && !forceUpdate) return required_scripts[path2].exports;
   if (path2[0] === "#") {
     const el = document.getElementById(path2);
     if (el) {
       return run(el.innerText, path2);
     }
-  } else if ((_a = lilact_default) == null ? void 0 : _a[LAZY]) {
-    lilact_default[LAZY] = false;
-    return fetch(path2).then((res2) => {
-      if (!res2.ok) throw new Error(`HTTP ${res2.status}`);
-      return res2.text();
-    }).then((res2) => {
-      var _a2;
-      res2 = run(res2, path2, false);
-      return (_a2 = res2 == null ? void 0 : res2.default) != null ? _a2 : res2;
-    }).catch((err) => {
-      throw err;
-    });
   } else {
-    const request = new XMLHttpRequest();
-    request.open("GET", path2, false);
-    request.send(null);
-    if (request.status === 200) {
-      return run(request.responseText, path2, false);
+    if (requirer && requirer.path) {
+      path2 = joinPaths(requirer.path, path2);
+    }
+    if (((_b = lilact_default) == null ? void 0 : _b[LAZY]) || isLazy) {
+      lilact_default[LAZY] = false;
+      return fetch(path2).then((res2) => {
+        if (!res2.ok) throw new Error(`HTTP ${res2.status}`);
+        return res2.text();
+      }).then((res2) => {
+        var _a2;
+        res2 = run(res2, path2, false);
+        return (_a2 = res2 == null ? void 0 : res2.default) != null ? _a2 : res2;
+      }).catch((err) => {
+        throw err;
+      });
+    } else {
+      const request = new XMLHttpRequest();
+      request.open("GET", path2, false);
+      request.send(null);
+      if (request.status === 200) {
+        return run(request.responseText, path2, false);
+      }
     }
   }
   throw new Error(`Required resource not found (${path2})`);
@@ -5074,9 +5098,420 @@ function encode_integer(num) {
   return result;
 }
 
+// .tmp/src/expscan.js
+var keywords = /* @__PURE__ */ new Set([
+  "break",
+  "case",
+  "catch",
+  "class",
+  "const",
+  "continue",
+  "debugger",
+  "default",
+  "do",
+  "else",
+  "export",
+  "extends",
+  "finally",
+  "for",
+  "function",
+  "if",
+  "import",
+  "in",
+  "instanceof",
+  "super",
+  "switch",
+  "this",
+  "throw",
+  "try",
+  "var",
+  "while",
+  "with",
+  "yield",
+  "return",
+  "true",
+  "false",
+  "null",
+  "undefined",
+  "enum",
+  "implements",
+  "interface",
+  "let",
+  "package",
+  "private",
+  "protected",
+  "public",
+  "static",
+  "yield",
+  "as",
+  "from",
+  "of",
+  "async",
+  "get",
+  "set",
+  "static",
+  "super",
+  "delete",
+  "void",
+  "typeof",
+  "new",
+  "await"
+]);
+var operators = /* @__PURE__ */ new Set([
+  "(",
+  ")",
+  "{",
+  "}",
+  "[",
+  "]",
+  "...",
+  ".",
+  "=>",
+  ",",
+  ";",
+  ":",
+  "?",
+  "++",
+  "--",
+  "+",
+  "-",
+  "*",
+  "/",
+  "%",
+  "**",
+  ">>",
+  "<<",
+  ">>>",
+  "<<<",
+  "&",
+  "|",
+  "^",
+  "~",
+  "==",
+  "!=",
+  "===",
+  "!==",
+  ">",
+  "<",
+  ">=",
+  "<=",
+  "&&",
+  "||",
+  "??",
+  "?.",
+  "=",
+  "+=",
+  "-=",
+  "*=",
+  "/=",
+  "%=",
+  "**=",
+  "<<=",
+  ">>=",
+  ">>>=",
+  "&=",
+  "|=",
+  "^=",
+  "??=",
+  "&&=",
+  "||=",
+  "!"
+]);
+function isNumber(s) {
+  if (!/^(?:[+-]?(?:(?:\d(?:\d|_)*)(?:\.(?:\d(?:\d|_)*))?|\.(?:\d(?:\d|_)*))(?:[eE][+-]?(?:\d(?:\d|_)*))?|[+-]?Infinity|[+-]?NaN|[+-]?(?:(?:0[xX](?:[0-9a-fA-F](?:[0-9a-fA-F]|_)*))|(?:0[oO](?:[0-7](?:[0-7]|_)*))|(?:0[bB](?:[01](?:[01]|_)*))|(?:\d(?:\d|_)*))n)$/u.test(s)) return false;
+  return !keywords.has(s);
+}
+function isUnicodeEscapeSequence(s) {
+  if (!/(?:\\u\{[0-9a-fA-F]+\}|\\u[0-9a-fA-F]{4})/g.test(s)) return false;
+  return !keywords.has(s);
+}
+function isValidIdentifierName(s) {
+  if (!/^(?:[$_\p{ID_Start}][$_\u200C\u200D\p{ID_Continue}]*)$/u.test(s)) return false;
+  return !keywords.has(s);
+}
+function labeler(custom_words, x) {
+  if (typeof x === "string") {
+    if (custom_words && custom_words.hasOwnProperty(x)) return custom_words[x];
+    if (x.trim() === "") {
+      if (x.indexOf("\n") !== -1) return "\n";
+      return " ";
+    }
+    if (keywords.has(x)) return "K";
+    if (operators.has(x)) return "O";
+    if (isValidIdentifierName(x)) return "I";
+    if (isUnicodeEscapeSequence(x)) return "U";
+    if (isNumber(x)) return "N";
+  } else if (typeof x === "object") {
+    if (x.type === "comment") return "C";
+    if (x.type === "regexp") return "R";
+    if (x.type === "js") return "J";
+    if (x.type === "paranthesis") return "P";
+    if (x.type === "string") return "S";
+    if (x.type === "xml") return "X";
+  }
+  return "?";
+}
+function generateSequence(arr, labeler2 = labeler2.bind(null, null)) {
+  return arr.map(labeler2).join("");
+}
+var import_export_regexp = /(?:i[C \n]*(?:(?:I|J|(?:\*[C \n]*a[C \n]*I))[C \n]*,[C \n]*)*(?:(?:(?:I(?:[C \n]*a[C \n]*I)?)|J|(?:\*[C \n]*a[C \n]*I))[C \n]*f[C \n]*)?S)|(?:e[C \n]*(?:(?:[*J][C \n]*f[C \n]*S)|(?:d[C \n]*[IFJ])|J|(?:[VF][c \n]*I)|I))|(?:r[c \n]*P)/mg;
+var props_regexp = /O[C \n]*(?:[Id](?:[C \n]*a[C \n]*I)?[C \n]*,[C \n]*)*(?:I(?:[C \n]*a[C \n]*I)?)[C \n]*O/mg;
+function processImportExports(node3, jsx2) {
+  const s = generateSequence(
+    node3.out,
+    labeler.bind(
+      null,
+      {
+        "import": "i",
+        "export": "e",
+        "as": "a",
+        "from": "f",
+        ",": ",",
+        ".": ".",
+        "*": "*",
+        ";": ";",
+        "var": "V",
+        "let": "V",
+        "const": "V",
+        "function": "F",
+        "class": "F",
+        "=": "=",
+        "default": "d",
+        "require": "r"
+      }
+    )
+  );
+  let i2;
+  const skip_spaces = (dir = 1) => {
+    while (s[i2] === " " || s[i2] === "\n" || s[i2] === "C") {
+      if (dir === 1) node3.out[i2] = null;
+      i2 += dir;
+    }
+  };
+  let begin = node3.begin;
+  const begins = [];
+  for (i2 = 0; i2 < node3.out.length; i2++) {
+    if (i2 == 0) begins.push(node3.begin);
+    else {
+      if (typeof node3.out[i2 - 1] === "string") {
+        begins.push(begins[i2 - 1] + node3.out[i2 - 1].length);
+      } else {
+        begins.push(node3.out[i2 - 1].end);
+      }
+    }
+  }
+  begins.push(node3.end);
+  for (const m of s.matchAll(import_export_regexp)) {
+    if (m[0].startsWith("r")) {
+      const req = m[0];
+      const args = node3.out[m.index + req.length - 1].out;
+      if (args.length === 1) {
+        args.push(", {requirer:module}");
+      }
+    } else if (m[0].startsWith("i")) {
+      const imp = m[0];
+      i2 = m.index - 1;
+      skip_spaces(-1);
+      if (s[i2] === ".") continue;
+      const src = jsx2.substring(node3.out[m.index + imp.length - 1].begin, node3.out[m.index + imp.length - 1].end);
+      const imports = {};
+      let star_imports = [];
+      for (i2 = m.index + 1; i2 < m.index + imp.length - 1; i2++) {
+        node3.out.splice(m.index, 1, {
+          type: "import",
+          begin: begins[m.index],
+          end: begins[m.index + imp.length]
+        });
+        skip_spaces();
+        switch (s[i2]) {
+          case ",":
+            break;
+          case "I": {
+            const prop = node3.out[i2];
+            imports[prop] = "default";
+            continue;
+          }
+          case "J": {
+            let sj = generateSequence(
+              node3.out[i2].out,
+              labeler.bind(
+                null,
+                { "as": "a", ",": "," }
+              )
+            );
+            props_regexp.lastIndex = -1;
+            if (!props_regexp.test(sj)) throw "incorrect import properties definition.";
+            const ps = node3.out[i2].out;
+            for (let j = 1; j < sj.length - 1; j++) {
+              while (sj[j] === " " || sj[j] === "\n" || sj[j] === "C" || sj[j] === ",") j++;
+              const prop = ps[j];
+              j++;
+              while (sj[j] === " " || sj[j] === "\n" || sj[j] === "C") j++;
+              if (sj[j] === "a") {
+                j++;
+                while (sj[j] === " " || sj[j] === "\n" || sj[j] === "C") j++;
+                imports[ps[j]] = prop;
+                j++;
+              } else {
+                imports[prop] = prop;
+              }
+            }
+            continue;
+          }
+          case "*": {
+            i2++;
+            skip_spaces();
+            i2++;
+            skip_spaces();
+            star_imports.push(node3.out[i2]);
+            continue;
+          }
+          case "S":
+            for (i2 = m.index + 1; i2 < m.index + imp.length; i2++) {
+              node3.out[i2] = null;
+            }
+            let cjs = "";
+            for (const s2 of star_imports) {
+              cjs += `const ${s2} = require(${src},{requirer:module});
+`;
+            }
+            if (Object.keys(imports).length) {
+              let o = "{";
+              let ls = "[";
+              for (const p in imports) {
+                if (o.length > 1) {
+                  o += ",";
+                  ls += ",";
+                }
+                if (p === imports[p]) {
+                  o += p;
+                  ls += `'${p}'`;
+                } else {
+                  o += p + ":" + imports[p];
+                  ls += `'${imports[p]}'`;
+                }
+              }
+              o += "}";
+              ls += "]";
+              cjs += `const ${o} = require(${src}, {checkExport: ${ls},requirer:module})`;
+            } else {
+              cjs += `require(${src},{requirer:module})`;
+            }
+            node3.out[m.index].cjs = cjs;
+            continue;
+        }
+      }
+    } else {
+      const exp = m[0];
+      node3.out.splice(m.index, 1, {
+        type: "export",
+        begin: begins[m.index],
+        end: begins[m.index + 1]
+      });
+      i2 = m.index - 1;
+      skip_spaces(-1);
+      if (s[i2] === ".") continue;
+      i2 = m.index + 1;
+      skip_spaces();
+      switch (s[i2]) {
+        case "d":
+          node3.out[i2] = null;
+          node3.out[m.index].cjs = "module.exports.default =";
+          continue;
+        case "V":
+        case "F":
+          const j = i2;
+          const type = s[i2] === "F" ? `= ${node3.out[i2]} ` : "";
+          node3.out[i2] = null;
+          i2++;
+          skip_spaces();
+          const name = node3.out[i2];
+          if (s[j] === "V") {
+            node3.out[i2] = null;
+            i2++;
+          }
+          skip_spaces();
+          node3.out[m.index].cjs = `module.exports.${name} ${type}`;
+          continue;
+        case "*":
+          node3.out[i2] = null;
+          i2++;
+          skip_spaces();
+          node3.out[i2] = null;
+          i2++;
+          skip_spaces();
+          const src = jsx2.substring(node3.out[i2].begin, node3.out[i2].end);
+          node3.out[i2] = null;
+          node3.out[m.index].cjs = `Object.assign(module.exports, require(${src},{requirer:module}))`;
+          continue;
+        case "I":
+          node3.out[m.index].cjs = `module.exports.${node3.out[i2]} = `;
+          continue;
+        case "J": {
+          const exports = {};
+          let sj = generateSequence(
+            node3.out[i2].out,
+            labeler.bind(
+              null,
+              { "as": "a", ",": ",", "default": "I" }
+            )
+          );
+          props_regexp.lastIndex = -1;
+          if (!props_regexp.test(sj)) throw "incorrect export properties definition.";
+          const ps = node3.out[i2].out;
+          for (let j2 = 1; j2 < sj.length - 1; j2++) {
+            while (sj[j2] === " " || sj[j2] === "\n" || sj[j2] === "C" || sj[j2] === ",") j2++;
+            const prop = ps[j2];
+            j2++;
+            while (sj[j2] === " " || sj[j2] === "\n" || sj[j2] === "C") j2++;
+            if (sj[j2] === "a") {
+              j2++;
+              while (sj[j2] === " " || sj[j2] === "\n" || sj[j2] === "C") j2++;
+              exports[ps[j2]] = prop;
+              j2++;
+            } else {
+              exports[prop] = prop;
+            }
+          }
+          let o = "{";
+          let ls = "{";
+          for (const p in exports) {
+            if (o.length > 1) {
+              o += ",";
+              ls += ",";
+            }
+            if (p === exports[p]) {
+              o += p;
+              ls += p;
+            } else {
+              o += p + ":" + exports[p];
+              ls += exports[p];
+            }
+          }
+          o += "}";
+          ls += "}";
+          node3.out[i2] = null;
+          i2++;
+          skip_spaces();
+          if (node3.out[i2] === "from") {
+            node3.out[i2] = null;
+            i2++;
+            skip_spaces();
+            const src2 = jsx2.substring(node3.out[i2].begin, node3.out[i2].end);
+            node3.out[i2] = null;
+            node3.out[m.index].cjs = `{ const ${o} = require(${src2},{requirer:module}); Object.assign(module.exports, ${ls}); }`;
+          } else {
+            node3.out[m.index].cjs = `Object.assign(module.exports, ${o})`;
+          }
+          continue;
+        }
+      }
+    }
+  }
+}
+
 // .tmp/src/jsx.js
 var transpilerConfig = {
-  //addons: jsxAddons, // addons are not used anymore
   setBlockLabels: true,
   enableLabelStack: false,
   injectLabels: true,
@@ -5085,9 +5520,9 @@ var transpilerConfig = {
   preprocessorDelimiter: "\u0294"
   // alt+shift+. on apple abc extended layout   
 };
-var TRANSPILER_OUTPUT = /* @__PURE__ */ Symbol.for("LILACT:TRANSPILER_OUTPUT");
 var raiseError;
 var tab = 0;
+var TOKENIZE_RE = /(\{|\}|\[|\]|\(|\)|\.\.\.|=>|\?\?=|\?\?|\?\.|===|!==|>>>|<<=|>>=|>>>=|\*\*=|\*\*|&&=|\|\|=|<=|>=|==|!=|<<|>>|\+\+|--|\+=|-=|\*=|\/=|%=|&=|\^=|\|=|=|\+|-|\*|\/|%|&|\^|\||!|~|\?|:|<|>|=|\.|,|;|\n+|[\s^\n]+)/gm;
 function lookAhead(f, code2, index2, ...args) {
   const b2 = f(code2, index2, ...args);
   if (b2) {
@@ -5283,7 +5718,7 @@ function parseString(code2, index2, q, container2) {
       case "$":
         if (q === "`") {
           if (code2[index2 + 1] === "{") {
-            [index2] = lookAhead(parseJS, code2, index2 + 1, true, container2);
+            [index2] = lookAhead(parseJS, code2, index2 + 1, true);
             index2--;
           }
         }
@@ -5541,7 +5976,7 @@ function parseParanthesis(code2, index2, container2) {
       case '"':
       case "'":
       case "`":
-        [index2] = lookAhead(parseString, code2, index2, ch2);
+        [index2] = lookAhead(parseString, code2, index2, ch2, b2);
         break;
       case "{":
         [index2] = lookAhead(parseJS, code2, index2, true, b2);
@@ -5591,7 +6026,7 @@ function parseJS(code2, index2 = 0, is_block = false, container2) {
       case '"':
       case "'":
       case "`":
-        [index2] = lookAhead(parseString, code2, index2, ch2);
+        [index2] = lookAhead(parseString, code2, index2, ch2, b2);
         break;
       case "{": {
         const i2 = index2;
@@ -5742,12 +6177,12 @@ function generateSourceMap(json, path2, jsx_eols, out_eols, mappings2 = []) {
   };
   const scan_leaves = (node3) => {
     var _a;
-    if (((_a = node3.out) == null ? void 0 : _a.length) > 0) {
+    if (((_a = node3 == null ? void 0 : node3.out) == null ? void 0 : _a.length) > 0) {
       for (const ch2 of node3.out) {
         scan_leaves(ch2);
       }
     }
-    if (node3.begin !== void 0 && node3.out_index !== void 0) {
+    if ((node3 == null ? void 0 : node3.begin) !== void 0 && (node3 == null ? void 0 : node3.out_index) !== void 0) {
       mpps.push([...getRowCol(out_eols, node3.out_index), ...getRowCol(jsx_eols, node3.begin), node3]);
     }
   };
@@ -5787,6 +6222,7 @@ function transpileJSX(jsx2, {
   appendSourcemap = true,
   injectTraceLabels = false,
   discardComments = false,
+  produceCJS = false,
   // lilact internal
   blocks_info: blocks_info2 = {
     labels: {},
@@ -5806,7 +6242,6 @@ function transpileJSX(jsx2, {
     er.lilact_trace = "parse";
     throw er;
   }).bind(null, eols);
-  const tokenize_re = /([\{\}\(\),;\[\]\n]|[\s^\n]+)/g;
   const json = parseJS(jsx2);
   json.data = jsx2;
   const prepare = (node3) => {
@@ -5828,7 +6263,7 @@ function transpileJSX(jsx2, {
             if (node3.type === "xml") {
               node3.children.splice(chi, 0, '"' + s.replaceAll("\n", "\\\n").replaceAll('"', '\\"') + '"');
             } else {
-              node3.children.splice(chi, 0, ...s.split(tokenize_re));
+              node3.children.splice(chi, 0, ...s.split(TOKENIZE_RE));
             }
             chi++;
           }
@@ -5848,7 +6283,7 @@ function transpileJSX(jsx2, {
               "\n": "\\\n"
             })[m]) + '"');
           } else {
-            node3.children.push(...s.split(tokenize_re));
+            node3.children.push(...s.split(TOKENIZE_RE));
           }
         }
       }
@@ -5862,14 +6297,18 @@ function transpileJSX(jsx2, {
   preprocessPragmas(json);
   const codify = (outlen, node3, is_attr = false, is_xml = false) => {
     if (typeof node3 !== "object") return node3;
+    if (node3 === null) return "";
     node3.out_index = outlen;
     if (node3.type === "string") return jsx2.substring(node3.begin, node3.end);
+    if (node3.type === "import") return node3.cjs;
+    if (node3.type === "export") return node3.cjs;
     if (node3.type === "regex") return jsx2.substring(node3.begin, node3.end);
     if (node3.type === "comment") return discardComments || is_attr ? "" : jsx2.substring(node3.begin, node3.end);
     if (node3.type === "directive") return node3.value;
     if (node3.type === "paranthesis") {
       let out2 = "(";
       if (node3.out) {
+        if (produceCJS) processImportExports(node3, jsx2);
         for (const ch2 of node3.out) {
           out2 += codify(outlen + out2.length - 1, ch2);
         }
@@ -5879,6 +6318,7 @@ function transpileJSX(jsx2, {
     if (node3.type === "js") {
       let out2 = "";
       if (node3.out) {
+        if (produceCJS) processImportExports(node3, jsx2);
         for (const ch2 of node3.out) {
           if (is_xml && ch2.type === "comment") continue;
           out2 += codify(outlen + out2.length - (is_attr ? 1 : 0), ch2);
@@ -5947,7 +6387,7 @@ function transpileJSX(jsx2, {
 
 // .tmp/src/lilact.jsx
 var Lilact2 = {
-  VERSION: "beta.21",
+  VERSION: "beta.22",
   // Configuration
   defaultTransitionTimeout: 300,
   defaultIsEqual: Object.is,
@@ -5969,11 +6409,18 @@ var Lilact2 = {
   // Dependencies
   PropTypes,
   redux: redux_exports,
-  emotion: emotion_css_esm_exports
+  emotion: emotion_css_esm_exports,
+  default: Lilact2
+};
+Lilact2.importObjectPaths = {
+  "lilact": Lilact2,
+  "@emotion/css": Lilact2.emotion,
+  "redux": Lilact2.redux
 };
 globalThis.Lilact = Lilact2;
 globalThis.createComponent = Lilact2.createComponent;
 globalThis.Fragment = Lilact2.Fragment;
+globalThis.require = Lilact2.require;
 document.addEventListener("DOMContentLoaded", () => {
   Lilact2.runScripts();
 });

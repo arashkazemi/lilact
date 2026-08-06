@@ -1,11 +1,11 @@
-const { useState, memo } = Lilact;
+import { useState, memo } from "lilact"
 
 const Child = memo(function Child({ count }) {
   console.log("Child render. count =", count);
   return <div>Child count: {count}</div>;
 });
 
-module.exports = function Demo() {
+export default function Demo() {
   const [tick, setTick] = useState(0);
   const [count] = useState(5); // never changes
 

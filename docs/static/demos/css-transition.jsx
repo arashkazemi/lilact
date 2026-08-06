@@ -1,4 +1,4 @@
-const { CSSTransition, useState, useRef } = Lilact;
+import { CSSTransition, useState, useRef } from "lilact";
 
 
 Lilact.emotion.injectGlobal(`
@@ -29,7 +29,7 @@ function Demo()
 
   const chs = [];
 
-  for(let i=0; i<10;i++) chs.push( <div className='test'>{i}</div> );
+  for(let i=1; i<10;i++) chs.push( <div className='test'>{i}</div> );
 
   return (
     <div style={{overflow:"hidden", textAlign: "center"}}>
@@ -62,4 +62,4 @@ function Demo()
   );
 }
 
-module.exports = Demo;
+export default Demo;

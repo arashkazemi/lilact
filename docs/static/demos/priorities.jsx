@@ -1,4 +1,4 @@
-const {useEffect, useLayoutEffect, useInsertionEffect, useState, startTransition} = Lilact;
+import {useEffect, useLayoutEffect, useInsertionEffect, useState, startTransition} from "lilact";
 
 function Demo() {
   const [n, setN] = useState(0);
@@ -65,4 +65,4 @@ function Demo() {
   </>);
 }
 
-module.exports = Demo;
+export default Demo;

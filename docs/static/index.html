@@ -20,8 +20,8 @@
 
 <script type='text/jsx'>
 	
-const { useRef, useEffect, useState, Suspense, Spinner, run, render } = Lilact;
-const { css,cx,keyframes,injectGlobal } = Lilact.emotion;
+import { useRef, useEffect, useState, Suspense, Spinner, run, render } from "lilact";
+import { css,cx,keyframes,injectGlobal } from "@emotion/css";
 
 
 const cache = new Map();
@@ -161,7 +161,7 @@ function DemoView({ entry })
 	//console.log(code);
 	if(isOpen) {
 		useEffect(() => {
-			const Comp = run(code, "demos/"+entry[0]);
+			const Comp = run(code, "demos/"+entry[0]).default;
 			Lilact.render(<Comp/>, viewRef.current);
 		});
 

@@ -384,11 +384,6 @@ if(DEBUG) {
 		}
 
 		catch(e) {
-			// todo: should did catch be called? and state be modified?
-			/*if(this.component.componentDidCatch) {
-				this.component.componentDidCatch(e);
-			}
-			else */
 			throw(e);
 		}
 	}

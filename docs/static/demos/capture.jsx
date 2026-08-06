@@ -1,6 +1,6 @@
-const { useEffect } = Lilact;
+import { useEffect } from "lilact";
 
-module.exports = function Demo() {
+export default function Demo() {
   useEffect(() => {
     // Just to make it obvious in the console that this is running once
     console.log("mount");

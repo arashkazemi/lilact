@@ -92,7 +92,7 @@ export {transpileJSX, transpilerConfig} from "./jsx";
 export const Lilact = 
 {	
 
-	VERSION: "beta.21",
+	VERSION: "beta.22",
 	
 	// Configuration
 
@@ -123,11 +123,20 @@ export const Lilact =
 	redux,
 	emotion,
 
+	default: Lilact,
+
+}
+
+Lilact.importObjectPaths = {
+	"lilact": Lilact,
+	"@emotion/css": Lilact.emotion,
+	"redux": Lilact.redux
 }
 
 globalThis.Lilact = Lilact;
 globalThis.createComponent = Lilact.createComponent;
 globalThis.Fragment = Lilact.Fragment;
+globalThis.require = Lilact.require;
 
 document.addEventListener('DOMContentLoaded', () => {
   Lilact.runScripts();

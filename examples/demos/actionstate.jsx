@@ -1,4 +1,4 @@
-const { useActionState, Spinner } = Lilact;
+import { useActionState, Spinner } from "lilact";
 
 async function addToCart(prevState, queryData) {
 
@@ -36,4 +36,4 @@ function Demo() {
 }
 
 
-module.exports = Demo;
+export default Demo;

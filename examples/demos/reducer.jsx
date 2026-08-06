@@ -1,4 +1,4 @@
-const { useReducer } = Lilact;
+import { useReducer } from "lilact";
 
 function createInitialState(username) {
 	const initialTodos = [];
@@ -73,4 +73,4 @@ function Demo({ username })
 	</>
 }
 
-module.exports = Demo;
+export default Demo;

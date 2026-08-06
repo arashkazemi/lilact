@@ -1,4 +1,4 @@
-const { PropTypes } = Lilact;
+import { PropTypes } from "lilact";
 
 function UserCard({ name, age, tags, onClick }) {
   return (
@@ -31,4 +31,4 @@ function Demo() {
           </div>
 }
 
-module.exports = Demo;
+export default Demo;

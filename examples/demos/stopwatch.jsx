@@ -1,4 +1,4 @@
-const { useState, useRef } = Lilact;
+import { useState, useRef } from "lilact";
 
 function Demo() 
 {
@@ -39,4 +39,4 @@ function Demo()
   );
 }
 
-module.exports = Demo;
+export default Demo;

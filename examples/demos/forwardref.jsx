@@ -1,4 +1,4 @@
-const { forwardRef, useImperativeHandle, useRef } = Lilact;
+import { forwardRef, useImperativeHandle, useRef } from "lilact";
 
 const Child = forwardRef(function Child({ id }, ref) {
   // Each child exposes a custom imperative API on its *own* ref
@@ -11,7 +11,7 @@ const Child = forwardRef(function Child({ id }, ref) {
   return <div>Child {id}</div>;
 });
 
-module.exports = function Demo() {
+export default function Demo() {
   const childRefs = useRef([]);
 
   // helper: store the function ref for each child index

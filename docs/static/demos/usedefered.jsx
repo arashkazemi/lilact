@@ -1,4 +1,4 @@
-const { useState, useDeferredValue } = Lilact;
+import { useState, useDeferredValue } from "lilact";
 
 function ExpensiveList({ query }) {
   const items = Array.from({ length: 5000 }, (_, i) => `${query} item ${i}`);
@@ -30,4 +30,4 @@ function Demo() {
   );
 }
 
-module.exports = Demo;
+export default Demo;

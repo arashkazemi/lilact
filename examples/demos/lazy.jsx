@@ -1,6 +1,6 @@
-const {Suspense, Spinner, lazy, require} = Lilact;
+import {Suspense, Spinner, lazy } from "lilact";
 
-const StopWatch = lazy( ()=>require('demos/stopwatch.jsx') );
+const StopWatch = lazy( () => require('./stopwatch.jsx') );
 
 function Demo({file}) 
 {
@@ -12,4 +12,4 @@ function Demo({file})
 			</div>
 }
 
-module.exports = Demo;
+export default Demo;

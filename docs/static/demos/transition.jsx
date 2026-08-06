@@ -1,4 +1,4 @@
-const { useState, Transition } = Lilact;
+import { useState, Transition } from "lilact";
 
 function Demo() {
   const [inProp, setInProp] = useState(false);
@@ -38,4 +38,4 @@ function Demo() {
         </>;
 };
 
-module.exports = Demo;
+export default Demo;

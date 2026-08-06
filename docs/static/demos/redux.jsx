@@ -1,5 +1,5 @@
-const { Provider, useSelector, useDispatch, connect } = Lilact;
-const { createStore } = Lilact.redux;
+import { Provider, useSelector, useDispatch, connect } from "lilact";
+import { createStore } from "redux";
 
 // Reducer + store
 function counterReducer(state = { count: 0 }, action) {
@@ -54,5 +54,5 @@ function Demo({ username })
 			</Provider>;
 }
 
-module.exports = Demo;
+export default Demo;
 

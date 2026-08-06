@@ -32,6 +32,33 @@ import Lilact from './lilact.jsx';
 import { CORE, COMPONENT, LAZY } from "./symbols.jsx"
 
 
+function joinPaths(basePath, relativePath) {
+	const isAbs = relativePath.startsWith("/");
+	const stack = [];
+
+	const parts = (isAbs ? "" : basePath).split("/").filter(Boolean);
+	for (const p of parts) stack.push(p);
+
+	if(!basePath.endsWith("/")) stack.pop();
+
+	const relParts = relativePath.split("/");
+
+	for (const p of relParts) {
+		if (p === "" || p === ".") continue;
+		if (p === "..") {
+			if (stack.length > 0) stack.pop();
+		} else {
+			stack.push(p);
+		}
+	}
+
+	return (isAbs ? "/" : "") + stack.join("/");
+}
+
+// Examples:
+//console.log(joinPaths("a/b/c", "./../d")); // a/b/dfdsfds
+//console.log(joinPaths("a/b/c", "../../d")); // a/d
+
 /** @ignore */
 export const required_scripts = {};
 
@@ -48,17 +75,18 @@ export const required_scripts = {};
 export function run(jsx, path=`InlineJSX-${++Lilact.eval_num}`, is_inline=true)
 {
 	const mappings = [];
-	const module = {exports: {}};
-	let processed;
-
-
-	required_scripts[path] = { 	
+	const module = { 	
 		mappings,
-		module,
 		is_inline,
 		path,
 		code: jsx,
+		exports: {}
 	};
+
+	let processed;
+
+
+	required_scripts[path] = module;
 
 
 	try {
@@ -71,6 +99,7 @@ export function run(jsx, path=`InlineJSX-${++Lilact.eval_num}`, is_inline=true)
 			blocks_info: Lilact.blocks_info,
 
 			injectTraceLabels: true,
+			produceCJS: true,
 		} );
 	}
 	catch(e) {
@@ -80,7 +109,7 @@ export function run(jsx, path=`InlineJSX-${++Lilact.eval_num}`, is_inline=true)
 	}
 
 if(DEBUG) {
-		required_scripts[path].processed = processed;
+	required_scripts[path].processed = processed;
 }		
 	
 	processed += "\n//# sourceURL=eval:/" + path;
@@ -121,16 +150,22 @@ if(DEBUG) {
  * If require is called inside the function given to lazy, it will run async. See `lazy`.
  * 
  * @param path - The path to the required file. Must be either absolute path or relative to the current 
- * document’s URL (the page/location that initiated the request).
+ * module or document’s URL (the page/location that initiated the request).
  * 
- * @param forceUpdate - To treat the code as inline. The main difference at the moment is that inline code doesn't include sourcemap.
+ * @param [forceUpdate] - Force re-run module. By default an imported module is only run once.
+ * @param [checkExport] - An array of module properties to be checked upon import. This is used for import error detection.
+ * @param [isLazy] - if loading is should be async. Returns a promise if true.
+ * @param [requirer] - The module that is importing the other module. This is used internally to resolve relative paths.
  * 
  * @returns An array representation of the children.
  */
-export function require(path, forceUpdate)
+export function require(path, {forceUpdate, checkExport, requirer, isLazy})
 {
-	if(required_scripts[path] && !forceUpdate) return required_scripts[path].module.exports;
+
+	if(Lilact.importObjectPaths?.[path]) return Lilact.importObjectPaths[path];
+	if(required_scripts[path] && !forceUpdate) return required_scripts[path].exports;
 	
+
 	if(path[0]==='#') {
 
 		const el = document.getElementById(path);
@@ -140,32 +175,38 @@ export function require(path, forceUpdate)
 		}
 
 	}
-	else if(Lilact?.[LAZY]) {
-		Lilact[LAZY]=false;
-
-		return fetch(path)
-			.then(res => {
-				if (!res.ok) throw new Error(`HTTP ${res.status}`);
-				return res.text();
-			})
-			.then(res => {
-				res = run(res, path, false);
-				// todo: this is for the lazy, so we detect default, should we do it in sync mode too?
-				return res?.default ?? res;
-			})
-			.catch(err => {
-				throw err;
-			});
-	}
 	else {
-		// note: this makes a sync request. this is not advised,
-		// but import should be sync. for an async solution use lazy and suspense.
+		if(requirer && requirer.path) {
+			path = joinPaths(requirer.path, path);
+		}
 
-		const request = new XMLHttpRequest();
-		request.open("GET", path, false);
-		request.send(null);
-		if (request.status === 200) {
-			return run(request.responseText, path, false);
+		if(Lilact?.[LAZY] || isLazy) {
+			Lilact[LAZY]=false;
+
+			return fetch(path)
+				.then(res => {
+					if (!res.ok) throw new Error(`HTTP ${res.status}`);
+					return res.text();
+				})
+				.then(res => {
+					res = run(res, path, false);
+					// todo: this is for the lazy, so we detect default to match react behaviour, but should we do it in sync mode too?
+					return res?.default ?? res;
+				})
+				.catch(err => {
+					throw err;
+				});
+		}
+		else {
+			// note: this makes a sync request. this is not advised,
+			// but import should be sync. for an async solution use lazy and suspense.
+
+			const request = new XMLHttpRequest();
+			request.open("GET", path, false);
+			request.send(null);
+			if (request.status === 200) {
+				return run(request.responseText, path, false);
+			}
 		}
 	}
 
@@ -176,7 +217,15 @@ export function require(path, forceUpdate)
 /**
  * Wrapper that enables async, code-split component loading. `lazy` should be used
  * outside the component definintion or it will produce new components on each rerender.
- *
+ * 
+ * Note that in factory function you should use require instead of `import`. Dynamic `import` 
+ * would work, but it will not be wired correctly to the `Lilact` runtime.
+ * 
+ * Example: 
+ * ``` 
+ * const StopWatch = lazy( () => require('./stopwatch.jsx') );
+ * ```
+ * 
  * @param factory - A function with **no arguments** that returns a `Promise`.
  * The promise must resolve to a module whose module.exports.default is a Lilact component
  * or otherwise it will be whatever the module.exports is set to.

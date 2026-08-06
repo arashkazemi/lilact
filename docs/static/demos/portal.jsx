@@ -1,4 +1,4 @@
-const { createPortal, useState } = Lilact;
+import { createPortal, useState } from "lilact";
 
 function Modal({ open, onClose, children }) {
   if (!open) return null;
@@ -41,11 +41,13 @@ function Modal({ open, onClose, children }) {
   );
 }
 
-module.exports = function Demo() {
+export default function Demo() {
   const [open, setOpen] = useState(false);
 
   return (
     <>
+      <p>This example creates a modal, but uses a portal for it.</p>
+      <p>Notice that the modal close button style does not obey this container CSS rules as it is rendered outside.</p>
       <button onClick={() => setOpen(true)}>Open modal</button>
       <Modal open={open} onClose={() => setOpen(false)}>
         <b>Hello World!</b><br/>

@@ -1,4 +1,4 @@
-const { HashRouter, NavLink, Routes, Route, useNavigate, useLocation } = Lilact;
+import { HashRouter, NavLink, Routes, Route, useNavigate, useLocation } from "lilact";
 
 /* Simple pages */
 function Home() {
@@ -143,4 +143,4 @@ function Demo() {
   );
 }
 
-module.exports = Demo;
+export default Demo;

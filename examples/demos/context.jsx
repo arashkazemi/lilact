@@ -1,5 +1,5 @@
-const { createContext, useContext, useState } = Lilact;
-const { css, cx } = Lilact.emotion;
+import { createContext, useContext, useState } from "lilact";
+import { css, cx } from "@emotion/css";
 
 const ThemeContext = createContext(null);
 
@@ -63,4 +63,4 @@ function Demo() {
 			</ThemeContext.Provider>
 }
 
-module.exports = Demo;
+export default Demo;

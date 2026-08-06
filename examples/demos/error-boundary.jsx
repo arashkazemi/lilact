@@ -1,4 +1,4 @@
-const { ErrorBoundary, useState } = Lilact;
+import { ErrorBoundary, useState } from "lilact";
 
 function Demo() {
   const [mode, setMode] = useState("safe"); // "safe" | "direct" | "deep"
@@ -56,4 +56,4 @@ function MyFallback({ error, reset }) {
   );
 }
 
-module.exports = Demo;
+export default Demo;

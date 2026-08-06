@@ -1,4 +1,4 @@
-const { useEffect, useRef, useState } = Lilact;
+import { useEffect, useRef, useState } from "lilact";
 
 function ModalDialog({ isOpen, children }) {
 	const ref = useRef();
@@ -37,4 +37,4 @@ function Demo() {
 			</>;
 }
 
-module.exports = Demo;
+export default Demo;

@@ -1,4 +1,4 @@
-const { useState, SwitchTransition } = Lilact;
+import { useState, SwitchTransition } from "lilact";
 
 Lilact.emotion.injectGlobal(`
 .switch-enter,
@@ -51,4 +51,4 @@ function Demo() {
   );
 }
 
-module.exports = Demo;
+export default Demo;

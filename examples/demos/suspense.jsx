@@ -1,4 +1,4 @@
-const { Suspense, Spinner } = Lilact;
+import { Suspense, Spinner } from "lilact";
 
 // resource factory that throws its internal promise until resolved
 function createResource(delay, value) {
@@ -43,4 +43,4 @@ function Demo() {
 }
 
 
-module.exports = Demo;
+export default Demo;

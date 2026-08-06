@@ -1,4 +1,4 @@
-const { useState } = Lilact;
+import { useState } from "lilact";
 
 function Demo() {
   const [mode, setMode] = useState("safe"); // "safe" | "direct" | "deep"
@@ -36,4 +36,4 @@ function DeepTree() {
   return <section><Middle /></section>;
 }
 
-module.exports = Demo;
+export default Demo;

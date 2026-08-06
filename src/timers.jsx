@@ -28,11 +28,6 @@
 
 */
 
-// note: lilact timers can be used without lilact. uncomment the directive below to
-// get the transpiled version in dist directory.
-//ʔ outputJS('./dist/timers.js');
-
-
 import  { IDX, DUE, REPEAT, CLEARED, INTERVAL, CALLBACK, ARGS } from "./symbols.jsx"
 
 /**

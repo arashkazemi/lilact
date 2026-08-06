@@ -29,7 +29,7 @@ If you find Lilact useful, please consider sponsoring. Your support funds ongoin
 
 ## Overview
 
-`Lilact` is a very lightweight implementation of the React API designed to run in the browser. It can be used as a single script that is around `90kb` minified and around `32kb` gzipped and includes its whole API. It is tested and works on **Chrome**, **Firefox**, **Edge**, and **Safari**.
+`Lilact` is a very lightweight implementation of the React API designed to run in the browser. It can be used as a single script that is around `98kb` minified and around `34kb` gzipped and includes its whole API. It is tested and works on **Chrome**, **Firefox**, **Edge**, and **Safari**.
 
 `Lilact` is very fast, uses minimal resources, and handles memory very efficiently.
 
@@ -94,10 +94,16 @@ and update the bundle if any file is changed.
 
 ## Using Lilact Outside Node.js (Browser / Script Tag Integration)
 
-`Lilact` runs in the browser, so if you use `Lilact` outside Node, it uses `eval` to run the transpiled scripts, so it cannot use `import`/`export` the same way as a module.
+`Lilact` runs in the browser, and uses `eval` to run the transpiled scripts. You can use both ESModule and CommonJS syntax,
+but in the background `Lilact` converts the ES import and exports to CommonJS as `eval` doesn't allow ES syntax.
 
-Import the `Lilact` functions using this convention. There is also a `require` function that you can use
-to load other JSX or JS files.
+```js
+import { useState, useRef, render } from "lilact";
+
+import App from './App.jsx'; // imports the default export
+```
+
+or
 
 ```js
 const { useState, useRef, render, require } = Lilact;
@@ -106,6 +112,13 @@ const App = require('./App.jsx');
 ```
 
 To export:
+
+```js
+export default ...
+// or other standard export statements
+```
+
+or
 
 ```js
 module.exports = ...
