@@ -1206,6 +1206,13 @@ export function createPortal(children, element)
 }
 
 
+export function cloneComponent(component, propsPatch, ...children)
+{
+	return { entity: component.entity, props: {...component.props, ...propsPatch, children} };
+}
+
+export const cloneElement = cloneComponent;
+
 /**
  * Renders a component into a target DOM element.
  * If the component maintains internal state, this typically mounts it (or updates the existing tree) under `element`.

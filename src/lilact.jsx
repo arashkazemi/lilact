@@ -92,7 +92,7 @@ export {transpileJSX, transpilerConfig} from "./jsx";
 export const Lilact = 
 {	
 
-	VERSION: "beta.22",
+	VERSION: "beta.23",
 	
 	// Configuration
 
@@ -123,9 +123,11 @@ export const Lilact =
 	redux,
 	emotion,
 
-	default: Lilact,
-
 }
+
+Lilact.default = Lilact;
+
+export default Lilact;
 
 Lilact.importObjectPaths = {
 	"lilact": Lilact,
@@ -152,6 +154,4 @@ if(DEBUG) {
 	console.log(`Lilact (Version: ${Lilact.VERSION}) - Debug Mode`);
 	console.log(`Copyright(C) 2024-2026 Arash Kazemi <contact.arash.kazemi@gmail.com>`);
 }
-
-export default Lilact;
 

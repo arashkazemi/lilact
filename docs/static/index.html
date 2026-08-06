@@ -172,8 +172,8 @@ function DemoView({ entry })
 	
 	return 	<>
 						<button onClick={()=>setOpen(!isOpen)} className={collapsible} type="button">
-							<span className={left}>{ (isOpen?'- ':'+ ') + entry[0] + ' '}</span>
-							<b className={right}>{entry[1]}</b>
+							<b className={left}>{ (isOpen?'- ':'+ ') + entry[1] + ' '}</b>
+							<span className={right}>{entry[0]}</span>
 						</button>
 						{isOpen &&
 						<div style={{width:"100%"}}>
@@ -216,40 +216,41 @@ function App()
 {
 	const demos =[
 		"Hooks",
-		['stopwatch.jsx',				'( useState, useRef )'],
-		['actionstate.jsx',			'( useActionState, Spinner )'],
-		['usedefered.jsx',		'( useState, useDeferredValue )'],
-		['usetransition.jsx',		'( useTransition, useState, useCallback, useId ), emotion:( css, cx )'],
-		['reducer.jsx',					'( useReducer )'],
-		['context.jsx',					'( createContext, useContext, useState ), emotion:( css, cx )'],
+		['stopwatch.jsx',				'Stop Watch ( useState, useRef )'],
+		['actionstate.jsx',			'Action State ( useActionState, Spinner )'],
+		['usedefered.jsx',		'Deferred List Update ( useState, useDeferredValue )'],
+		['usetransition.jsx',		'Transition ( useTransition, useState, useCallback, useId ), emotion:( css, cx )'],
+		['reducer.jsx',					'Todo List: ( useReducer )'],
+		['context.jsx',					'Modern Context API ( createContext, useContext, useState ), emotion:( css, cx )'],
 		
 		"API",
-		['capture.jsx',						'-- Event Capture and Bubble --'],
-		['priorities.jsx',						'-- Effect Priorities --'],
-		['forwardref.jsx',						'( forwardRef, useImperativeHandle, useRef )'],
-		['memo.jsx',						'( memo, useState )'],
-		['lazy.jsx',						'( lazy, require, Suspene, Spinner )'],
-		['proptypes.jsx',				'( PropTypes )'],
-		['legacy-context.jsx',				'-- Legacy Context API --'],
-		['redux.jsx',						'( Provider, useSelector, useDispatch, connect ), redux:( createStore )'],
-		['transition.jsx',			'( useState, Transition )'],
+		['capture.jsx',						'Event Capture and Bubble'],
+		['priorities.jsx',						'Effect Priorities'],
+		['forwardref.jsx',						'ForwardRef with Function Refs ( forwardRef, useImperativeHandle, useRef )'],
+		['memo.jsx',						'Component Memoization ( memo, useState )'],
+		['lazy.jsx',						'Lazy Loading ( lazy, require, Suspene, Spinner )'],
+		['proptypes.jsx',				'PropTypes Validation'],
+		['legacy-context.jsx',				'Legacy Context API'],
+		['redux.jsx',						'Redux and Despatch ( Provider, useSelector, useDispatch, connect ), redux:( createStore )'],
+		['transition.jsx',			'Transition States ( useState, Transition )'],
+		['cloneelement.jsx',			'Cloning Components ( cloneElement, import as React )'],
 
 		"Components",
-		['router.jsx',					'( HashRouter, NavLink, Routes, Route, useNavigate, useLocation )'],
-		['modal.jsx',						'( useEffect, useRef, useState )'],
-		['portal.jsx',						'(createPortal, useState )'],
-		['pane.jsx',						'( useRef, useState, SplitPane )'],
-		['css-transition.jsx',		'( CSSTransition, useState, useRef )'],
-		['switch-transition.jsx',		'( SwitchTransition )'],
-		['suspense.jsx',				'( Suspense, Spinner )'],
-		['form-elements.jsx',		'()'],
+		['router.jsx',					'Hash Router ( HashRouter, NavLink, Routes, Route, useNavigate, useLocation )'],
+		['modal.jsx',						'Simple Modal ( useEffect, useRef, useState )'],
+		['portal.jsx',						'Portal (createPortal, useState )'],
+		['pane.jsx',						'SplitPane ( useRef, useState, SplitPane )'],
+		['css-transition.jsx',		'CSSTransition ( CSSTransition, useState, useRef )'],
+		['switch-transition.jsx',		'SwitchTransition'],
+		['suspense.jsx',				'Suspense and Spinner'],
+		['form-elements.jsx',		'Form Elements'],
 
 		"Error Report and Handling",
-		['error-boundary.jsx',						'( ErrorBoundary, useState )'],
-		['error-parser.jsx',							'-- JSX Parser Error --'],
-		['error-init.jsx',								'-- Error in Component initialization --'],
-		['error-component-stack.jsx',			'-- Error Component Stack --'],
-		['error-callback.jsx',						'-- Error in Callback --'],
+		['error-boundary.jsx',						'Error Boundary'],
+		['error-parser.jsx',							'JSX Parser Error'],
+		['error-init.jsx',								'Error in Component initialization'],
+		['error-component-stack.jsx',			'Error Component Stack'],
+		['error-callback.jsx',						'Error in Callback'],
 	];
 
 	return<>

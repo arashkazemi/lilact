@@ -79,7 +79,7 @@ function NavControls() {
         }
         style={{ marginLeft: 8 }}
       >
-        Go Profile (replace + state)
+        Go Profile (replace + state) (Clears History)
       </button>
       <button onClick={() => navigate(-1)} style={{ marginLeft: 8 }}>
         Back

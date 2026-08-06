@@ -135,26 +135,24 @@ if(DEBUG) {
 
 
 /**
- * Loads a jsx script from a path. All scripts can access Lilact namespace as a global object. 
- * 
- * `require` loads synchronously, as it is expected to be loaded on the next instruction.
- * 
- * As running the transpiled scripts rely on `new Function`, it is not possible to use module imports 
- * and exports. So to import you should use `const {useState} = Lilact` convention. And to 
- * export, you should use `module.exports = ...`. `require` returns `module.exports` value
- * so you can import different modules using the convention above.
+ * Loads a jsx script from a path. `require` loads synchronously, as it is expected to be loaded on the next instruction.
  * 
  * If the path is in the format #id, it will query the document for a script element with the given 
  * id and run its contents.
  * 
  * If require is called inside the function given to lazy, it will run async. See `lazy`.
  * 
+ * All required scripts can access Lilact namespace as a global object. 
+ * 
  * @param path - The path to the required file. Must be either absolute path or relative to the current 
  * module or document’s URL (the page/location that initiated the request).
  * 
  * @param [forceUpdate] - Force re-run module. By default an imported module is only run once.
+ * 
  * @param [checkExport] - An array of module properties to be checked upon import. This is used for import error detection.
+ * 
  * @param [isLazy] - if loading is should be async. Returns a promise if true.
+ * 
  * @param [requirer] - The module that is importing the other module. This is used internally to resolve relative paths.
  * 
  * @returns An array representation of the children.
@@ -167,7 +165,6 @@ export function require(path, {forceUpdate, checkExport, requirer, isLazy})
 	
 
 	if(path[0]==='#') {
-
 		const el = document.getElementById(path);
 
 		if(el) {
@@ -190,7 +187,6 @@ export function require(path, {forceUpdate, checkExport, requirer, isLazy})
 				})
 				.then(res => {
 					res = run(res, path, false);
-					// todo: this is for the lazy, so we detect default to match react behaviour, but should we do it in sync mode too?
 					return res?.default ?? res;
 				})
 				.catch(err => {

@@ -174,6 +174,7 @@ export function processImportExports(node, jsx)
 			const src = jsx.substring(node.out[m.index+imp.length-1].begin, node.out[m.index+imp.length-1].end);
 			const imports = {};
 			let star_imports = [];
+			let import_alls = [];
 
 			for(i = m.index+1;i<m.index+imp.length-1;i++) {
 
@@ -181,6 +182,7 @@ export function processImportExports(node, jsx)
 							type: "import",
 							begin: begins[m.index],
 							end: begins[m.index+imp.length],
+							cjs: ''
 						});
 
 				skip_spaces();
@@ -189,8 +191,7 @@ export function processImportExports(node, jsx)
 				case ',':
 					break;
 				case 'I': {
-					const prop = node.out[i];
-					imports[prop] = 'default'; 
+					import_alls.push(node.out[i]);
 					continue;
 				}
 				case 'J': {
@@ -238,8 +239,11 @@ export function processImportExports(node, jsx)
 					}
 
 					let cjs = '';
-					for(const s of star_imports) {
+					for(const s of import_alls) {
 						cjs+=`const ${s} = require(${src},{requirer:module});\n`;
+					}
+					for(const s of star_imports) {
+						cjs+=`const ${s} = require(${src},{requirer:module, checkExport: ['default']}).default;\n`;
 					}
 					if(Object.keys(imports).length) {
 						let o = '{';

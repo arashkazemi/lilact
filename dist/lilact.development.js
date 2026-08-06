@@ -1973,6 +1973,8 @@ __export(components_exports, {
   RootComponent: () => RootComponent,
   boolean_html_attributes_set: () => boolean_html_attributes_set,
   capture_events_set: () => capture_events_set,
+  cloneComponent: () => cloneComponent,
+  cloneElement: () => cloneElement,
   createComponent: () => createComponent2,
   createElement: () => createElement,
   createPortal: () => createPortal,
@@ -3071,6 +3073,10 @@ function createRoot(element) {
 function createPortal(children, element) {
   return createComponent2(lilact_default.Portal, { "view": element }, children);
 }
+function cloneComponent(component, propsPatch, ...children) {
+  return { entity: component.entity, props: { ...component.props, ...propsPatch, children } };
+}
+var cloneElement = cloneComponent;
 function render(component, element) {
   if (component[CORE] && (component[CORE].container || component[CORE].parent)) {
     throw new Error("Component is already in use");
@@ -5316,19 +5322,20 @@ function processImportExports(node3, jsx2) {
       const src = jsx2.substring(node3.out[m.index + imp.length - 1].begin, node3.out[m.index + imp.length - 1].end);
       const imports = {};
       let star_imports = [];
+      let import_alls = [];
       for (i2 = m.index + 1; i2 < m.index + imp.length - 1; i2++) {
         node3.out.splice(m.index, 1, {
           type: "import",
           begin: begins[m.index],
-          end: begins[m.index + imp.length]
+          end: begins[m.index + imp.length],
+          cjs: ""
         });
         skip_spaces();
         switch (s[i2]) {
           case ",":
             break;
           case "I": {
-            const prop = node3.out[i2];
-            imports[prop] = "default";
+            import_alls.push(node3.out[i2]);
             continue;
           }
           case "J": {
@@ -5371,8 +5378,12 @@ function processImportExports(node3, jsx2) {
               node3.out[i2] = null;
             }
             let cjs = "";
-            for (const s2 of star_imports) {
+            for (const s2 of import_alls) {
               cjs += `const ${s2} = require(${src},{requirer:module});
+`;
+            }
+            for (const s2 of star_imports) {
+              cjs += `const ${s2} = require(${src},{requirer:module, checkExport: ['default']}).default;
 `;
             }
             if (Object.keys(imports).length) {
@@ -6387,7 +6398,7 @@ function transpileJSX(jsx2, {
 
 // .tmp/src/lilact.jsx
 var Lilact2 = {
-  VERSION: "beta.22",
+  VERSION: "beta.23",
   // Configuration
   defaultTransitionTimeout: 300,
   defaultIsEqual: Object.is,
@@ -6409,9 +6420,10 @@ var Lilact2 = {
   // Dependencies
   PropTypes,
   redux: redux_exports,
-  emotion: emotion_css_esm_exports,
-  default: Lilact2
+  emotion: emotion_css_esm_exports
 };
+Lilact2.default = Lilact2;
+var lilact_default = Lilact2;
 Lilact2.importObjectPaths = {
   "lilact": Lilact2,
   "@emotion/css": Lilact2.emotion,
@@ -6433,7 +6445,6 @@ if (true) {
   console.log(`Lilact (Version: ${Lilact2.VERSION}) - Debug Mode`);
   console.log(`Copyright(C) 2024-2026 Arash Kazemi <contact.arash.kazemi@gmail.com>`);
 }
-var lilact_default = Lilact2;
 export {
   CSSTransition,
   Children,
@@ -6465,6 +6476,8 @@ export {
   capture_events_set,
   clearInterval,
   clearTimeout2 as clearTimeout,
+  cloneComponent,
+  cloneElement,
   combineReducers2 as combineReducers,
   connect,
   createComponent2 as createComponent,

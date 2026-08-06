@@ -37,6 +37,8 @@ function reducer(state, action) {
 
 function Demo({ username }) 
 {
+	username ??= "Tester";
+	
 	const [state, dispatch] = useReducer(
 		reducer,
 		username,
