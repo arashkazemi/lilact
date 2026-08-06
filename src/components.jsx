@@ -1142,7 +1142,7 @@ export function createComponent(entity, props={}, ...children)
 	props.key = generateComponentKey(entity, props);
 	props.children = children;
 
-	return { entity, props };
+	return { entity, props, [CORE]: null };
 }
 
 /**
@@ -1208,7 +1208,7 @@ export function createPortal(children, element)
 
 export function cloneComponent(component, propsPatch, ...children)
 {
-	return { entity: component.entity, props: {...component.props, ...propsPatch, children} };
+	return { entity: component.entity, props: {...component.props, ...propsPatch, children}, [CORE]: null };
 }
 
 export const cloneElement = cloneComponent;
@@ -1247,7 +1247,7 @@ export function memo(component)
 		component[MEMOIZED] = true;
 	}
 	else {
-		component = { component, [MEMOIZED]: true };
+		component = { component, [MEMOIZED]: true, [CORE]: null };
 	}
 	return component;
 }

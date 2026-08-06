@@ -28,6 +28,9 @@
 
 */
 
+import { isValidComponent } from "./misc.jsx";
+
+
 function isNullOrUndefined(v) {
   return v === null || v === undefined;
 }
@@ -43,6 +46,28 @@ function formatComponentName(componentName) {
 function defaultGetDisplayName(x) {
   if (!x) return "Unknown";
   return x.displayName || x.name || "Unknown";
+}
+
+
+// ---- node validator ----
+function isNode(x) {
+  // ignored-by-render children should be accepted by node
+  if (x === null || x === undefined) return true;
+  if (x === false || x === true) return true;
+
+  // primitives render
+  if (typeof x === "string" || typeof x === "number") return true;
+
+  if (isValidComponent(x)) return true;
+
+  // arrays are accepted as children; renderer will flatten later
+  if (Array.isArray(x)) return x.every(isNode);
+
+  return false;
+}
+
+function isValidElementType(x) {
+  return typeof x === "function" || typeof x === "string";
 }
 
 /**
@@ -116,6 +141,19 @@ function createPropTypes() {
 
   PropTypes.symbol = createPrimitiveValidator((v) => typeof v === "symbol");
   PropTypes.symbol.expectedType = "symbol";
+
+  PropTypes.component = createPrimitiveValidator((v) => isValidComponent(v));
+  PropTypes.component.expectedType = "component";
+
+  PropTypes.element = createPrimitiveValidator((v) => isValidComponent(v));
+  PropTypes.element.expectedType = "element";
+
+  PropTypes.node = createPrimitiveValidator((v) => isNode(v));
+  PropTypes.node.expectedType = "node";
+
+  PropTypes.elementType = createPrimitiveValidator((v) => isValidElementType(v));
+  PropTypes.elementType.expectedType = "elementType";
+
 
   // ----- combinators -----
 

@@ -47,6 +47,12 @@ export default function Demo() {
     <div style={{ padding: 16 }}>
       <h2>React.cloneElement behavior</h2>
 
+      <p> This is a cloneElement example. But notice that Lilact is imported as React! </p>
+      <p> This is to show how Lilact can be easily integrated in many React projects! In fact Lilact
+          uses "Component" instead of "Element" in its names, so "cloneComponent" is its
+          main cloning function. But similar to createComponent that is aliased to createElement, 
+          cloneComponent is aliased to cloneElement to be compatible with the official React API.</p>
+
       <div style={{ marginBottom: 16 }}>
         <div>1) Original element (unchanged):</div>
         {original}

@@ -1679,322 +1679,27 @@ var css = _createEmotion.css;
 var sheet = _createEmotion.sheet;
 var cache = _createEmotion.cache;
 
-// .tmp/src/proptypes.jsx
-function isNullOrUndefined(v) {
-  return v === null || v === void 0;
-}
-function formatComponentName(componentName) {
-  return componentName || "<<anonymous>>";
-}
-function defaultGetDisplayName(x) {
-  if (!x) return "Unknown";
-  return x.displayName || x.name || "Unknown";
-}
-function createPrimitiveValidator(typeCheck) {
-  const validator = function validate(props, propName, componentName, location, propFullName, secret) {
-    const value = props[propName];
-    if (isNullOrUndefined(value)) return null;
-    if (typeCheck(value)) return null;
-    const expected = typeCheck.expectedType || "the correct type";
-    const actual = value === null ? "null" : typeof value;
-    return new Error(
-      `Invalid ${location} \`${propFullName}\` of type \`${actual}\` supplied to \`${formatComponentName(componentName)}\`, expected \`${expected}\`.`
-    );
-  };
-  validator.isRequired = function validateRequired(props, propName, componentName, location, propFullName) {
-    const value = props[propName];
-    if (isNullOrUndefined(value)) {
-      return new Error(
-        `The ${location} \`${propFullName}\` is marked as required in \`${formatComponentName(componentName)}\`, but its value is \`${value}\`.`
-      );
-    }
-    return validator(props, propName, componentName, location, propFullName);
-  };
-  return validator;
-}
-function createPropTypes() {
-  const PropTypes2 = {};
-  PropTypes2.any = (function() {
-    const v = function validateAny(props, propName, componentName, location, propFullName) {
-      return null;
-    };
-    v.isRequired = function validateAnyRequired() {
-      return null;
-    };
-    return v;
-  })();
-  PropTypes2.array = createPrimitiveValidator((v) => Array.isArray(v));
-  PropTypes2.array.expectedType = "array";
-  PropTypes2.bool = createPrimitiveValidator((v) => typeof v === "boolean");
-  PropTypes2.bool.expectedType = "boolean";
-  PropTypes2.func = createPrimitiveValidator((v) => typeof v === "function");
-  PropTypes2.func.expectedType = "function";
-  PropTypes2.number = createPrimitiveValidator((v) => typeof v === "number" && !Number.isNaN(v));
-  PropTypes2.number.expectedType = "number";
-  PropTypes2.object = createPrimitiveValidator((v) => typeof v === "object" && v !== null && !Array.isArray(v));
-  PropTypes2.object.expectedType = "object";
-  PropTypes2.string = createPrimitiveValidator((v) => typeof v === "string");
-  PropTypes2.string.expectedType = "string";
-  PropTypes2.symbol = createPrimitiveValidator((v) => typeof v === "symbol");
-  PropTypes2.symbol.expectedType = "symbol";
-  PropTypes2.oneOf = function oneOf(values) {
-    const allowed = Array.isArray(values) ? values : [];
-    const validator = function validateOneOf(props, propName, componentName, location, propFullName) {
-      const value = props[propName];
-      if (isNullOrUndefined(value)) return null;
-      for (let i2 = 0; i2 < allowed.length; i2++) {
-        if (value === allowed[i2]) return null;
-      }
-      const actual = value === null ? "null" : typeof value;
-      return new Error(
-        `Invalid ${location} \`${propFullName}\` of value \`${String(value)}\` supplied to \`${formatComponentName(componentName)}\`, expected one of [${allowed.map(String).join(", ")}] (received type \`${actual}\`).`
-      );
-    };
-    validator.isRequired = function validateOneOfRequired(props, propName, componentName, location, propFullName) {
-      if (isNullOrUndefined(props[propName])) {
-        return new Error(
-          `The ${location} \`${propFullName}\` is marked as required in \`${formatComponentName(componentName)}\`, but its value is \`${props[propName]}\`.`
-        );
-      }
-      return validator(props, propName, componentName, location, propFullName);
-    };
-    return validator;
-  };
-  PropTypes2.oneOfType = function oneOfType(validators) {
-    const vlist = validators || [];
-    const validator = function validateOneOfType(props, propName, componentName, location, propFullName) {
-      const value = props[propName];
-      if (isNullOrUndefined(value)) return null;
-      for (let i2 = 0; i2 < vlist.length; i2++) {
-        const err = vlist[i2](props, propName, componentName, location, propFullName);
-        if (err === null) return null;
-      }
-      return new Error(
-        `Invalid ${location} \`${propFullName}\` supplied to \`${formatComponentName(componentName)}\` (none of the allowed types matched).`
-      );
-    };
-    validator.isRequired = function validateOneOfTypeRequired(props, propName, componentName, location, propFullName) {
-      if (isNullOrUndefined(props[propName])) {
-        return new Error(
-          `The ${location} \`${propFullName}\` is marked as required in \`${formatComponentName(componentName)}\`, but its value is \`${props[propName]}\`.`
-        );
-      }
-      return validator(props, propName, componentName, location, propFullName);
-    };
-    return validator;
-  };
-  PropTypes2.arrayOf = function arrayOf(innerValidator) {
-    const inner = innerValidator;
-    const validator = function validateArrayOf(props, propName, componentName, location, propFullName) {
-      const value = props[propName];
-      if (isNullOrUndefined(value)) return null;
-      if (!Array.isArray(value)) {
-        return new Error(
-          `Invalid ${location} \`${propFullName}\` of type \`${typeof value}\` supplied to \`${formatComponentName(componentName)}\`, expected an array.`
-        );
-      }
-      for (let i2 = 0; i2 < value.length; i2++) {
-        const itemPath = `${propFullName}[${i2}]`;
-        const itemErr = inner(
-          { [propName]: value[i2] },
-          propName,
-          componentName,
-          location,
-          itemPath
-        );
-        if (itemErr !== null) return itemErr;
-      }
-      return null;
-    };
-    validator.isRequired = function validateArrayOfRequired(props, propName, componentName, location, propFullName) {
-      if (isNullOrUndefined(props[propName])) {
-        return new Error(
-          `The ${location} \`${propFullName}\` is marked as required in \`${formatComponentName(componentName)}\`, but its value is \`${props[propName]}\`.`
-        );
-      }
-      return validator(props, propName, componentName, location, propFullName);
-    };
-    return validator;
-  };
-  PropTypes2.objectOf = function objectOf(innerValidator) {
-    const inner = innerValidator;
-    const validator = function validateObjectOf(props, propName, componentName, location, propFullName) {
-      const value = props[propName];
-      if (isNullOrUndefined(value)) return null;
-      if (typeof value !== "object" || value === null || Array.isArray(value)) {
-        return new Error(
-          `Invalid ${location} \`${propFullName}\` of type \`${typeof value}\` supplied to \`${formatComponentName(componentName)}\`, expected an object.`
-        );
-      }
-      const keys = Object.keys(value);
-      for (let i2 = 0; i2 < keys.length; i2++) {
-        const k = keys[i2];
-        const keyPath = `${propFullName}.${k}`;
-        const keyErr = inner(
-          { [propName]: value[k] },
-          propName,
-          componentName,
-          location,
-          keyPath
-        );
-        if (keyErr !== null) return keyErr;
-      }
-      return null;
-    };
-    validator.isRequired = function validateObjectOfRequired(props, propName, componentName, location, propFullName) {
-      if (isNullOrUndefined(props[propName])) {
-        return new Error(
-          `The ${location} \`${propFullName}\` is marked as required in \`${formatComponentName(componentName)}\`, but its value is \`${props[propName]}\`.`
-        );
-      }
-      return validator(props, propName, componentName, location, propFullName);
-    };
-    return validator;
-  };
-  function makeShapeValidator(spec, { exact }) {
-    const keys = spec ? Object.keys(spec) : [];
-    const validator = function validateShapeLike(props, propName, componentName, location, propFullName) {
-      const value = props[propName];
-      const propIsMissing = isNullOrUndefined(value);
-      if (propIsMissing) return null;
-      if (typeof value !== "object" || value === null || Array.isArray(value)) {
-        return new Error(
-          `Invalid ${location} \`${propFullName}\` of type \`${typeof value}\` supplied to \`${formatComponentName(componentName)}\`, expected an object.`
-        );
-      }
-      if (exact) {
-        const valueKeys = Object.keys(value);
-        for (let i2 = 0; i2 < valueKeys.length; i2++) {
-          const k = valueKeys[i2];
-          if (!Object.prototype.hasOwnProperty.call(spec, k)) {
-            const keyPath = `${propFullName}.${k}`;
-            return new Error(
-              `Invalid ${location} \`${keyPath}\` supplied to \`${formatComponentName(componentName)}\`: extra key \`${k}\` is not allowed by exact().`
-            );
-          }
-        }
-      }
-      for (let i2 = 0; i2 < keys.length; i2++) {
-        const k = keys[i2];
-        const specValidator = spec[k];
-        const nestedVal = value[k];
-        const nestedPath = `${propFullName}.${k}`;
-        if (isNullOrUndefined(nestedVal)) {
-          const err2 = specValidator(
-            { [propName]: nestedVal },
-            propName,
-            componentName,
-            location,
-            nestedPath
-          );
-          if (err2 !== null) return err2;
-          continue;
-        }
-        const err = specValidator(
-          { [propName]: nestedVal },
-          propName,
-          componentName,
-          location,
-          nestedPath
-        );
-        if (err !== null) return err;
-      }
-      return null;
-    };
-    validator.isRequired = function validateShapeLikeRequired(props, propName, componentName, location, propFullName) {
-      if (isNullOrUndefined(props[propName])) {
-        return new Error(
-          `The ${location} \`${propFullName}\` is marked as required in \`${formatComponentName(componentName)}\`, but its value is \`${props[propName]}\`.`
-        );
-      }
-      return validator(props, propName, componentName, location, propFullName);
-    };
-    return validator;
-  }
-  PropTypes2.shape = function shape(spec) {
-    return makeShapeValidator(spec, { exact: false });
-  };
-  PropTypes2.exact = function exact(spec) {
-    return makeShapeValidator(spec, { exact: true });
-  };
-  PropTypes2.instanceOf = function instanceOf(ClassOrConstructor) {
-    const validator = function validateInstanceOf(props, propName, componentName, location, propFullName) {
-      const value = props[propName];
-      if (isNullOrUndefined(value)) return null;
-      if (value instanceof ClassOrConstructor) return null;
-      return new Error(
-        `Invalid ${location} \`${propFullName}\` supplied to \`${formatComponentName(componentName)}\`: expected instance of \`${defaultGetDisplayName(ClassOrConstructor)}\`.`
-      );
-    };
-    validator.isRequired = function validateInstanceOfRequired(props, propName, componentName, location, propFullName) {
-      if (isNullOrUndefined(props[propName])) {
-        return new Error(
-          `The ${location} \`${propFullName}\` is marked as required in \`${formatComponentName(componentName)}\`, but its value is \`${props[propName]}\`.`
-        );
-      }
-      return validator(props, propName, componentName, location, propFullName);
-    };
-    return validator;
-  };
-  const warningCache = /* @__PURE__ */ new Set();
-  PropTypes2.checkPropTypes = function checkPropTypes(typeSpecs, values, location, componentName) {
-    if (false) return;
-    if (!typeSpecs) return;
-    const specs = typeSpecs;
-    const component = formatComponentName(componentName);
-    const typeSpecKeys = Object.keys(specs);
-    for (let i2 = 0; i2 < typeSpecKeys.length; i2++) {
-      const propKey = typeSpecKeys[i2];
-      const validator = specs[propKey];
-      if (typeof validator !== "function") continue;
-      const fullName = propKey;
-      const err = validator(values || {}, propKey, component, location, fullName);
-      if (err instanceof Error) {
-        const cacheKey = `${component}|${location}|${propKey}|${err.message}`;
-        if (warningCache.has(cacheKey)) continue;
-        warningCache.add(cacheKey);
-        if (typeof console !== "undefined" && console.error) {
-          console.error(
-            `Warning: Failed prop type: ${err.message}`
-          );
-        }
-      }
-    }
-  };
-  return PropTypes2;
-}
-var PropTypes = createPropTypes();
-
-// .tmp/src/components.jsx
-var components_exports = {};
-__export(components_exports, {
-  Component: () => Component,
-  HTMLComponent: () => HTMLComponent,
-  RootComponent: () => RootComponent,
-  boolean_html_attributes_set: () => boolean_html_attributes_set,
-  capture_events_set: () => capture_events_set,
-  cloneComponent: () => cloneComponent,
-  cloneElement: () => cloneElement,
-  createComponent: () => createComponent2,
-  createElement: () => createElement,
-  createPortal: () => createPortal,
-  createRoot: () => createRoot,
-  current_component: () => current_component,
-  effect_timeout: () => effect_timeout,
-  events_set: () => events_set,
-  insertion_effects: () => insertion_effects,
-  layout_effects: () => layout_effects,
-  length_css_attributes_set: () => length_css_attributes_set,
-  memo: () => memo,
-  passive_effects: () => passive_effects,
-  processEffects: () => processEffects,
-  render: () => render,
-  roots: () => roots,
-  special_attributes: () => special_attributes,
-  update_cbs: () => update_cbs,
-  update_interval_margin: () => update_interval_margin,
-  update_set: () => update_set,
-  update_timeout: () => update_timeout
+// .tmp/src/misc.jsx
+var misc_exports = {};
+__export(misc_exports, {
+  Children: () => Children,
+  Fragment: () => Fragment2,
+  Portal: () => Portal,
+  deepEqual: () => deepEqual,
+  eval_num: () => eval_num,
+  findDOMNode: () => findDOMNode,
+  forwardRef: () => forwardRef,
+  getComponentByPointer: () => getComponentByPointer,
+  id_num: () => id_num,
+  isAsync: () => isAsync,
+  isClass: () => isClass,
+  isEmpty: () => isEmpty,
+  isError: () => isError2,
+  isThenable: () => isThenable,
+  isValidComponent: () => isValidComponent,
+  isValidElement: () => isValidElement,
+  shallowEqual: () => shallowEqual,
+  toBool: () => toBool
 });
 
 // .tmp/src/symbols.jsx
@@ -2031,27 +1736,6 @@ var [
 ];
 
 // .tmp/src/misc.jsx
-var misc_exports = {};
-__export(misc_exports, {
-  Children: () => Children,
-  Fragment: () => Fragment2,
-  Portal: () => Portal,
-  deepEqual: () => deepEqual,
-  eval_num: () => eval_num,
-  findDOMNode: () => findDOMNode,
-  forwardRef: () => forwardRef,
-  getComponentByPointer: () => getComponentByPointer,
-  id_num: () => id_num,
-  isAsync: () => isAsync,
-  isClass: () => isClass,
-  isEmpty: () => isEmpty,
-  isError: () => isError2,
-  isThenable: () => isThenable,
-  isValidComponent: () => isValidComponent,
-  isValidElement: () => isValidElement,
-  shallowEqual: () => shallowEqual,
-  toBool: () => toBool
-});
 var typeOf = (input) => {
   const rawObject = Object.prototype.toString.call(input).toLowerCase();
   const typeOfRegex = /\[object (.*)]/g;
@@ -2312,7 +1996,342 @@ function toBool(value) {
 var id_num = Math.floor(Math.random() * 1e4);
 var eval_num = 0;
 
+// .tmp/src/proptypes.jsx
+function isNullOrUndefined(v) {
+  return v === null || v === void 0;
+}
+function formatComponentName(componentName) {
+  return componentName || "<<anonymous>>";
+}
+function defaultGetDisplayName(x) {
+  if (!x) return "Unknown";
+  return x.displayName || x.name || "Unknown";
+}
+function isNode(x) {
+  if (x === null || x === void 0) return true;
+  if (x === false || x === true) return true;
+  if (typeof x === "string" || typeof x === "number") return true;
+  if (isValidComponent(x)) return true;
+  if (Array.isArray(x)) return x.every(isNode);
+  return false;
+}
+function isValidElementType(x) {
+  return typeof x === "function" || typeof x === "string";
+}
+function createPrimitiveValidator(typeCheck) {
+  const validator = function validate(props, propName, componentName, location, propFullName, secret) {
+    const value = props[propName];
+    if (isNullOrUndefined(value)) return null;
+    if (typeCheck(value)) return null;
+    const expected = typeCheck.expectedType || "the correct type";
+    const actual = value === null ? "null" : typeof value;
+    return new Error(
+      `Invalid ${location} \`${propFullName}\` of type \`${actual}\` supplied to \`${formatComponentName(componentName)}\`, expected \`${expected}\`.`
+    );
+  };
+  validator.isRequired = function validateRequired(props, propName, componentName, location, propFullName) {
+    const value = props[propName];
+    if (isNullOrUndefined(value)) {
+      return new Error(
+        `The ${location} \`${propFullName}\` is marked as required in \`${formatComponentName(componentName)}\`, but its value is \`${value}\`.`
+      );
+    }
+    return validator(props, propName, componentName, location, propFullName);
+  };
+  return validator;
+}
+function createPropTypes() {
+  const PropTypes2 = {};
+  PropTypes2.any = (function() {
+    const v = function validateAny(props, propName, componentName, location, propFullName) {
+      return null;
+    };
+    v.isRequired = function validateAnyRequired() {
+      return null;
+    };
+    return v;
+  })();
+  PropTypes2.array = createPrimitiveValidator((v) => Array.isArray(v));
+  PropTypes2.array.expectedType = "array";
+  PropTypes2.bool = createPrimitiveValidator((v) => typeof v === "boolean");
+  PropTypes2.bool.expectedType = "boolean";
+  PropTypes2.func = createPrimitiveValidator((v) => typeof v === "function");
+  PropTypes2.func.expectedType = "function";
+  PropTypes2.number = createPrimitiveValidator((v) => typeof v === "number" && !Number.isNaN(v));
+  PropTypes2.number.expectedType = "number";
+  PropTypes2.object = createPrimitiveValidator((v) => typeof v === "object" && v !== null && !Array.isArray(v));
+  PropTypes2.object.expectedType = "object";
+  PropTypes2.string = createPrimitiveValidator((v) => typeof v === "string");
+  PropTypes2.string.expectedType = "string";
+  PropTypes2.symbol = createPrimitiveValidator((v) => typeof v === "symbol");
+  PropTypes2.symbol.expectedType = "symbol";
+  PropTypes2.component = createPrimitiveValidator((v) => isValidComponent(v));
+  PropTypes2.component.expectedType = "component";
+  PropTypes2.element = createPrimitiveValidator((v) => isValidComponent(v));
+  PropTypes2.element.expectedType = "element";
+  PropTypes2.node = createPrimitiveValidator((v) => isNode(v));
+  PropTypes2.node.expectedType = "node";
+  PropTypes2.elementType = createPrimitiveValidator((v) => isValidElementType(v));
+  PropTypes2.elementType.expectedType = "elementType";
+  PropTypes2.oneOf = function oneOf(values) {
+    const allowed = Array.isArray(values) ? values : [];
+    const validator = function validateOneOf(props, propName, componentName, location, propFullName) {
+      const value = props[propName];
+      if (isNullOrUndefined(value)) return null;
+      for (let i2 = 0; i2 < allowed.length; i2++) {
+        if (value === allowed[i2]) return null;
+      }
+      const actual = value === null ? "null" : typeof value;
+      return new Error(
+        `Invalid ${location} \`${propFullName}\` of value \`${String(value)}\` supplied to \`${formatComponentName(componentName)}\`, expected one of [${allowed.map(String).join(", ")}] (received type \`${actual}\`).`
+      );
+    };
+    validator.isRequired = function validateOneOfRequired(props, propName, componentName, location, propFullName) {
+      if (isNullOrUndefined(props[propName])) {
+        return new Error(
+          `The ${location} \`${propFullName}\` is marked as required in \`${formatComponentName(componentName)}\`, but its value is \`${props[propName]}\`.`
+        );
+      }
+      return validator(props, propName, componentName, location, propFullName);
+    };
+    return validator;
+  };
+  PropTypes2.oneOfType = function oneOfType(validators) {
+    const vlist = validators || [];
+    const validator = function validateOneOfType(props, propName, componentName, location, propFullName) {
+      const value = props[propName];
+      if (isNullOrUndefined(value)) return null;
+      for (let i2 = 0; i2 < vlist.length; i2++) {
+        const err = vlist[i2](props, propName, componentName, location, propFullName);
+        if (err === null) return null;
+      }
+      return new Error(
+        `Invalid ${location} \`${propFullName}\` supplied to \`${formatComponentName(componentName)}\` (none of the allowed types matched).`
+      );
+    };
+    validator.isRequired = function validateOneOfTypeRequired(props, propName, componentName, location, propFullName) {
+      if (isNullOrUndefined(props[propName])) {
+        return new Error(
+          `The ${location} \`${propFullName}\` is marked as required in \`${formatComponentName(componentName)}\`, but its value is \`${props[propName]}\`.`
+        );
+      }
+      return validator(props, propName, componentName, location, propFullName);
+    };
+    return validator;
+  };
+  PropTypes2.arrayOf = function arrayOf(innerValidator) {
+    const inner = innerValidator;
+    const validator = function validateArrayOf(props, propName, componentName, location, propFullName) {
+      const value = props[propName];
+      if (isNullOrUndefined(value)) return null;
+      if (!Array.isArray(value)) {
+        return new Error(
+          `Invalid ${location} \`${propFullName}\` of type \`${typeof value}\` supplied to \`${formatComponentName(componentName)}\`, expected an array.`
+        );
+      }
+      for (let i2 = 0; i2 < value.length; i2++) {
+        const itemPath = `${propFullName}[${i2}]`;
+        const itemErr = inner(
+          { [propName]: value[i2] },
+          propName,
+          componentName,
+          location,
+          itemPath
+        );
+        if (itemErr !== null) return itemErr;
+      }
+      return null;
+    };
+    validator.isRequired = function validateArrayOfRequired(props, propName, componentName, location, propFullName) {
+      if (isNullOrUndefined(props[propName])) {
+        return new Error(
+          `The ${location} \`${propFullName}\` is marked as required in \`${formatComponentName(componentName)}\`, but its value is \`${props[propName]}\`.`
+        );
+      }
+      return validator(props, propName, componentName, location, propFullName);
+    };
+    return validator;
+  };
+  PropTypes2.objectOf = function objectOf(innerValidator) {
+    const inner = innerValidator;
+    const validator = function validateObjectOf(props, propName, componentName, location, propFullName) {
+      const value = props[propName];
+      if (isNullOrUndefined(value)) return null;
+      if (typeof value !== "object" || value === null || Array.isArray(value)) {
+        return new Error(
+          `Invalid ${location} \`${propFullName}\` of type \`${typeof value}\` supplied to \`${formatComponentName(componentName)}\`, expected an object.`
+        );
+      }
+      const keys = Object.keys(value);
+      for (let i2 = 0; i2 < keys.length; i2++) {
+        const k = keys[i2];
+        const keyPath = `${propFullName}.${k}`;
+        const keyErr = inner(
+          { [propName]: value[k] },
+          propName,
+          componentName,
+          location,
+          keyPath
+        );
+        if (keyErr !== null) return keyErr;
+      }
+      return null;
+    };
+    validator.isRequired = function validateObjectOfRequired(props, propName, componentName, location, propFullName) {
+      if (isNullOrUndefined(props[propName])) {
+        return new Error(
+          `The ${location} \`${propFullName}\` is marked as required in \`${formatComponentName(componentName)}\`, but its value is \`${props[propName]}\`.`
+        );
+      }
+      return validator(props, propName, componentName, location, propFullName);
+    };
+    return validator;
+  };
+  function makeShapeValidator(spec, { exact }) {
+    const keys = spec ? Object.keys(spec) : [];
+    const validator = function validateShapeLike(props, propName, componentName, location, propFullName) {
+      const value = props[propName];
+      const propIsMissing = isNullOrUndefined(value);
+      if (propIsMissing) return null;
+      if (typeof value !== "object" || value === null || Array.isArray(value)) {
+        return new Error(
+          `Invalid ${location} \`${propFullName}\` of type \`${typeof value}\` supplied to \`${formatComponentName(componentName)}\`, expected an object.`
+        );
+      }
+      if (exact) {
+        const valueKeys = Object.keys(value);
+        for (let i2 = 0; i2 < valueKeys.length; i2++) {
+          const k = valueKeys[i2];
+          if (!Object.prototype.hasOwnProperty.call(spec, k)) {
+            const keyPath = `${propFullName}.${k}`;
+            return new Error(
+              `Invalid ${location} \`${keyPath}\` supplied to \`${formatComponentName(componentName)}\`: extra key \`${k}\` is not allowed by exact().`
+            );
+          }
+        }
+      }
+      for (let i2 = 0; i2 < keys.length; i2++) {
+        const k = keys[i2];
+        const specValidator = spec[k];
+        const nestedVal = value[k];
+        const nestedPath = `${propFullName}.${k}`;
+        if (isNullOrUndefined(nestedVal)) {
+          const err2 = specValidator(
+            { [propName]: nestedVal },
+            propName,
+            componentName,
+            location,
+            nestedPath
+          );
+          if (err2 !== null) return err2;
+          continue;
+        }
+        const err = specValidator(
+          { [propName]: nestedVal },
+          propName,
+          componentName,
+          location,
+          nestedPath
+        );
+        if (err !== null) return err;
+      }
+      return null;
+    };
+    validator.isRequired = function validateShapeLikeRequired(props, propName, componentName, location, propFullName) {
+      if (isNullOrUndefined(props[propName])) {
+        return new Error(
+          `The ${location} \`${propFullName}\` is marked as required in \`${formatComponentName(componentName)}\`, but its value is \`${props[propName]}\`.`
+        );
+      }
+      return validator(props, propName, componentName, location, propFullName);
+    };
+    return validator;
+  }
+  PropTypes2.shape = function shape(spec) {
+    return makeShapeValidator(spec, { exact: false });
+  };
+  PropTypes2.exact = function exact(spec) {
+    return makeShapeValidator(spec, { exact: true });
+  };
+  PropTypes2.instanceOf = function instanceOf(ClassOrConstructor) {
+    const validator = function validateInstanceOf(props, propName, componentName, location, propFullName) {
+      const value = props[propName];
+      if (isNullOrUndefined(value)) return null;
+      if (value instanceof ClassOrConstructor) return null;
+      return new Error(
+        `Invalid ${location} \`${propFullName}\` supplied to \`${formatComponentName(componentName)}\`: expected instance of \`${defaultGetDisplayName(ClassOrConstructor)}\`.`
+      );
+    };
+    validator.isRequired = function validateInstanceOfRequired(props, propName, componentName, location, propFullName) {
+      if (isNullOrUndefined(props[propName])) {
+        return new Error(
+          `The ${location} \`${propFullName}\` is marked as required in \`${formatComponentName(componentName)}\`, but its value is \`${props[propName]}\`.`
+        );
+      }
+      return validator(props, propName, componentName, location, propFullName);
+    };
+    return validator;
+  };
+  const warningCache = /* @__PURE__ */ new Set();
+  PropTypes2.checkPropTypes = function checkPropTypes(typeSpecs, values, location, componentName) {
+    if (false) return;
+    if (!typeSpecs) return;
+    const specs = typeSpecs;
+    const component = formatComponentName(componentName);
+    const typeSpecKeys = Object.keys(specs);
+    for (let i2 = 0; i2 < typeSpecKeys.length; i2++) {
+      const propKey = typeSpecKeys[i2];
+      const validator = specs[propKey];
+      if (typeof validator !== "function") continue;
+      const fullName = propKey;
+      const err = validator(values || {}, propKey, component, location, fullName);
+      if (err instanceof Error) {
+        const cacheKey = `${component}|${location}|${propKey}|${err.message}`;
+        if (warningCache.has(cacheKey)) continue;
+        warningCache.add(cacheKey);
+        if (typeof console !== "undefined" && console.error) {
+          console.error(
+            `Warning: Failed prop type: ${err.message}`
+          );
+        }
+      }
+    }
+  };
+  return PropTypes2;
+}
+var PropTypes = createPropTypes();
+
 // .tmp/src/components.jsx
+var components_exports = {};
+__export(components_exports, {
+  Component: () => Component,
+  HTMLComponent: () => HTMLComponent,
+  RootComponent: () => RootComponent,
+  boolean_html_attributes_set: () => boolean_html_attributes_set,
+  capture_events_set: () => capture_events_set,
+  cloneComponent: () => cloneComponent,
+  cloneElement: () => cloneElement,
+  createComponent: () => createComponent2,
+  createElement: () => createElement,
+  createPortal: () => createPortal,
+  createRoot: () => createRoot,
+  current_component: () => current_component,
+  effect_timeout: () => effect_timeout,
+  events_set: () => events_set,
+  insertion_effects: () => insertion_effects,
+  layout_effects: () => layout_effects,
+  length_css_attributes_set: () => length_css_attributes_set,
+  memo: () => memo,
+  passive_effects: () => passive_effects,
+  processEffects: () => processEffects,
+  render: () => render,
+  roots: () => roots,
+  special_attributes: () => special_attributes,
+  update_cbs: () => update_cbs,
+  update_interval_margin: () => update_interval_margin,
+  update_set: () => update_set,
+  update_timeout: () => update_timeout
+});
 var ComponentCache = class {
   constructor(owner) {
     __publicField(this, "owner");
@@ -3047,7 +3066,7 @@ function createComponent2(entity, props = {}, ...children) {
   }
   props.key = generateComponentKey(entity, props);
   props.children = children;
-  return { entity, props };
+  return { entity, props, [CORE]: null };
 }
 function createRoot(element) {
   let root;
@@ -3074,7 +3093,7 @@ function createPortal(children, element) {
   return createComponent2(lilact_default.Portal, { "view": element }, children);
 }
 function cloneComponent(component, propsPatch, ...children) {
-  return { entity: component.entity, props: { ...component.props, ...propsPatch, children } };
+  return { entity: component.entity, props: { ...component.props, ...propsPatch, children }, [CORE]: null };
 }
 var cloneElement = cloneComponent;
 function render(component, element) {
@@ -3087,7 +3106,7 @@ function memo(component) {
   if (typeof component === "object") {
     component[MEMOIZED] = true;
   } else {
-    component = { component, [MEMOIZED]: true };
+    component = { component, [MEMOIZED]: true, [CORE]: null };
   }
   return component;
 }
@@ -6405,7 +6424,7 @@ function transpileJSX(jsx2, {
 
 // .tmp/src/lilact.jsx
 var Lilact2 = {
-  VERSION: "beta.23",
+  VERSION: "RC.1",
   // Configuration
   defaultTransitionTimeout: 300,
   defaultIsEqual: Object.is,

@@ -175,7 +175,7 @@ This is not the only way to use it—inside Node projects you can use standard m
 
 ### Node.js example
 
-```js
+```jsx
 import { render } from "lilact";
 
 function App() {
@@ -211,6 +211,22 @@ render(<App/>, document.body);
 ---
 
 ## Learn More / Examples / Beta Status
+
+`Lilact` tries to mimic `React` API as close as possible. So the [Official React API Reference](https://react.dev/reference/react) can be used as a perfect resource. Most of its examples would work in `Lilact` with just substituting import source "react" with "lilact"! You can even do:
+
+```jsx
+import React from "lilact"
+
+```
+
+And things will probably work just fine. For `redux` and `emotion` just import as you would do, `Lilact` will fix the references automatically:
+
+```jsx
+import redux from "redux";
+import emotion from "@emotion/css";
+```
+
+Some functions are not implemented in `Lilact`, mostly because `Lilact` is only client side and doesn't need server side API. Besides that, a few missing hooks and components like `Profiler` or `StrictMode` exist, which will be implemented in the future. There are also a few differences that are mentioned in the `Lilact` documentation. 
 
 To know more about using `Lilact`, see the included examples:  
 [Lilact Examples](https://arashkazemi.github.io/lilact/static)
