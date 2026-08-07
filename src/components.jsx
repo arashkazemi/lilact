@@ -35,6 +35,8 @@ import { shallowEqual, toBool, isClass } from "./misc.jsx";
 
 import { PropTypes } from './proptypes.jsx';
 
+const SVG_NS = "http://www.w3.org/2000/svg";
+
 /* 
 ComponentCache is for internal use. It is the heart of the JSX runtime,
 it holds child components and detects which one is being rendered or updated.
@@ -210,7 +212,12 @@ if(DEBUG) {
 
 			if( typeof(this.entity)==='string' ) {
 				if(!(this.element instanceof Element)) {
-					this.element = document.createElement(this.entity);
+					if(this.parent.entity==='svg' || this.entity==='svg') {
+						this.element = document.createElementNS(SVG_NS, this.entity);
+					}
+					else {
+						this.element = document.createElement(this.entity);
+					}
 					if(next_props?.defaultValue) this.element.value = String(next_props.defaultValue).slice(0, next_props?.maxLength);
 					if(next_props?.defaultChecked) this.element.checked = next_props.defaultChecked;
 				}

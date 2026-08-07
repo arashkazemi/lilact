@@ -2332,6 +2332,7 @@ __export(components_exports, {
   update_set: () => update_set,
   update_timeout: () => update_timeout
 });
+var SVG_NS = "http://www.w3.org/2000/svg";
 var ComponentCache = class {
   constructor(owner) {
     __publicField(this, "owner");
@@ -2445,7 +2446,11 @@ var ComponentCore = class {
       if (this.component.shouldComponentUpdate && !this.component.shouldComponentUpdate(next_state, next_props, this.context)) return;
       if (typeof this.entity === "string") {
         if (!(this.element instanceof Element)) {
-          this.element = document.createElement(this.entity);
+          if (this.parent.entity === "svg" || this.entity === "svg") {
+            this.element = document.createElementNS(SVG_NS, this.entity);
+          } else {
+            this.element = document.createElement(this.entity);
+          }
           if (next_props == null ? void 0 : next_props.defaultValue) this.element.value = String(next_props.defaultValue).slice(0, next_props == null ? void 0 : next_props.maxLength);
           if (next_props == null ? void 0 : next_props.defaultChecked) this.element.checked = next_props.defaultChecked;
         }
