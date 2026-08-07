@@ -212,7 +212,9 @@ if(DEBUG) {
 
 			if( typeof(this.entity)==='string' ) {
 				if(!(this.element instanceof Element)) {
-					if(this.parent.entity==='svg' || this.entity==='svg') {
+
+					if(this.is_svg || this.container.is_svg) {
+						this.is_svg = true;
 						this.element = document.createElementNS(SVG_NS, this.entity);
 					}
 					else {
@@ -1050,6 +1052,9 @@ export class HTMLComponent extends Component
 	{
 		super(props);
 		this[CORE].entity = entity;
+		if(entity==='svg') {
+			this[CORE].is_svg = true;
+		}
 	}
 
 	render()

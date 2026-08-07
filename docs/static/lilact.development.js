@@ -2446,7 +2446,8 @@ var ComponentCore = class {
       if (this.component.shouldComponentUpdate && !this.component.shouldComponentUpdate(next_state, next_props, this.context)) return;
       if (typeof this.entity === "string") {
         if (!(this.element instanceof Element)) {
-          if (this.parent.entity === "svg" || this.entity === "svg") {
+          if (this.is_svg || this.container.is_svg) {
+            this.is_svg = true;
             this.element = document.createElementNS(SVG_NS, this.entity);
           } else {
             this.element = document.createElement(this.entity);
@@ -3028,6 +3029,9 @@ var HTMLComponent = class extends Component {
   constructor(entity, props) {
     super(props);
     this[CORE].entity = entity;
+    if (entity === "svg") {
+      this[CORE].is_svg = true;
+    }
   }
   render() {
     return this[CORE].props.children;
