@@ -4973,6 +4973,7 @@ var SplitPane = forwardRef(function SplitPane2({
   firstPaneStyle,
   secondPaneStyle,
   splitterStyle,
+  splitterChild,
   children
 }, ref) {
   const initialMode = mode === "vertical" ? "vertical" : "horizontal";
@@ -5100,7 +5101,7 @@ var SplitPane = forwardRef(function SplitPane2({
     height: "100%",
     overflow: "hidden",
     ...style || {}
-  } }, createComponent("div", { "style": pane1StyleAbs }, firstChild), createComponent("div", { "style": pane2StyleAbs }, secondChild), createComponent(DragHandle, { "onStart": handleStart, "onDelta": handleDelta, "onEnd": handleEnd, "style": splitterAbsStyle, "className": "splitter" }));
+  } }, createComponent("div", { "style": pane1StyleAbs }, firstChild), createComponent("div", { "style": pane2StyleAbs }, secondChild), createComponent(DragHandle, { "onStart": handleStart, "onDelta": handleDelta, "onEnd": handleEnd, "style": splitterAbsStyle, "className": "splitter" }, splitterChild));
 });
 var clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
@@ -6433,7 +6434,7 @@ function transpileJSX(jsx2, {
 
 // .tmp/src/lilact.jsx
 var Lilact2 = {
-  VERSION: "RC.1",
+  VERSION: "RC.2",
   // Configuration
   defaultTransitionTimeout: 300,
   defaultIsEqual: Object.is,

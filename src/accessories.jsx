@@ -424,6 +424,7 @@ export function DragHandle({
  * @param leftPaneStyle - Optional styles applied to the left pane (or top pane in vertical mode).
  * @param rightPaneStyle - Optional styles applied to the right pane (or bottom pane in vertical mode).
  * @param splitterStyle - Optional styles applied to the splitter element.
+ * @param splitterChild - Child to be rendered into the splitter itself.
  * @param children - Children to be rendered into the two pane containers.
  *
  * @example
@@ -457,6 +458,7 @@ export const SplitPane = forwardRef(function SplitPane(
 		firstPaneStyle,
 		secondPaneStyle,
 		splitterStyle,
+		splitterChild,
 		children,
 	},
 	ref
@@ -637,7 +639,9 @@ export const SplitPane = forwardRef(function SplitPane(
 				onEnd={handleEnd}
 				style={splitterAbsStyle}
 				className="splitter"
-			/>
+			>
+				{splitterChild}
+			</DragHandle>
 		</div>
 	);
 });
