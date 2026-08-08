@@ -175,7 +175,7 @@ This is not the only way to use it—inside Node projects you can use standard m
 
 ### Node.js example
 
-```jsx
+```tsx
 import { render } from "lilact";
 
 function App() {
