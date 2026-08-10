@@ -449,300 +449,391 @@ export function DragHandle({
  */
 
 export const SplitPane = forwardRef(function SplitPane(
-	{
-		mode = "horizontal",
-		position,
-		defaultPosition = 0.5,
-		min = 0.1,
-		max = 0.9,
-		splitterSize = 8,
-		onSizeChange,
-		resizePolicy = "proportional",
-		style,
-		className,
-		firstPaneStyle,
-		secondPaneStyle,
-		splitterStyle,
-		splitterChild,
-		children,
-	},
-	ref
+  {
+    mode = "horizontal",
+    position,
+    defaultPosition = 0.5,
+    min = 0.1,
+    max = 0.9,
+    splitterSize = 8,
+    onSizeChange,
+    resizePolicy = "proportional",
+    style,
+    className,
+    firstPaneStyle,
+    secondPaneStyle,
+    splitterStyle,
+    splitterChild,
+    children,
+  },
+  ref
 ) {
-	const containerRef = useRef(null);
-	const sizeRef = useRef({ w: splitterSize+1, h: splitterSize+1 });
+  const containerRef = useRef(null);
 
-	const initialMode = mode === "vertical" ? "vertical" : "horizontal";
-	const [internalMode, setInternalMode] = useState(initialMode);
+  // Measured container size
+  const sizeRef = useRef({ w: 0, h: 0 });
 
-	const [internalPos, setInternalPos] = useState(clamp(defaultPosition, min, max, 
-						 mode==='vertical'?sizeRef.current.h:sizeRef.current.w, splitterSize));
+  // Internal mode supports imperative setMode
+  const [internalMode, setInternalMode] = useState(mode === "vertical" ? "vertical" : "horizontal");
+  const internalModeRef = useRef(internalMode);
 
+  // Internal position for uncontrolled usage
+  const [internalPos, setInternalPos] = useState(defaultPosition);
+  const internalPosRef = useRef(internalPos);
 
-	let posResolved = position == null ? internalPos : position;
-	posResolved = clamp(posResolved, min, max, 
-						 mode==='vertical'?sizeRef.current.h:sizeRef.current.w, splitterSize);
+  // Latest effective pos (controlled or uncontrolled)
+  const effectivePosRef = useRef(undefined);
 
-	useEffect(() => {
-		if (position == null) return;
-		setInternalPos(clamp(position, min, max, 
-							 mode==='vertical'?sizeRef.current.h:sizeRef.current.w, splitterSize));
-	}, [position, min, max]);
+  const resizePolicyRef = useRef(resizePolicy);
+  useEffect(() => {
+    resizePolicyRef.current = resizePolicy;
+  }, [resizePolicy]);
 
-	useEffect(() => {
-		setInternalMode(mode === "vertical" ? "vertical" : "horizontal");
-	}, [mode]);
+  // Keep refs synced
+  internalModeRef.current = internalMode;
 
-	const setPosition = (next) => {
-		const clamped = clamp(next, min, max, 
-							 mode==='vertical'?sizeRef.current.h:sizeRef.current.w, splitterSize);
-		if (position == null) setInternalPos(clamped);
-		onSizeChange?.(clamped);
-	};
+  useEffect(() => {
+    internalPosRef.current = internalPos;
+  }, [internalPos]);
 
-	useImperativeHandle(ref, () => ({
-		setPosition,
-		setMode: (nextMode) => setInternalMode(nextMode === "vertical" ? "vertical" : "horizontal"),
-		getPosition: () => posResolved,
-		getMode: () => internalMode,
-	}));
+  // If mode prop changes, update internalMode synchronously
+  useLayoutEffect(() => {
+    setInternalMode(mode === "vertical" ? "vertical" : "horizontal");
+  }, [mode]);
 
+  const clampWithSize = (v, modeNow, w, h) => {
+    const size = modeNow === "vertical" ? h : w;
+    return clamp(v, min, max, size, splitterSize);
+  };
 
-	useLayoutEffect(() => {
-		const el = containerRef.current;
-		if (!el) return;
+  // Determine effective position (controlled vs uncontrolled) without clamping on first render
+  const posResolved = useMemo(() => {
+    const raw = position == null ? internalPos : position;
 
-		const ro = new ResizeObserver(() => {
-			const rect = el.getBoundingClientRect();
-			const o = sizeRef.current;
-			sizeRef.current = { w: rect.width, h: rect.height };
+    // If we don't know size yet, just keep raw (no size-based min/max function evaluation)
+    // to avoid “startup jump from wrong clamping”.
+    const { w, h } = sizeRef.current;
+    const hasSize = (mode === "vertical" ? h > 0 : w > 0);
 
-			if (ref.current?.getPosition) {
-				const p = ref.current.getPosition();
+    if (!hasSize) return raw;
 
-				if (resizePolicy === 'fixFirst') {
-					if (internalMode === 'vertical') {
-						const availOld = o.h - splitterSize;
-						const availNew = sizeRef.current.h - splitterSize;
-						if (availOld > 0 && availNew > 0) {
-			       			const firstPx = p * availOld;          // fixed pane size in px
-					        const nextP = firstPx / availNew;     // recompute normalized
-					        if (Math.abs(nextP - p) > EPS) setPosition(nextP);
-					    }
-					} 
-					else {
-						const availOld = o.w - splitterSize;
-						const availNew = sizeRef.current.w - splitterSize;
-						if (availOld > 0 && availNew > 0) {
-							const firstPx = p * availOld;
-							const nextP = firstPx / availNew;
-							if (Math.abs(nextP - p) > EPS) setPosition(nextP);
-						}
-					}
-				} 
-				else if (resizePolicy === 'fixSecond') {
-				    // fixSecond means second pane pixel size stays constant.
-				    // secondPx = (1-p) * availOld
-				    // nextP = 1 - secondPx/availNew
-					if (internalMode === 'vertical') {
-						const availOld = o.h - splitterSize;
-						const availNew = sizeRef.current.h - splitterSize;
-						if (availOld > 0 && availNew > 0) {
-							const secondPx = (1 - p) * availOld;
-							const nextP = 1 - (secondPx / availNew);
-							if (Math.abs(nextP - p) > EPS) setPosition(nextP);
-						}
-					} 
-					else {
-						const availOld = o.w - splitterSize;
-						const availNew = sizeRef.current.w - splitterSize;
-						if (availOld > 0 && availNew > 0) {
-							const secondPx = (1 - p) * availOld;
-							const nextP = 1 - (secondPx / availNew);
-							if (Math.abs(nextP - p) > EPS) setPosition(nextP);
-						}
-					}
-				}
-			}
+    return clampWithSize(raw, internalModeRef.current, w, h);
+  }, [position, internalPos, min, max, splitterSize, mode]);
 
+  useEffect(() => {
+    effectivePosRef.current = posResolved;
+  }, [posResolved]);
 
-		});
+  // setPosition for imperative usage + drag + resizePolicy
+  const setPosition = (next) => {
+    const modeNow = internalModeRef.current;
+    const { w, h } = sizeRef.current;
 
-		ro.observe(el);
-		const rect = el.getBoundingClientRect();
-		sizeRef.current = { w: rect.width, h: rect.height };
+    // If size unknown, just update internalPos (we'll clamp on first measure)
+    if ((modeNow === "vertical" ? h <= 0 : w <= 0)) {
+      if (position == null) setInternalPos(next);
+      onSizeChange?.(next);
+      return;
+    }
 
-		return () => ro.disconnect();
-	}, [resizePolicy, internalMode]);
+    const clamped = clampWithSize(next, modeNow, w, h);
+    if (position == null) setInternalPos(clamped);
+    effectivePosRef.current = clamped;
+    onSizeChange?.(clamped);
+  };
 
-	const startPosRef = useRef(posResolved);
-	const [dragging, setDragging] = useState(false);
+  useImperativeHandle(ref, () => ({
+    setPosition,
+    setMode: (nextMode) => setInternalMode(nextMode === "vertical" ? "vertical" : "horizontal"),
+    getPosition: () => (effectivePosRef.current ?? posResolved),
+    getMode: () => internalModeRef.current,
+  }));
 
-	const handleStart = () => {
-		setDragging(true);
-		startPosRef.current = posResolved;
-	};
+  // One-time “first valid size” initialization:
+  // - update clamp
+  // - emit onSizeChange once so parent splitterPos becomes correct
+  const didInitRef = useRef(false);
 
-	const handleDelta = (x, y, _data) => {
-		const { w, h } = sizeRef.current;
-		if (internalMode === "horizontal") {
-			setPosition(startPosRef.current + x / (w || 1));
-		} else {
-			setPosition(startPosRef.current + y / (h || 1));
-		}
-	};
+  useLayoutEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
 
-	const handleEnd = () => setDragging(false);
+    const ro = new ResizeObserver((entries) => {
+      const rect = el.getBoundingClientRect();
+      const prev = sizeRef.current;
+      const nextSize = { w: rect.width, h: rect.height };
+      sizeRef.current = nextSize;
 
-	const arr = Children.toArray(children);
-	const firstChild = arr[0];
-	const secondChild = arr[1];
+      const modeNow = internalModeRef.current;
 
+      const hadSize = (modeNow === "vertical" ? prev.h > 0 : prev.w > 0);
+      const hasSizeNow = (modeNow === "vertical" ? nextSize.h > 0 : nextSize.w > 0);
 
-	const p = posResolved;
-	const { w, h } = sizeRef.current;
+      // First time we get meaningful size -> clamp + notify exactly once
+      if (!didInitRef.current && hasSizeNow) {
+        didInitRef.current = true;
 
-	const computedPane1Style = {
-		position: "absolute",
-		top: 0,
-		left: 0,
-		overflow: "auto",
+        const raw = position == null ? internalPosRef.current : position;
+        const clamped = clampWithSize(raw, modeNow, nextSize.w, nextSize.h);
 
-		...(firstPaneStyle || {}),
-	};
+        if (position == null) setInternalPos(clamped);
+        effectivePosRef.current = clamped;
+        onSizeChange?.(clamped);
 
-	const computedPane2Style = {
-		position: "absolute",
-		bottom: 0,
-		right: 0,
-		overflow: "auto",
+        return; // don't apply resizePolicy math on the same tick as init
+      }
 
-		...(secondPaneStyle || {}),
-	};
+      // Apply resizePolicy on subsequent resizes (when we have both old & new size)
+      if (!hadSize || !hasSizeNow) return;
 
+      const p = effectivePosRef.current ?? posResolved;
+      const rp = resizePolicyRef.current;
+      const s = splitterSize;
 
-	const computedSplitterStyle = {
-		background: "rgba(0,0,0,0.08)",
-		boxShadow: "inset 0 0 2px rgba(0,0,0,0.25)",
-		zIndex: 10,
-		position: "absolute",
-		cursor: internalMode==='horizontal' ? "col-resize" : "row-resize",
-		touchAction: "none",
-		pointerEvents: "auto",
-		...(splitterStyle || {}),
-	};
+      if (rp === "fixFirst") {
+        if (modeNow === "vertical") {
+          const availOld = prev.h - s;
+          const availNew = nextSize.h - s;
+          if (availOld > 0 && availNew > 0) {
+            const firstPx = p * availOld;
+            const nextP = firstPx / availNew;
+            if (Math.abs(nextP - p) > EPS) setPosition(nextP);
+          }
+        }
+        else {
+          const availOld = prev.w - s;
+          const availNew = nextSize.w - s;
+          if (availOld > 0 && availNew > 0) {
+            const firstPx = p * availOld;
+            const nextP = firstPx / availNew;
+            if (Math.abs(nextP - p) > EPS) setPosition(nextP);
+          }
+        }
+      }
+      else if (rp === "fixSecond") {
+        if (modeNow === "vertical") {
+          const availOld = prev.h - s;
+          const availNew = nextSize.h - s;
+          if (availOld > 0 && availNew > 0) {
+            const secondPx = (1 - p) * availOld;
+            const nextP = 1 - secondPx / availNew;
+            if (Math.abs(nextP - p) > EPS) setPosition(nextP);
+          }
+        }
+        else {
+          const availOld = prev.w - s;
+          const availNew = nextSize.w - s;
+          if (availOld > 0 && availNew > 0) {
+            const secondPx = (1 - p) * availOld;
+            const nextP = 1 - secondPx / availNew;
+            if (Math.abs(nextP - p) > EPS) setPosition(nextP);
+          }
+        }
+      } // proportional => derived from p; no policy adjustment needed
+    });
 
+    ro.observe(el);
+    return () => ro.disconnect();
+    // We intentionally do NOT include posResolved/internalPos here to avoid re-attaching observer.
+    // ResizeObserver uses refs to get latest values.
+  }, [min, max, splitterSize, onSizeChange, position]);
 
-	if(internalMode==='horizontal') {
-		computedPane1Style.bottom = 0;
-		computedPane2Style.top = 0;
+  // Drag support
+  const startPosRef = useRef(posResolved);
+  const [dragging, setDragging] = useState(false);
 
-		if(resizePolicy==='fixFirst') {
-			computedPane1Style.width = p*(w-splitterSize);
-			computedPane2Style.left = computedPane1Style.width+splitterSize;
+  useEffect(() => {
+    if (!dragging) startPosRef.current = posResolved;
+  }, [posResolved, dragging]);
 
-			Object.assign( computedSplitterStyle, {
-				top: 0,
-				bottom: 0,
-				left: computedPane1Style.width,
-				width: splitterSize,
-			});
-		}
-		else if(resizePolicy==='fixSecond') {
-			computedPane2Style.width = (1-p)*(w-splitterSize);
-			computedPane1Style.right = computedPane2Style.width+splitterSize;
+  const handleStart = () => {
+    setDragging(true);
+    startPosRef.current = effectivePosRef.current ?? posResolved;
+  };
 
-			Object.assign( computedSplitterStyle, {
-				top: 0,
-				bottom: 0,
-				right: computedPane2Style.width,
-				width: splitterSize,
-			});
-		}
-		else {
-			computedPane1Style.width = `calc(${p} * (100% - ${splitterSize}px))`;
-			computedPane2Style.left = `calc(${p} * (100% - ${splitterSize}px) + ${splitterSize}px)`;
+  const handleDelta = (x, y) => {
+    const modeNow = internalModeRef.current;
+    const { w, h } = sizeRef.current;
 
-			Object.assign( computedSplitterStyle, {
-				top: 0,
-				bottom: 0,
-				left: `calc(${p} * (100% - ${splitterSize}px))`,
-				width: splitterSize,
-			});
-		}
-	}
-	else {
-		computedPane1Style.right = 0;
-		computedPane2Style.left = 0;
+    if (modeNow === "horizontal") {
+      const denom = w > 0 ? w : 1;
+      setPosition(startPosRef.current + x / denom);
+    }
+    else {
+      const denom = h > 0 ? h : 1;
+      setPosition(startPosRef.current + y / denom);
+    }
+  };
 
-		if(resizePolicy==='fixFirst') {
-			computedPane1Style.height = p*(h-splitterSize);
-			computedPane2Style.top = computedPane1Style.height+splitterSize;
+  const handleEnd = () => setDragging(false);
 
-			Object.assign( computedSplitterStyle, {
-				left: 0,
-				right: 0,
-				top: computedPane1Style.height,
-				height: splitterSize,
-			});
-		}
-		else if(resizePolicy==='fixSecond') {
-			computedPane2Style.height = (1-p)*(h-splitterSize);
-			computedPane1Style.bottom = computedPane2Style.height+splitterSize;
+  const arr = Children.toArray(children);
+  const firstChild = arr[0];
+  const secondChild = arr[1];
 
-			Object.assign( computedSplitterStyle, {
-				left: 0,
-				right: 0,
-				bottom: computedPane2Style.height,
-				height: splitterSize,
-			});
-		}
-		else {
-			computedPane1Style.height = `calc(${p} * (100% - ${splitterSize}px))`;
-			computedPane2Style.top = `calc(${p} * (100% - ${splitterSize}px) + ${splitterSize}px)`;
+  const p = posResolved;
+  const { w, h } = sizeRef.current;
 
-			Object.assign( computedSplitterStyle, {
-				left: 0,
-				right: 0,
-				top: computedPane1Style.height,
-				height: splitterSize,
-			});
-		}
-	}
+  const computedPane1Style = {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    overflow: "auto",
+    ...(firstPaneStyle || {}),
+  };
 
-	return (
-		<div
-			ref={containerRef}
-			className={className}
-			style={{
-				position: "relative",
-				width: "100%",
-				height: "100%",
-				overflow: "hidden",
-				...(style || {}),
-			}}
-		>
-			<div style={computedPane1Style}>{firstChild}</div>
-			<div style={computedPane2Style}>{secondChild}</div>
+  const computedPane2Style = {
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    overflow: "auto",
+    ...(secondPaneStyle || {}),
+  };
 
-			<DragHandle
-				onStart={handleStart}
-				onDelta={handleDelta}
-				onEnd={handleEnd}
-				style={computedSplitterStyle}
-				className="splitter"
-			>
-				{splitterChild}
-			</DragHandle>
-		</div>
-	);
+  const computedSplitterStyle = {
+    background: "rgba(0,0,0,0.08)",
+    boxShadow: "inset 0 0 2px rgba(0,0,0,0.25)",
+    zIndex: 10,
+    position: "absolute",
+    cursor: internalMode === "horizontal" ? "col-resize" : "row-resize",
+    touchAction: "none",
+    pointerEvents: "auto",
+    ...(splitterStyle || {}),
+  };
+
+  if (internalMode === "horizontal") {
+    computedPane1Style.bottom = 0;
+    computedPane2Style.top = 0;
+
+    if (resizePolicy === "fixFirst") {
+      const ww = w - splitterSize;
+      const pane1W = ww > 0 ? p * ww : 0;
+
+      computedPane1Style.width = pane1W;
+      computedPane2Style.left = pane1W + splitterSize;
+
+      Object.assign(computedSplitterStyle, {
+        top: 0,
+        bottom: 0,
+        left: pane1W,
+        width: splitterSize,
+      });
+    }
+    else if (resizePolicy === "fixSecond") {
+      const ww = w - splitterSize;
+      const pane2W = ww > 0 ? (1 - p) * ww : 0;
+
+      computedPane2Style.width = pane2W;
+      computedPane1Style.right = pane2W + splitterSize;
+
+      Object.assign(computedSplitterStyle, {
+        top: 0,
+        bottom: 0,
+        right: pane2W,
+        width: splitterSize,
+      });
+    } else {
+      computedPane1Style.width = `calc(${p} * (100% - ${splitterSize}px))`;
+      computedPane2Style.left = `calc(${p} * (100% - ${splitterSize}px) + ${splitterSize}px)`;
+
+      Object.assign(computedSplitterStyle, {
+        top: 0,
+        bottom: 0,
+        left: `calc(${p} * (100% - ${splitterSize}px))`,
+        width: splitterSize,
+      });
+    }
+  } else {
+    // vertical
+    computedPane1Style.right = 0;
+    computedPane2Style.left = 0;
+
+    if (resizePolicy === "fixFirst") {
+      const hh = h - splitterSize;
+      const pane1H = hh > 0 ? p * hh : 0;
+
+      computedPane1Style.height = pane1H;
+      computedPane2Style.top = pane1H + splitterSize;
+
+      Object.assign(computedSplitterStyle, {
+        left: 0,
+        right: 0,
+        top: pane1H,
+        height: splitterSize,
+      });
+    } else if (resizePolicy === "fixSecond") {
+      const hh = h - splitterSize;
+      const pane2H = hh > 0 ? (1 - p) * hh : 0;
+
+      computedPane2Style.height = pane2H;
+      computedPane1Style.bottom = pane2H + splitterSize;
+
+      Object.assign(computedSplitterStyle, {
+        left: 0,
+        right: 0,
+        bottom: pane2H,
+        height: splitterSize,
+      });
+    } else {
+      computedPane1Style.height = `calc(${p} * (100% - ${splitterSize}px))`;
+      computedPane2Style.top = `calc(${p} * (100% - ${splitterSize}px) + ${splitterSize}px)`;
+
+      Object.assign(computedSplitterStyle, {
+        left: 0,
+        right: 0,
+        top: computedPane1Style.height,
+        height: splitterSize,
+      });
+    }
+  }
+
+  return (
+    <div
+      ref={containerRef}
+      className={className}
+      style={{
+        position: "relative",
+        width: "100%",
+        height: "100%",
+        overflow: "hidden",
+        ...(style || {}),
+      }}
+    >
+      <div style={computedPane1Style}>{firstChild}</div>
+      <div style={computedPane2Style}>{secondChild}</div>
+
+      <DragHandle
+        key={internalMode}
+        onStart={handleStart}
+        onDelta={handleDelta}
+        onEnd={handleEnd}
+        style={computedSplitterStyle}
+        className="splitter"
+      >
+        {splitterChild}
+      </DragHandle>
+    </div>
+  );
 });
 
 const EPS = 1e-6;
 
-const clamp = function(v, min, max, size, splitterSize) {
-	if(typeof(min)==='function') { if(size>0) min = min(size, splitterSize); else min=0; }
-	if(typeof(max)==='function') { if(size>0) max = max(size, splitterSize); else max=1; }
-	min = Math.max( 0, Math.min(min,1) );
-	max = Math.max( 0, Math.min(max,1) );
-	return Math.max(min, Math.min(max, v));
-}
+const clamp = function (v, min, max, size, splitterSize) {
+  let _min = min;
+  let _max = max;
+
+  // Only evaluate min/max functions when size is known (>0).
+  // When size is unknown, we don't want to clamp based on a fake size (prevents startup jumps).
+  if (typeof _min === "function") {
+    if (size > 0) _min = _min(size, splitterSize);
+    else _min = 0;
+  }
+  if (typeof _max === "function") {
+    if (size > 0) _max = _max(size, splitterSize);
+    else _max = 1;
+  }
+
+  _min = Math.max(0, Math.min(_min, 1));
+  _max = Math.max(0, Math.min(_max, 1));
+  return Math.max(_min, Math.min(_max, v));
+};

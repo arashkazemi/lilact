@@ -4980,120 +4980,145 @@ var SplitPane = forwardRef(function SplitPane2({
   children
 }, ref) {
   const containerRef = useRef(null);
-  const sizeRef = useRef({ w: splitterSize + 1, h: splitterSize + 1 });
-  const initialMode = mode === "vertical" ? "vertical" : "horizontal";
-  const [internalMode, setInternalMode] = useState(initialMode);
-  const [internalPos, setInternalPos] = useState(clamp(
-    defaultPosition,
-    min,
-    max,
-    mode === "vertical" ? sizeRef.current.h : sizeRef.current.w,
-    splitterSize
-  ));
-  let posResolved = position2 == null ? internalPos : position2;
-  posResolved = clamp(
-    posResolved,
-    min,
-    max,
-    mode === "vertical" ? sizeRef.current.h : sizeRef.current.w,
-    splitterSize
-  );
+  const sizeRef = useRef({ w: 0, h: 0 });
+  const [internalMode, setInternalMode] = useState(mode === "vertical" ? "vertical" : "horizontal");
+  const internalModeRef = useRef(internalMode);
+  const [internalPos, setInternalPos] = useState(defaultPosition);
+  const internalPosRef = useRef(internalPos);
+  const effectivePosRef = useRef(void 0);
+  const resizePolicyRef = useRef(resizePolicy);
   useEffect(() => {
-    if (position2 == null) return;
-    setInternalPos(clamp(
-      position2,
-      min,
-      max,
-      mode === "vertical" ? sizeRef.current.h : sizeRef.current.w,
-      splitterSize
-    ));
-  }, [position2, min, max]);
+    resizePolicyRef.current = resizePolicy;
+  }, [resizePolicy]);
+  internalModeRef.current = internalMode;
   useEffect(() => {
+    internalPosRef.current = internalPos;
+  }, [internalPos]);
+  useLayoutEffect(() => {
     setInternalMode(mode === "vertical" ? "vertical" : "horizontal");
   }, [mode]);
+  const clampWithSize = (v, modeNow, w2, h2) => {
+    const size = modeNow === "vertical" ? h2 : w2;
+    return clamp(v, min, max, size, splitterSize);
+  };
+  const posResolved = useMemo(() => {
+    const raw = position2 == null ? internalPos : position2;
+    const { w: w2, h: h2 } = sizeRef.current;
+    const hasSize = mode === "vertical" ? h2 > 0 : w2 > 0;
+    if (!hasSize) return raw;
+    return clampWithSize(raw, internalModeRef.current, w2, h2);
+  }, [position2, internalPos, min, max, splitterSize, mode]);
+  useEffect(() => {
+    effectivePosRef.current = posResolved;
+  }, [posResolved]);
   const setPosition = (next2) => {
-    const clamped = clamp(
-      next2,
-      min,
-      max,
-      mode === "vertical" ? sizeRef.current.h : sizeRef.current.w,
-      splitterSize
-    );
+    const modeNow = internalModeRef.current;
+    const { w: w2, h: h2 } = sizeRef.current;
+    if (modeNow === "vertical" ? h2 <= 0 : w2 <= 0) {
+      if (position2 == null) setInternalPos(next2);
+      onSizeChange == null ? void 0 : onSizeChange(next2);
+      return;
+    }
+    const clamped = clampWithSize(next2, modeNow, w2, h2);
     if (position2 == null) setInternalPos(clamped);
+    effectivePosRef.current = clamped;
     onSizeChange == null ? void 0 : onSizeChange(clamped);
   };
   useImperativeHandle(ref, () => ({
     setPosition,
     setMode: (nextMode) => setInternalMode(nextMode === "vertical" ? "vertical" : "horizontal"),
-    getPosition: () => posResolved,
-    getMode: () => internalMode
+    getPosition: () => {
+      var _a;
+      return (_a = effectivePosRef.current) != null ? _a : posResolved;
+    },
+    getMode: () => internalModeRef.current
   }));
+  const didInitRef = useRef(false);
   useLayoutEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-    const ro = new ResizeObserver(() => {
+    const ro = new ResizeObserver((entries) => {
       var _a;
-      const rect2 = el.getBoundingClientRect();
-      const o = sizeRef.current;
-      sizeRef.current = { w: rect2.width, h: rect2.height };
-      if ((_a = ref.current) == null ? void 0 : _a.getPosition) {
-        const p2 = ref.current.getPosition();
-        if (resizePolicy === "fixFirst") {
-          if (internalMode === "vertical") {
-            const availOld = o.h - splitterSize;
-            const availNew = sizeRef.current.h - splitterSize;
-            if (availOld > 0 && availNew > 0) {
-              const firstPx = p2 * availOld;
-              const nextP = firstPx / availNew;
-              if (Math.abs(nextP - p2) > EPS) setPosition(nextP);
-            }
-          } else {
-            const availOld = o.w - splitterSize;
-            const availNew = sizeRef.current.w - splitterSize;
-            if (availOld > 0 && availNew > 0) {
-              const firstPx = p2 * availOld;
-              const nextP = firstPx / availNew;
-              if (Math.abs(nextP - p2) > EPS) setPosition(nextP);
-            }
+      const rect = el.getBoundingClientRect();
+      const prev2 = sizeRef.current;
+      const nextSize = { w: rect.width, h: rect.height };
+      sizeRef.current = nextSize;
+      const modeNow = internalModeRef.current;
+      const hadSize = modeNow === "vertical" ? prev2.h > 0 : prev2.w > 0;
+      const hasSizeNow = modeNow === "vertical" ? nextSize.h > 0 : nextSize.w > 0;
+      if (!didInitRef.current && hasSizeNow) {
+        didInitRef.current = true;
+        const raw = position2 == null ? internalPosRef.current : position2;
+        const clamped = clampWithSize(raw, modeNow, nextSize.w, nextSize.h);
+        if (position2 == null) setInternalPos(clamped);
+        effectivePosRef.current = clamped;
+        onSizeChange == null ? void 0 : onSizeChange(clamped);
+        return;
+      }
+      if (!hadSize || !hasSizeNow) return;
+      const p2 = (_a = effectivePosRef.current) != null ? _a : posResolved;
+      const rp = resizePolicyRef.current;
+      const s = splitterSize;
+      if (rp === "fixFirst") {
+        if (modeNow === "vertical") {
+          const availOld = prev2.h - s;
+          const availNew = nextSize.h - s;
+          if (availOld > 0 && availNew > 0) {
+            const firstPx = p2 * availOld;
+            const nextP = firstPx / availNew;
+            if (Math.abs(nextP - p2) > EPS) setPosition(nextP);
           }
-        } else if (resizePolicy === "fixSecond") {
-          if (internalMode === "vertical") {
-            const availOld = o.h - splitterSize;
-            const availNew = sizeRef.current.h - splitterSize;
-            if (availOld > 0 && availNew > 0) {
-              const secondPx = (1 - p2) * availOld;
-              const nextP = 1 - secondPx / availNew;
-              if (Math.abs(nextP - p2) > EPS) setPosition(nextP);
-            }
-          } else {
-            const availOld = o.w - splitterSize;
-            const availNew = sizeRef.current.w - splitterSize;
-            if (availOld > 0 && availNew > 0) {
-              const secondPx = (1 - p2) * availOld;
-              const nextP = 1 - secondPx / availNew;
-              if (Math.abs(nextP - p2) > EPS) setPosition(nextP);
-            }
+        } else {
+          const availOld = prev2.w - s;
+          const availNew = nextSize.w - s;
+          if (availOld > 0 && availNew > 0) {
+            const firstPx = p2 * availOld;
+            const nextP = firstPx / availNew;
+            if (Math.abs(nextP - p2) > EPS) setPosition(nextP);
+          }
+        }
+      } else if (rp === "fixSecond") {
+        if (modeNow === "vertical") {
+          const availOld = prev2.h - s;
+          const availNew = nextSize.h - s;
+          if (availOld > 0 && availNew > 0) {
+            const secondPx = (1 - p2) * availOld;
+            const nextP = 1 - secondPx / availNew;
+            if (Math.abs(nextP - p2) > EPS) setPosition(nextP);
+          }
+        } else {
+          const availOld = prev2.w - s;
+          const availNew = nextSize.w - s;
+          if (availOld > 0 && availNew > 0) {
+            const secondPx = (1 - p2) * availOld;
+            const nextP = 1 - secondPx / availNew;
+            if (Math.abs(nextP - p2) > EPS) setPosition(nextP);
           }
         }
       }
     });
     ro.observe(el);
-    const rect = el.getBoundingClientRect();
-    sizeRef.current = { w: rect.width, h: rect.height };
     return () => ro.disconnect();
-  }, [resizePolicy, internalMode]);
+  }, [min, max, splitterSize, onSizeChange, position2]);
   const startPosRef = useRef(posResolved);
   const [dragging, setDragging] = useState(false);
+  useEffect(() => {
+    if (!dragging) startPosRef.current = posResolved;
+  }, [posResolved, dragging]);
   const handleStart = () => {
+    var _a;
     setDragging(true);
-    startPosRef.current = posResolved;
+    startPosRef.current = (_a = effectivePosRef.current) != null ? _a : posResolved;
   };
-  const handleDelta = (x, y, _data) => {
+  const handleDelta = (x, y) => {
+    const modeNow = internalModeRef.current;
     const { w: w2, h: h2 } = sizeRef.current;
-    if (internalMode === "horizontal") {
-      setPosition(startPosRef.current + x / (w2 || 1));
+    if (modeNow === "horizontal") {
+      const denom = w2 > 0 ? w2 : 1;
+      setPosition(startPosRef.current + x / denom);
     } else {
-      setPosition(startPosRef.current + y / (h2 || 1));
+      const denom = h2 > 0 ? h2 : 1;
+      setPosition(startPosRef.current + y / denom);
     }
   };
   const handleEnd = () => setDragging(false);
@@ -5130,21 +5155,25 @@ var SplitPane = forwardRef(function SplitPane2({
     computedPane1Style.bottom = 0;
     computedPane2Style.top = 0;
     if (resizePolicy === "fixFirst") {
-      computedPane1Style.width = p * (w - splitterSize);
-      computedPane2Style.left = computedPane1Style.width + splitterSize;
+      const ww = w - splitterSize;
+      const pane1W = ww > 0 ? p * ww : 0;
+      computedPane1Style.width = pane1W;
+      computedPane2Style.left = pane1W + splitterSize;
       Object.assign(computedSplitterStyle, {
         top: 0,
         bottom: 0,
-        left: computedPane1Style.width,
+        left: pane1W,
         width: splitterSize
       });
     } else if (resizePolicy === "fixSecond") {
-      computedPane2Style.width = (1 - p) * (w - splitterSize);
-      computedPane1Style.right = computedPane2Style.width + splitterSize;
+      const ww = w - splitterSize;
+      const pane2W = ww > 0 ? (1 - p) * ww : 0;
+      computedPane2Style.width = pane2W;
+      computedPane1Style.right = pane2W + splitterSize;
       Object.assign(computedSplitterStyle, {
         top: 0,
         bottom: 0,
-        right: computedPane2Style.width,
+        right: pane2W,
         width: splitterSize
       });
     } else {
@@ -5161,21 +5190,25 @@ var SplitPane = forwardRef(function SplitPane2({
     computedPane1Style.right = 0;
     computedPane2Style.left = 0;
     if (resizePolicy === "fixFirst") {
-      computedPane1Style.height = p * (h - splitterSize);
-      computedPane2Style.top = computedPane1Style.height + splitterSize;
+      const hh = h - splitterSize;
+      const pane1H = hh > 0 ? p * hh : 0;
+      computedPane1Style.height = pane1H;
+      computedPane2Style.top = pane1H + splitterSize;
       Object.assign(computedSplitterStyle, {
         left: 0,
         right: 0,
-        top: computedPane1Style.height,
+        top: pane1H,
         height: splitterSize
       });
     } else if (resizePolicy === "fixSecond") {
-      computedPane2Style.height = (1 - p) * (h - splitterSize);
-      computedPane1Style.bottom = computedPane2Style.height + splitterSize;
+      const hh = h - splitterSize;
+      const pane2H = hh > 0 ? (1 - p) * hh : 0;
+      computedPane2Style.height = pane2H;
+      computedPane1Style.bottom = pane2H + splitterSize;
       Object.assign(computedSplitterStyle, {
         left: 0,
         right: 0,
-        bottom: computedPane2Style.height,
+        bottom: pane2H,
         height: splitterSize
       });
     } else {
@@ -5195,21 +5228,23 @@ var SplitPane = forwardRef(function SplitPane2({
     height: "100%",
     overflow: "hidden",
     ...style || {}
-  } }, createComponent("div", { "style": computedPane1Style }, firstChild), createComponent("div", { "style": computedPane2Style }, secondChild), createComponent(DragHandle, { "onStart": handleStart, "onDelta": handleDelta, "onEnd": handleEnd, "style": computedSplitterStyle, "className": "splitter" }, splitterChild));
+  } }, createComponent("div", { "style": computedPane1Style }, firstChild), createComponent("div", { "style": computedPane2Style }, secondChild), createComponent(DragHandle, { "key": internalMode, "onStart": handleStart, "onDelta": handleDelta, "onEnd": handleEnd, "style": computedSplitterStyle, "className": "splitter" }, splitterChild));
 });
 var EPS = 1e-6;
 var clamp = function(v, min, max, size, splitterSize) {
-  if (typeof min === "function") {
-    if (size > 0) min = min(size, splitterSize);
-    else min = 0;
+  let _min = min;
+  let _max = max;
+  if (typeof _min === "function") {
+    if (size > 0) _min = _min(size, splitterSize);
+    else _min = 0;
   }
-  if (typeof max === "function") {
-    if (size > 0) max = max(size, splitterSize);
-    else max = 1;
+  if (typeof _max === "function") {
+    if (size > 0) _max = _max(size, splitterSize);
+    else _max = 1;
   }
-  min = Math.max(0, Math.min(min, 1));
-  max = Math.max(0, Math.min(max, 1));
-  return Math.max(min, Math.min(max, v));
+  _min = Math.max(0, Math.min(_min, 1));
+  _max = Math.max(0, Math.min(_max, 1));
+  return Math.max(_min, Math.min(_max, v));
 };
 
 // .tmp/src/vlq.js
