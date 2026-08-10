@@ -420,7 +420,7 @@ export function DragHandle({
  * @param max - Maximum allowed position. Defaults to `0.9`.
  		  Can also be a function that will be called with (containerWidth|containerHeight,splitterSize) as arguments
  * @param splitterSize - Thickness of the draggable splitter in pixels. Defaults to `8`.
- * @param resizeMode - The behavior on container resize. Its value can be `proportional`, `fixFirst` or `fixSecond`.
+ * @param resizePolicy - The behavior on container resize. Its value can be `proportional`, `fixFirst` or `fixSecond`.
  * 		  Default is `proportional`.
  * @param onSizeChange - Callback invoked when the position changes. Receives the new normalized position.
  * @param style - Optional root container styles.
@@ -457,7 +457,7 @@ export const SplitPane = forwardRef(function SplitPane(
 		max = 0.9,
 		splitterSize = 8,
 		onSizeChange,
-		resizeMode = "proportional",
+		resizePolicy = "proportional",
 		style,
 		className,
 		firstPaneStyle,
@@ -469,23 +469,23 @@ export const SplitPane = forwardRef(function SplitPane(
 	ref
 ) {
 	const containerRef = useRef(null);
-	const sizeRef = useRef({ w: 0, h: 0 });
+	const sizeRef = useRef({ w: splitterSize+1, h: splitterSize+1 });
 
 	const initialMode = mode === "vertical" ? "vertical" : "horizontal";
 	const [internalMode, setInternalMode] = useState(initialMode);
 
 	const [internalPos, setInternalPos] = useState(clamp(defaultPosition, min, max, 
-						 mode==='verical'?sizeRef.current.h:sizeRef.current.w, splitterSize));
+						 mode==='vertical'?sizeRef.current.h:sizeRef.current.w, splitterSize));
 
 
 	let posResolved = position == null ? internalPos : position;
 	posResolved = clamp(posResolved, min, max, 
-						 mode==='verical'?sizeRef.current.h:sizeRef.current.w, splitterSize);
+						 mode==='vertical'?sizeRef.current.h:sizeRef.current.w, splitterSize);
 
 	useEffect(() => {
 		if (position == null) return;
 		setInternalPos(clamp(position, min, max, 
-							 mode==='verical'?sizeRef.current.h:sizeRef.current.w, splitterSize));
+							 mode==='vertical'?sizeRef.current.h:sizeRef.current.w, splitterSize));
 	}, [position, min, max]);
 
 	useEffect(() => {
@@ -494,7 +494,7 @@ export const SplitPane = forwardRef(function SplitPane(
 
 	const setPosition = (next) => {
 		const clamped = clamp(next, min, max, 
-							 mode==='verical'?sizeRef.current.h:sizeRef.current.w, splitterSize);
+							 mode==='vertical'?sizeRef.current.h:sizeRef.current.w, splitterSize);
 		if (position == null) setInternalPos(clamped);
 		onSizeChange?.(clamped);
 	};
@@ -516,25 +516,55 @@ export const SplitPane = forwardRef(function SplitPane(
 			const o = sizeRef.current;
 			sizeRef.current = { w: rect.width, h: rect.height };
 
+			if (ref.current?.getPosition) {
+				const p = ref.current.getPosition();
 
-			if(ref.current?.getPosition) {
-				if( resizeMode==='fixFirst') {
-					if(internalMode==='vertical' && o.h>0) {
-						setPosition( ref.current.getPosition() * o.h/sizeRef.current.h );
+				if (resizePolicy === 'fixFirst') {
+					if (internalMode === 'vertical') {
+						const availOld = o.h - splitterSize;
+						const availNew = sizeRef.current.h - splitterSize;
+						if (availOld > 0 && availNew > 0) {
+			       			const firstPx = p * availOld;          // fixed pane size in px
+					        const nextP = firstPx / availNew;     // recompute normalized
+					        if (Math.abs(nextP - p) > EPS) setPosition(nextP);
+					    }
+					} 
+					else {
+						const availOld = o.w - splitterSize;
+						const availNew = sizeRef.current.w - splitterSize;
+						if (availOld > 0 && availNew > 0) {
+							const firstPx = p * availOld;
+							const nextP = firstPx / availNew;
+							if (Math.abs(nextP - p) > EPS) setPosition(nextP);
+						}
 					}
-					else if(o.w>0) {
-						setPosition( ref.current.getPosition() * o.w/sizeRef.current.w );
-					}
-				}
-				else if( resizeMode==='fixSecond') {
-					if(internalMode==='vertical' && o.h>0) {
-						setPosition( 1 - ( (1-ref.current.getPosition()) * o.h/sizeRef.current.h ) );
-					}
-					else if(o.w>0) {
-						setPosition( 1 - ( (1-ref.current.getPosition()) * o.w/sizeRef.current.w ) );
+				} 
+				else if (resizePolicy === 'fixSecond') {
+				    // fixSecond means second pane pixel size stays constant.
+				    // secondPx = (1-p) * availOld
+				    // nextP = 1 - secondPx/availNew
+					if (internalMode === 'vertical') {
+						const availOld = o.h - splitterSize;
+						const availNew = sizeRef.current.h - splitterSize;
+						if (availOld > 0 && availNew > 0) {
+							const secondPx = (1 - p) * availOld;
+							const nextP = 1 - (secondPx / availNew);
+							if (Math.abs(nextP - p) > EPS) setPosition(nextP);
+						}
+					} 
+					else {
+						const availOld = o.w - splitterSize;
+						const availNew = sizeRef.current.w - splitterSize;
+						if (availOld > 0 && availNew > 0) {
+							const secondPx = (1 - p) * availOld;
+							const nextP = 1 - (secondPx / availNew);
+							if (Math.abs(nextP - p) > EPS) setPosition(nextP);
+						}
 					}
 				}
 			}
+
+
 		});
 
 		ro.observe(el);
@@ -542,7 +572,7 @@ export const SplitPane = forwardRef(function SplitPane(
 		sizeRef.current = { w: rect.width, h: rect.height };
 
 		return () => ro.disconnect();
-	}, [resizeMode, internalMode]);
+	}, [resizePolicy, internalMode]);
 
 	const startPosRef = useRef(posResolved);
 	const [dragging, setDragging] = useState(false);
@@ -606,7 +636,7 @@ export const SplitPane = forwardRef(function SplitPane(
 		computedPane1Style.bottom = 0;
 		computedPane2Style.top = 0;
 
-		if(resizeMode==='fixFirst') {
+		if(resizePolicy==='fixFirst') {
 			computedPane1Style.width = p*(w-splitterSize);
 			computedPane2Style.left = computedPane1Style.width+splitterSize;
 
@@ -617,14 +647,14 @@ export const SplitPane = forwardRef(function SplitPane(
 				width: splitterSize,
 			});
 		}
-		else if(resizeMode==='fixSecond') {
+		else if(resizePolicy==='fixSecond') {
 			computedPane2Style.width = (1-p)*(w-splitterSize);
 			computedPane1Style.right = computedPane2Style.width+splitterSize;
 
 			Object.assign( computedSplitterStyle, {
 				top: 0,
 				bottom: 0,
-				left: computedPane2Style.width,
+				right: computedPane2Style.width,
 				width: splitterSize,
 			});
 		}
@@ -644,7 +674,7 @@ export const SplitPane = forwardRef(function SplitPane(
 		computedPane1Style.right = 0;
 		computedPane2Style.left = 0;
 
-		if(resizeMode==='fixFirst') {
+		if(resizePolicy==='fixFirst') {
 			computedPane1Style.height = p*(h-splitterSize);
 			computedPane2Style.top = computedPane1Style.height+splitterSize;
 
@@ -655,7 +685,7 @@ export const SplitPane = forwardRef(function SplitPane(
 				height: splitterSize,
 			});
 		}
-		else if(resizeMode==='fixSecond') {
+		else if(resizePolicy==='fixSecond') {
 			computedPane2Style.height = (1-p)*(h-splitterSize);
 			computedPane1Style.bottom = computedPane2Style.height+splitterSize;
 
@@ -707,9 +737,12 @@ export const SplitPane = forwardRef(function SplitPane(
 	);
 });
 
+const EPS = 1e-6;
 
 const clamp = function(v, min, max, size, splitterSize) {
 	if(typeof(min)==='function') { if(size>0) min = min(size, splitterSize); else min=0; }
 	if(typeof(max)==='function') { if(size>0) max = max(size, splitterSize); else max=1; }
+	min = Math.max( 0, Math.min(min,1) );
+	max = Math.max( 0, Math.min(max,1) );
 	return Math.max(min, Math.min(max, v));
 }
