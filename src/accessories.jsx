@@ -416,8 +416,12 @@ export function DragHandle({
  * If provided, the component uses this value instead of internal state.
  * @param defaultPosition - Initial splitter position for uncontrolled usage. Defaults to `0.5`.
  * @param min - Minimum allowed position. Defaults to `0.1`.
+ 		  Can also be a function that will be called with (containerWidth|containerHeight,splitterSize) as arguments
  * @param max - Maximum allowed position. Defaults to `0.9`.
+ 		  Can also be a function that will be called with (containerWidth|containerHeight,splitterSize) as arguments
  * @param splitterSize - Thickness of the draggable splitter in pixels. Defaults to `8`.
+ * @param resizeMode - The behavior on container resize. Its value can be `proportional`, `fixFirst` or `fixSecond`.
+ * 		  Default is `proportional`.
  * @param onSizeChange - Callback invoked when the position changes. Receives the new normalized position.
  * @param style - Optional root container styles.
  * @param className - Optional root container CSS class.
@@ -453,6 +457,7 @@ export const SplitPane = forwardRef(function SplitPane(
 		max = 0.9,
 		splitterSize = 8,
 		onSizeChange,
+		resizeMode = "proportional",
 		style,
 		className,
 		firstPaneStyle,
@@ -463,15 +468,24 @@ export const SplitPane = forwardRef(function SplitPane(
 	},
 	ref
 ) {
+	const containerRef = useRef(null);
+	const sizeRef = useRef({ w: 0, h: 0 });
+
 	const initialMode = mode === "vertical" ? "vertical" : "horizontal";
 	const [internalMode, setInternalMode] = useState(initialMode);
 
-	const [internalPos, setInternalPos] = useState(clamp(defaultPosition, min, max));
-	const posResolved = position == null ? internalPos : clamp(position, min, max);
+	const [internalPos, setInternalPos] = useState(clamp(defaultPosition, min, max, 
+						 mode==='verical'?sizeRef.current.h:sizeRef.current.w, splitterSize));
+
+
+	let posResolved = position == null ? internalPos : position;
+	posResolved = clamp(posResolved, min, max, 
+						 mode==='verical'?sizeRef.current.h:sizeRef.current.w, splitterSize);
 
 	useEffect(() => {
 		if (position == null) return;
-		setInternalPos(clamp(position, min, max));
+		setInternalPos(clamp(position, min, max, 
+							 mode==='verical'?sizeRef.current.h:sizeRef.current.w, splitterSize));
 	}, [position, min, max]);
 
 	useEffect(() => {
@@ -479,7 +493,8 @@ export const SplitPane = forwardRef(function SplitPane(
 	}, [mode]);
 
 	const setPosition = (next) => {
-		const clamped = clamp(next, min, max);
+		const clamped = clamp(next, min, max, 
+							 mode==='verical'?sizeRef.current.h:sizeRef.current.w, splitterSize);
 		if (position == null) setInternalPos(clamped);
 		onSizeChange?.(clamped);
 	};
@@ -491,8 +506,6 @@ export const SplitPane = forwardRef(function SplitPane(
 		getMode: () => internalMode,
 	}));
 
-	const containerRef = useRef(null);
-	const sizeRef = useRef({ w: 0, h: 0 });
 
 	useLayoutEffect(() => {
 		const el = containerRef.current;
@@ -500,7 +513,28 @@ export const SplitPane = forwardRef(function SplitPane(
 
 		const ro = new ResizeObserver(() => {
 			const rect = el.getBoundingClientRect();
+			const o = sizeRef.current;
 			sizeRef.current = { w: rect.width, h: rect.height };
+
+
+			if(ref.current?.getPosition) {
+				if( resizeMode==='fixFirst') {
+					if(internalMode==='vertical' && o.h>0) {
+						setPosition( ref.current.getPosition() * o.h/sizeRef.current.h );
+					}
+					else if(o.w>0) {
+						setPosition( ref.current.getPosition() * o.w/sizeRef.current.w );
+					}
+				}
+				else if( resizeMode==='fixSecond') {
+					if(internalMode==='vertical' && o.h>0) {
+						setPosition( 1 - ( (1-ref.current.getPosition()) * o.h/sizeRef.current.h ) );
+					}
+					else if(o.w>0) {
+						setPosition( 1 - ( (1-ref.current.getPosition()) * o.w/sizeRef.current.w ) );
+					}
+				}
+			}
 		});
 
 		ro.observe(el);
@@ -508,7 +542,7 @@ export const SplitPane = forwardRef(function SplitPane(
 		sizeRef.current = { w: rect.width, h: rect.height };
 
 		return () => ro.disconnect();
-	}, []);
+	}, [resizeMode, internalMode]);
 
 	const startPosRef = useRef(posResolved);
 	const [dragging, setDragging] = useState(false);
@@ -533,90 +567,117 @@ export const SplitPane = forwardRef(function SplitPane(
 	const firstChild = arr[0];
 	const secondChild = arr[1];
 
+
 	const p = posResolved;
+	const { w, h } = sizeRef.current;
 
-	const pane1StyleAbs =
-		internalMode === "horizontal"
-			? {
-					position: "absolute",
-					top: 0,
-					bottom: 0,
-					left: 0,
-					width: `calc(${p} * (100% - ${splitterSize}px))`,
-					overflow: "auto",
-					...(firstPaneStyle || {}),
-				}
-			: {
-					position: "absolute",
-					left: 0,
-					right: 0,
-					top: 0,
-					height: `calc(${p} * (100% - ${splitterSize}px))`,
-					overflow: "auto",
-					...(firstPaneStyle || {}),
-				};
+	const computedPane1Style = {
+		position: "absolute",
+		top: 0,
+		left: 0,
+		overflow: "auto",
 
-	const pane2StyleAbs =
-		internalMode === "horizontal"
-			? {
-					position: "absolute",
-					top: 0,
-					bottom: 0,
-					left: `calc(${p} * (100% - ${splitterSize}px) + ${splitterSize}px)`,
-					right: 0,
-					overflow: "auto",
-					...(secondPaneStyle || {}),
-				}
-			: {
-					position: "absolute",
-					left: 0,
-					right: 0,
-					top: `calc(${p} * (100% - ${splitterSize}px) + ${splitterSize}px)`,
-					bottom: 0,
-					overflow: "auto",
-					...(secondPaneStyle || {}),
-				};
+		...(firstPaneStyle || {}),
+	};
 
-	// Basic visible default for splitter (so it doesn't "disappear" on mode switch).
-	// Also give zIndex + background and keep pointer events enabled.
-	const splitterBase = {
+	const computedPane2Style = {
+		position: "absolute",
+		bottom: 0,
+		right: 0,
+		overflow: "auto",
+
+		...(secondPaneStyle || {}),
+	};
+
+
+	const computedSplitterStyle = {
 		background: "rgba(0,0,0,0.08)",
 		boxShadow: "inset 0 0 2px rgba(0,0,0,0.25)",
 		zIndex: 10,
+		position: "absolute",
+		cursor: internalMode==='horizontal' ? "col-resize" : "row-resize",
+		touchAction: "none",
+		pointerEvents: "auto",
+		...(splitterStyle || {}),
 	};
 
-	const splitterAbsStyle =
-		internalMode === "horizontal"
-			? {
-					position: "absolute",
-					top: 0,
-					bottom: 0,
-					left: `calc(${p} * (100% - ${splitterSize}px))`,
-					width: splitterSize,
-					height: "100%",
 
-					cursor: dragging ? "col-resize" : "col-resize",
-					touchAction: "none",
-					pointerEvents: "auto",
+	if(internalMode==='horizontal') {
+		computedPane1Style.bottom = 0;
+		computedPane2Style.top = 0;
 
-					...splitterBase,
-					...(splitterStyle || {}),
-				}
-			: {
-					position: "absolute",
-					left: 0,
-					right: 0,
-					top: `calc(${p} * (100% - ${splitterSize}px))`,
-					height: splitterSize,
-					width: "100%",
+		if(resizeMode==='fixFirst') {
+			computedPane1Style.width = p*(w-splitterSize);
+			computedPane2Style.left = computedPane1Style.width+splitterSize;
 
-					cursor: dragging ? "row-resize" : "row-resize",
-					touchAction: "none",
-					pointerEvents: "auto",
+			Object.assign( computedSplitterStyle, {
+				top: 0,
+				bottom: 0,
+				left: computedPane1Style.width,
+				width: splitterSize,
+			});
+		}
+		else if(resizeMode==='fixSecond') {
+			computedPane2Style.width = (1-p)*(w-splitterSize);
+			computedPane1Style.right = computedPane2Style.width+splitterSize;
 
-					...splitterBase,
-					...(splitterStyle || {}),
-				};
+			Object.assign( computedSplitterStyle, {
+				top: 0,
+				bottom: 0,
+				left: computedPane2Style.width,
+				width: splitterSize,
+			});
+		}
+		else {
+			computedPane1Style.width = `calc(${p} * (100% - ${splitterSize}px))`;
+			computedPane2Style.left = `calc(${p} * (100% - ${splitterSize}px) + ${splitterSize}px)`;
+
+			Object.assign( computedSplitterStyle, {
+				top: 0,
+				bottom: 0,
+				left: `calc(${p} * (100% - ${splitterSize}px))`,
+				width: splitterSize,
+			});
+		}
+	}
+	else {
+		computedPane1Style.right = 0;
+		computedPane2Style.left = 0;
+
+		if(resizeMode==='fixFirst') {
+			computedPane1Style.height = p*(h-splitterSize);
+			computedPane2Style.top = computedPane1Style.height+splitterSize;
+
+			Object.assign( computedSplitterStyle, {
+				left: 0,
+				right: 0,
+				top: computedPane1Style.height,
+				height: splitterSize,
+			});
+		}
+		else if(resizeMode==='fixSecond') {
+			computedPane2Style.height = (1-p)*(h-splitterSize);
+			computedPane1Style.bottom = computedPane2Style.height+splitterSize;
+
+			Object.assign( computedSplitterStyle, {
+				left: 0,
+				right: 0,
+				bottom: computedPane2Style.height,
+				height: splitterSize,
+			});
+		}
+		else {
+			computedPane1Style.height = `calc(${p} * (100% - ${splitterSize}px))`;
+			computedPane2Style.top = `calc(${p} * (100% - ${splitterSize}px) + ${splitterSize}px)`;
+
+			Object.assign( computedSplitterStyle, {
+				left: 0,
+				right: 0,
+				top: computedPane1Style.height,
+				height: splitterSize,
+			});
+		}
+	}
 
 	return (
 		<div
@@ -630,14 +691,14 @@ export const SplitPane = forwardRef(function SplitPane(
 				...(style || {}),
 			}}
 		>
-			<div style={pane1StyleAbs}>{firstChild}</div>
-			<div style={pane2StyleAbs}>{secondChild}</div>
+			<div style={computedPane1Style}>{firstChild}</div>
+			<div style={computedPane2Style}>{secondChild}</div>
 
 			<DragHandle
 				onStart={handleStart}
 				onDelta={handleDelta}
 				onEnd={handleEnd}
-				style={splitterAbsStyle}
+				style={computedSplitterStyle}
 				className="splitter"
 			>
 				{splitterChild}
@@ -647,4 +708,8 @@ export const SplitPane = forwardRef(function SplitPane(
 });
 
 
-const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+const clamp = function(v, min, max, size, splitterSize) {
+	if(typeof(min)==='function') { if(size>0) min = min(size, splitterSize); else min=0; }
+	if(typeof(max)==='function') { if(size>0) max = max(size, splitterSize); else max=1; }
+	return Math.max(min, Math.min(max, v));
+}

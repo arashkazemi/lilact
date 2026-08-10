@@ -115,8 +115,7 @@ class ComponentCache
 *  used by lilact are kept. The Component class uses it under the hood, so there is a separation
 *  and user can set whatever property they want in the component. Each Lilact.Component 
 *  has a core that is accessible via lilact symbol CORE, i.e. component[CORE]. Note
-*  that you should either define a LILACT:CORE symbol or use the lilact preprocessor
-*  tools which is a wiser choice.
+*  that you should define a LILACT:CORE symbol.
 * 
 *  ComponentCore methods are not to be called by the user. But it can also be used
 *  to store data more efficiently, and I have used it extensively. But it is
@@ -151,6 +150,8 @@ class ComponentCore
 
 	insert_index
 	loader_args
+
+	is_svg
 
 	*/
 
@@ -785,6 +786,7 @@ function doUpdates()
 
 	for(const u of _update_set)  u.apply();
 	for(const cb of _update_cbs)  cb();
+
 	processEffects();
 
 }
@@ -1092,7 +1094,7 @@ export class RootComponent extends HTMLComponent
 
 	constructor(element, props)
 	{
-		super(':root', props);
+		super(':root:', props);
 
 		if(typeof this.element==='string') {
 			element = document.querySelector(element);

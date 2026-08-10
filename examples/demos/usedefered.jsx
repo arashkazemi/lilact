@@ -1,7 +1,7 @@
 import { useState, useDeferredValue } from "lilact";
 
 function ExpensiveList({ query }) {
-  const items = Array.from({ length: 5000 }, (_, i) => `${query} item ${i}`);
+  const items = Array.from({ length: 2000 }, (_, i) => `${query} item ${i}`);
   return (
     <ul>
       {items.map((it) => (
