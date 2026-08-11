@@ -56,7 +56,7 @@ function joinPaths(basePath, relativePath) {
 }
 
 // Examples:
-//console.log(joinPaths("a/b/c", "./../d")); // a/b/dfdsfds
+//console.log(joinPaths("a/b/c", "./../d")); // a/b/d
 //console.log(joinPaths("a/b/c", "../../d")); // a/d
 
 /** @ignore */
@@ -68,16 +68,15 @@ export const required_scripts = {};
  *
  * @param jsx - The code to run.
  * @param path - The optional path to be used in reporting errors.
- * @param is_inline - To treat the code as inline. The main difference at the moment is that inline code doesn't include sourcemap.
  * 
  * @returns An array representation of the children.
  */
-export function run(jsx, path=`InlineJSX-${++Lilact.eval_num}`, is_inline=true)
+export function run(jsx, path=`InlineJSX-${++Lilact.eval_num}`, {isInline, isModule}={isInline:true, isModule:true})
 {
 	const mappings = [];
 	const module = { 	
 		mappings,
-		is_inline,
+		isInline,
 		path,
 		code: jsx,
 		exports: {}
@@ -124,7 +123,7 @@ if(DEBUG) {
 
 		//const res = new Function( "module", processed )(module);
 		const res = eval(processed);
-		if(module.exports) return module.exports;
+		if(isModule && module.exports) return module.exports;
 		return res;
 	}
 	catch(e) {
@@ -199,7 +198,7 @@ export function require(path)
 			// but import should be sync. for an async solution use lazy and suspense.
 
 			const request = new XMLHttpRequest();
-			request.open("GET", path, false);
+			request.open("GET", path, {isInline:false});
 			request.send(null);
 			if (request.status === 200) {
 				return run(request.responseText, path, false);

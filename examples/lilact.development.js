@@ -3597,11 +3597,11 @@ function joinPaths(basePath, relativePath) {
   return (isAbs ? "/" : "") + stack.join("/");
 }
 var required_scripts = {};
-function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, is_inline = true) {
+function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, { isInline, isModule } = { isInline: true, isModule: true }) {
   const mappings = [];
   const module = {
     mappings,
-    is_inline,
+    isInline,
     path,
     code: jsx,
     exports: {}
@@ -3635,7 +3635,7 @@ function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, is_inline = t
     globalThis.createComponent = lilact_default.createComponent;
     globalThis.Fragment = lilact_default.Fragment;
     const res = eval(processed);
-    if (module.exports) return module.exports;
+    if (isModule && module.exports) return module.exports;
     return res;
   } catch (e) {
     e = lilact_default.traceError(e);
@@ -3676,7 +3676,7 @@ function require2(path2) {
       });
     } else {
       const request = new XMLHttpRequest();
-      request.open("GET", path2, false);
+      request.open("GET", path2, { isInline: false });
       request.send(null);
       if (request.status === 200) {
         return run(request.responseText, path2, false);
