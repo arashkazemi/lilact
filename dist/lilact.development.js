@@ -1703,6 +1703,23 @@ __export(misc_exports, {
 });
 
 // .tmp/src/symbols.jsx
+var symbols_exports = {};
+__export(symbols_exports, {
+  ARGS: () => ARGS,
+  CALLBACK: () => CALLBACK,
+  CHILD_CLASS_ADDENDUM: () => CHILD_CLASS_ADDENDUM,
+  CLEARED: () => CLEARED,
+  COMPONENT: () => COMPONENT,
+  CORE: () => CORE,
+  DUE: () => DUE,
+  IDX: () => IDX,
+  INTERVAL: () => INTERVAL,
+  IS_ZOMBIE: () => IS_ZOMBIE,
+  LAZY: () => LAZY,
+  MEMOIZED: () => MEMOIZED,
+  REPEAT: () => REPEAT,
+  TEXT: () => TEXT2
+});
 var [
   CORE,
   COMPONENT,
@@ -3669,6 +3686,10 @@ function require2(path2) {
         return res2.text();
       }).then((res2) => {
         var _a2;
+        if (path2.endsWith(".css")) {
+          injectGlobal(res2);
+          return;
+        }
         res2 = run(res2, path2, false);
         return (_a2 = res2 == null ? void 0 : res2.default) != null ? _a2 : res2;
       }).catch((err) => {
@@ -5144,7 +5165,7 @@ var SplitPane = forwardRef(function SplitPane2({
   const computedSplitterStyle = {
     background: "rgba(0,0,0,0.08)",
     boxShadow: "inset 0 0 2px rgba(0,0,0,0.25)",
-    zIndex: 10,
+    zIndex: 1e6,
     position: "absolute",
     cursor: internalMode === "horizontal" ? "col-resize" : "row-resize",
     touchAction: "none",
@@ -6591,6 +6612,7 @@ var Lilact2 = {
   ...timers_exports,
   ...events_exports,
   ...errors_exports,
+  ...symbols_exports,
   ...router_exports,
   ...accessories_exports,
   transpileJSX,
@@ -6624,20 +6646,33 @@ if (true) {
   console.log(`Copyright(C) 2024-2026 Arash Kazemi <contact.arash.kazemi@gmail.com>`);
 }
 export {
+  ARGS,
+  CALLBACK,
+  CHILD_CLASS_ADDENDUM,
+  CLEARED,
+  COMPONENT,
+  CORE,
   CSSTransition,
   Children,
   Component,
+  DUE,
   DragHandle,
   ErrorBoundary,
   Fragment2 as Fragment,
   HTMLComponent,
   HashRouter,
+  IDX,
+  INTERVAL,
+  IS_ZOMBIE,
+  LAZY,
   Lilact2 as Lilact,
   Link,
+  MEMOIZED,
   NavLink,
   Portal,
   PropTypes,
   Provider,
+  REPEAT,
   RootComponent,
   Route,
   Routes,
@@ -6645,6 +6680,7 @@ export {
   SplitPane,
   Suspense,
   SwitchTransition,
+  TEXT2 as TEXT,
   Transition,
   TransitionGroup,
   addWrappedEventListener,

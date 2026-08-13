@@ -30,7 +30,7 @@
 import Lilact from './lilact.jsx';
 
 import { CORE, COMPONENT, LAZY } from "./symbols.jsx"
-
+import { injectGlobal } from "@emotion/css"
 
 function joinPaths(basePath, relativePath) {
 	const isAbs = relativePath.startsWith("/");
@@ -186,6 +186,10 @@ export function require(path)
 					return res.text();
 				})
 				.then(res => {
+					if(path.endsWith(".css")) {
+						injectGlobal(res);
+						return;
+					}
 					res = run(res, path, false);
 					return res?.default ?? res;
 				})

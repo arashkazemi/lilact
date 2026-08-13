@@ -693,7 +693,7 @@ export const SplitPane = forwardRef(function SplitPane(
   const computedSplitterStyle = {
     background: "rgba(0,0,0,0.08)",
     boxShadow: "inset 0 0 2px rgba(0,0,0,0.25)",
-    zIndex: 10,
+    zIndex: 1000000,
     position: "absolute",
     cursor: internalMode === "horizontal" ? "col-resize" : "row-resize",
     touchAction: "none",

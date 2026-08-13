@@ -63,6 +63,7 @@ import * as misc from './misc.jsx';
 import * as errors from './errors.jsx';
 import * as router from './router.jsx';
 import * as accessories from './accessories.jsx';
+import * as symbols from './symbols.jsx';
 import {transpileJSX, transpilerConfig} from "./jsx";
 
 
@@ -79,6 +80,7 @@ export * from './misc.jsx';
 export * from './errors.jsx';
 export * from './router.jsx';
 export * from './accessories.jsx';
+export * from './symbols.jsx';
 export {transpileJSX, transpilerConfig} from "./jsx";
 
 
@@ -111,6 +113,7 @@ export const Lilact =
 	...timers,
 	...events,
 	...errors,
+	...symbols,
 
 	...router,
 	...accessories,
