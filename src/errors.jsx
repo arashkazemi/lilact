@@ -62,7 +62,8 @@ function getErrorLocation(err) // works for both error and error-event, and also
 // Firefox:       fn@eval:xxx:LINE:COL
 // Safari:        @eval:xxx:LINE:COL   (sometimes)
 /** @ignore */
-function parseEvalLocationFromStack(stack, urlPrefix = "eval:/") {
+function parseEvalLocationFromStack(stack, urlPrefix = "eval:/")
+{
   const raw = typeof stack === "string" ? stack : String(stack || "");
   const lines = raw.split(/\r?\n/);
 
@@ -89,7 +90,8 @@ function parseEvalLocationFromStack(stack, urlPrefix = "eval:/") {
   return { url: null, line: null, col: null, matched: null, stackPreview: lines.slice(0, 6).join("\n") };
 }
 
-function escapeRegExp(s) {
+function escapeRegExp(s)
+{
   return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 

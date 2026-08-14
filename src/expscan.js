@@ -72,7 +72,8 @@ function isValidIdentifierName(s) {
   return !keywords.has(s);
 }
 
-export function labeler(custom_words, x) {
+export function labeler(custom_words, x)
+{
 	if( typeof(x)==='string' ) {
 		if(custom_words && custom_words.hasOwnProperty(x)) return custom_words[x];
 
@@ -303,22 +304,34 @@ export function processImportExports(node, jsx)
 					node.out[m.index].cjs = 'module.exports.default =';
 					continue;
 
-				case 'V':
-				case 'F':
-					const j = i;
-					const type = s[i]==='F'?`= ${node.out[i]} `:'';
-					node.out[i] = null;
-					i++;
-					skip_spaces();
-					const name = node.out[i];
-					if(s[j]==='V') {
-						node.out[i] = null;
-						i++;
-					}
-					skip_spaces();				
-					node.out[m.index].cjs = `module.exports.${name} ${type}`;
-					continue;
-
+				case 'V':{
+									const tp = node.out[i];
+									node.out[i] = null;
+									i++;
+									skip_spaces();
+									const name = node.out[i];
+				
+									node.out[i] = null;
+									i++;
+				
+									skip_spaces();				
+									node.out[m.index].cjs = `${tp} ${name} = module.exports.${name} `;
+									continue;
+				}
+				case 'F':{
+									const tp = node.out[i];
+									node.out[i] = null;
+									i++;
+									skip_spaces();
+									const name = node.out[i];
+				
+									// node.out[i] = null;
+									// i++;
+									// skip_spaces();				
+				
+									node.out[m.index].cjs = `module.exports.${name} = ${tp} `;
+									continue;
+				}
 				case '*':
 					node.out[i] = null;
 					i++;

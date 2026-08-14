@@ -59,7 +59,8 @@ const _pool = [];
 const MAX_POOL_SIZE = 10;
 const POINTER_TYPES = ["mouse", "pen", "touch"];
 
-export function createSyntheticEvent(nativeEvent, currentTarget) {
+export function createSyntheticEvent(nativeEvent, currentTarget) 
+{
   const e = _pool.length ? _pool.pop() : {};
 
   e.nativeEvent = nativeEvent;
@@ -181,7 +182,8 @@ export function createSyntheticEvent(nativeEvent, currentTarget) {
   return e;
 }
 
-export function releaseSyntheticEvent(e) {
+export function releaseSyntheticEvent(e)
+{
   if (e && !e.isPersistent) {
     e.nativeEvent = null;
     e.type = null;
@@ -261,7 +263,8 @@ export function releaseSyntheticEvent(e) {
 // Main wrapper factory
 // fn: function(syntheticEvent) { ... }
 // opts: { capture: bool, passive: bool, once: bool, stopPropagationOnTrueReturn: bool }
-export function wrapListener(fn, opts = {}) {
+export function wrapListener(fn, opts = {})
+{
 	const { stopPropagationOnTrueReturn = false } = opts;
 
 	return function handler(nativeEvent) {
@@ -284,7 +287,8 @@ export function wrapListener(fn, opts = {}) {
 }
 
 // Convenience: add/remove wrapper-managed listener
-export function addWrappedEventListener(target, type, fn, options = {}) {
+export function addWrappedEventListener(target, type, fn, options = {})
+{
 	const handler = wrapListener(fn, options);
 
 	target.addEventListener(type, handler, options);

@@ -3660,7 +3660,7 @@ function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, { isInline, i
   }
 }
 function require2(path2) {
-  var _a, _b, _c, _d, _e, _f;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
   let forceUpdate, checkExport, requirer, isLazy;
   if (arguments.length === 2 && typeof (arguments[1] === "object")) {
     forceUpdate = (_a = arguments[1]) == null ? void 0 : _a.forceUpdate;
@@ -3681,10 +3681,16 @@ function require2(path2) {
     }
     if (((_f = lilact_default) == null ? void 0 : _f[LAZY]) || isLazy) {
       lilact_default[LAZY] = false;
-      return fetch(path2).then((res2) => {
-        if (!res2.ok) throw new Error(`HTTP ${res2.status}`);
-        return res2.text();
-      }).then((res2) => {
+      let p = (_h = (_g = lilact_default).resolver) == null ? void 0 : _h.call(_g, path2);
+      if (p) {
+        p = Promise.resolve(p);
+      } else {
+        p = fetch(path2).then((res2) => {
+          if (!res2.ok) throw new Error(`HTTP ${res2.status}`);
+          return res2.text();
+        });
+      }
+      return p.then((res2) => {
         var _a2;
         if (path2.endsWith(".css")) {
           injectGlobal(res2);
@@ -3696,11 +3702,20 @@ function require2(path2) {
         throw err;
       });
     } else {
-      const request = new XMLHttpRequest();
-      request.open("GET", path2, { isInline: false });
-      request.send(null);
-      if (request.status === 200) {
-        return run(request.responseText, path2, false);
+      const p = (_j = (_i = lilact_default).resolver) == null ? void 0 : _j.call(_i, path2);
+      if (p) {
+        return run(p, path2, false);
+      } else {
+        const request = new XMLHttpRequest();
+        request.open("GET", path2, { isInline: false });
+        request.send(null);
+        if (request.status === 200) {
+          if (path2.endsWith(".css")) {
+            injectGlobal(res);
+            return;
+          }
+          return run(request.responseText, path2, false);
+        }
       }
     }
   }
@@ -5628,21 +5643,27 @@ function processImportExports(node3, jsx2) {
           node3.out[i2] = null;
           node3.out[m.index].cjs = "module.exports.default =";
           continue;
-        case "V":
-        case "F":
-          const j = i2;
-          const type = s[i2] === "F" ? `= ${node3.out[i2]} ` : "";
+        case "V": {
+          const tp = node3.out[i2];
           node3.out[i2] = null;
           i2++;
           skip_spaces();
           const name = node3.out[i2];
-          if (s[j] === "V") {
-            node3.out[i2] = null;
-            i2++;
-          }
+          node3.out[i2] = null;
+          i2++;
           skip_spaces();
-          node3.out[m.index].cjs = `module.exports.${name} ${type}`;
+          node3.out[m.index].cjs = `${tp} ${name} = module.exports.${name} `;
           continue;
+        }
+        case "F": {
+          const tp = node3.out[i2];
+          node3.out[i2] = null;
+          i2++;
+          skip_spaces();
+          const name = node3.out[i2];
+          node3.out[m.index].cjs = `module.exports.${name} = ${tp} `;
+          continue;
+        }
         case "*":
           node3.out[i2] = null;
           i2++;
@@ -5669,16 +5690,16 @@ function processImportExports(node3, jsx2) {
           props_regexp.lastIndex = -1;
           if (!props_regexp.test(sj)) throw "incorrect export properties definition.";
           const ps = node3.out[i2].out;
-          for (let j2 = 1; j2 < sj.length - 1; j2++) {
-            while (sj[j2] === " " || sj[j2] === "\n" || sj[j2] === "C" || sj[j2] === ",") j2++;
-            const prop = ps[j2];
-            j2++;
-            while (sj[j2] === " " || sj[j2] === "\n" || sj[j2] === "C") j2++;
-            if (sj[j2] === "a") {
-              j2++;
-              while (sj[j2] === " " || sj[j2] === "\n" || sj[j2] === "C") j2++;
-              exports[ps[j2]] = prop;
-              j2++;
+          for (let j = 1; j < sj.length - 1; j++) {
+            while (sj[j] === " " || sj[j] === "\n" || sj[j] === "C" || sj[j] === ",") j++;
+            const prop = ps[j];
+            j++;
+            while (sj[j] === " " || sj[j] === "\n" || sj[j] === "C") j++;
+            if (sj[j] === "a") {
+              j++;
+              while (sj[j] === " " || sj[j] === "\n" || sj[j] === "C") j++;
+              exports[ps[j]] = prop;
+              j++;
             } else {
               exports[prop] = prop;
             }

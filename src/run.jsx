@@ -180,32 +180,45 @@ export function require(path)
 		if(Lilact?.[LAZY] || isLazy) {
 			Lilact[LAZY]=false;
 
-			return fetch(path)
-				.then(res => {
+			let p = Lilact.resolver?.(path);
+
+			if(p) {
+				p = Promise.resolve(p);
+			}
+			else {
+				p = fetch(path).then(res => {
 					if (!res.ok) throw new Error(`HTTP ${res.status}`);
 					return res.text();
-				})
-				.then(res => {
+				});
+			}
+			return  p.then(res => {
+						if(path.endsWith(".css")) {
+							injectGlobal(res);
+							return;
+						}
+						res = run(res, path, false);
+						return res?.default ?? res;
+					})
+					.catch(err => {
+						throw err;
+					});
+		}
+		else {
+			const p = Lilact.resolver?.(path);
+			if(p) {
+				return run(p, path, false);
+			}
+			else {
+				const request = new XMLHttpRequest();
+				request.open("GET", path, {isInline:false});
+				request.send(null);
+				if (request.status === 200) {
 					if(path.endsWith(".css")) {
 						injectGlobal(res);
 						return;
 					}
-					res = run(res, path, false);
-					return res?.default ?? res;
-				})
-				.catch(err => {
-					throw err;
-				});
-		}
-		else {
-			// note: this makes a sync request. this is not advised,
-			// but import should be sync. for an async solution use lazy and suspense.
-
-			const request = new XMLHttpRequest();
-			request.open("GET", path, {isInline:false});
-			request.send(null);
-			if (request.status === 200) {
-				return run(request.responseText, path, false);
+					return run(request.responseText, path, false);
+				}
 			}
 		}
 	}
