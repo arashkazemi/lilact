@@ -5619,7 +5619,7 @@ function processImportExports(node3, jsx2) {
               o += "}";
               ls += "]";
               cjs += `const ${o} = require(${src}, {checkExport: ${ls},requirer:module})`;
-            } else {
+            } else if (cjs.length === 0) {
               cjs += `require(${src},{requirer:module})`;
             }
             node3.out[m.index].cjs = cjs;

@@ -87,7 +87,6 @@ export function run(jsx, path=`InlineJSX-${++Lilact.eval_num}`, {isInline, isMod
 
 	required_scripts[path] = module;
 
-
 	try {
 		processed = Lilact.transpileJSX( jsx,
 		{

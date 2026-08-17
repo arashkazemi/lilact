@@ -270,7 +270,7 @@ export function processImportExports(node, jsx)
 
 						cjs+=`const ${o} = require(${src}, {checkExport: ${ls},requirer:module})`;
 					}
-					else {
+					else if(cjs.length===0) {
 						cjs+=`require(${src},{requirer:module})`;
 					}
 
