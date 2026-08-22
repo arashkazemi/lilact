@@ -100,7 +100,7 @@ function parseArgs(argv) {
 		if (!k || !k.startsWith("--")) continue;
 		const key = k.slice(2);
 
-		if (key === "watch" || key === "minify") {
+		if (key === "watch" || key === "minify" || key === "split") {
 			args[key] = true;
 			continue;
 		}
@@ -118,21 +118,19 @@ async function run() {
 
 	if (!userEntry) {
 		console.error(
-			"Usage: lilact-bundler --watch --minify --entry ./path/to/entry.js --mode production --out ./dist --name bundle.js"
+			"Usage: lilact-bundler --watch --minify --entry ./path/to/entry.js --mode production --out ./dist"
 			);
 		process.exit(1);
 	}
 
-	const name = args.name ?? "bundle.js";
 	const mode = args.mode ?? "production";
 	const watch = args?.watch === true;
 	const minify = args?.minify === true;
+	const split = args?.split === true;
 
 	const userOutDir = args.out
 			? path.resolve(userProjectRoot, args.out)
 			: path.resolve(userProjectRoot, "dist");
-
-	const outFile = path.join(userOutDir, name);
 
 	const define = {
 		DEBUG: JSON.stringify(mode === "development"),
@@ -144,19 +142,21 @@ async function run() {
 	  name: "log-on-build",
 	  setup(build) {
 	    build.onStart(() => {
-	      console.log(`Rebuilt: ${outFile} (${new Date().toISOString()})`);
+	      console.log(`Rebuilt: ${new Date().toISOString()}`);
 	    });
 	  },
 	};
 
 	const ctx = await esbuild.context({
-		entryPoints: [userEntry],
+		entryPoints: {bundle: userEntry},
 		bundle: true,
 		format: "esm",
 		platform: "browser",
 
-		outfile: outFile,
-		sourcemap: true,
+		outdir: userOutDir,
+  		splitting: split,
+
+  		sourcemap: true,
 		target: ["es2018"],
 
 		minify: minify,
@@ -186,26 +186,9 @@ async function run() {
 		}
 	};
 
-	const buildOpts = {
-		entryPoints: [userEntry],
-		bundle: true,
-		format: "esm",
-		platform: "browser",
-		outfile: outFile,
-		sourcemap: true,
-		target: ["es2018"],
-		minify: minify,
-		define,
-		loader: { ".js": "js", ".jsx": "jsx", ".css": "css" },
-		resolveExtensions: [".js", ".jsx", ".json"],
-		absWorkingDir: userProjectRoot,
-		plugins: [createLilactJsxPlugin({ mode })],
-  		banner: { js: licenseBanner },
-	};
-
 	if (watch) {
 		await ctx.watch();
-		console.log(`Watching... output: ${outFile}`);
+		console.log(`Watching...`);
 	} else {
 		await ctx.rebuild();
 		await shutdown();
