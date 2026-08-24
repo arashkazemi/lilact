@@ -3438,7 +3438,7 @@ function useRef(initialValue = null) {
   }
   return hk;
 }
-function useLayoutEffect(effect, deps = void 0) {
+async function useLayoutEffect(effect, deps = void 0) {
   if (deps !== void 0 && (typeof deps !== "object" || deps.constructor.name !== "Array")) {
     throw new Error("Layout effect dependencies must be an array, object or omitted.");
   }
@@ -3447,16 +3447,16 @@ function useLayoutEffect(effect, deps = void 0) {
     if (deps !== void 0 && (hk == null ? void 0 : hk.deps) !== void 0 && shallowEqual(deps, hk.deps)) return;
   }
   if (hk == null ? void 0 : hk.cleanup) {
-    hk.cleanup();
+    await hk.cleanup();
   }
   hk.deps = deps;
-  lilact_default.layout_effects.add(() => {
-    hk.cleanup = effect();
+  lilact_default.layout_effects.add(async () => {
+    hk.cleanup = await effect();
   });
   lilact_default.clearTimeout(lilact_default.effect_timeout);
   lilact_default.setTimeout(lilact_default.processEffects, 0);
 }
-function useEffect(effect, deps = void 0) {
+async function useEffect(effect, deps = void 0) {
   if (deps !== void 0 && (typeof deps !== "object" || deps.constructor.name !== "Array")) {
     throw new Error("Effect dependencies must be an array, object or omitted.");
   }
@@ -3465,16 +3465,16 @@ function useEffect(effect, deps = void 0) {
     if (deps !== void 0 && (hk == null ? void 0 : hk.deps) !== void 0 && shallowEqual(deps, hk.deps)) return;
   }
   if (hk == null ? void 0 : hk.cleanup) {
-    hk.cleanup();
+    await hk.cleanup();
   }
   hk.deps = deps;
-  lilact_default.passive_effects.add(() => {
-    hk.cleanup = effect();
+  lilact_default.passive_effects.add(async () => {
+    hk.cleanup = await effect();
   });
   lilact_default.clearTimeout(lilact_default.effect_timeout);
   lilact_default.setTimeout(lilact_default.processEffects, 0);
 }
-function useInsertionEffect(effect, deps = void 0) {
+async function useInsertionEffect(effect, deps = void 0) {
   if (deps !== void 0 && (typeof deps !== "object" || deps.constructor.name !== "Array")) {
     throw new Error("Insertion effect dependencies must be an array, object, or omitted.");
   }
@@ -3483,11 +3483,11 @@ function useInsertionEffect(effect, deps = void 0) {
     if (deps !== void 0 && (hk == null ? void 0 : hk.deps) !== void 0 && shallowEqual(deps, hk.deps)) return;
   }
   if (hk == null ? void 0 : hk.cleanup) {
-    hk.cleanup();
+    await hk.cleanup();
   }
   hk.deps = deps;
-  lilact_default.insertion_effects.add(() => {
-    hk.cleanup = effect();
+  lilact_default.insertion_effects.add(async () => {
+    hk.cleanup = await effect();
   });
   lilact_default.clearTimeout(lilact_default.effect_timeout);
   lilact_default.setTimeout(lilact_default.processEffects, 0);
@@ -6658,6 +6658,9 @@ document.addEventListener("DOMContentLoaded", () => {
   Lilact2.runScripts();
 });
 if (true) {
+  window.addEventListener("unhandledrejection", (e) => {
+    Lilact2.globalErrorHandler(e.reason);
+  });
   window.addEventListener("error", (e) => {
     Lilact2.globalErrorHandler(e);
   });

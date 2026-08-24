@@ -273,7 +273,7 @@ export function useRef(initialValue = null)
  * 						used to determine when to re-run the effect.
  * @returns {void}
  */
-export function useLayoutEffect(effect, deps=undefined)
+export async function useLayoutEffect(effect, deps=undefined)
 {
 	if( deps!==undefined && (typeof(deps)!=='object' || deps.constructor.name!=='Array') ) {
 		throw new Error("Layout effect dependencies must be an array, object or omitted.");
@@ -286,11 +286,11 @@ export function useLayoutEffect(effect, deps=undefined)
 	}
 
 	if(hk?.cleanup) {
-		hk.cleanup();
+		await hk.cleanup();
 	}
 
 	hk.deps = deps;
-	Lilact.layout_effects.add( ()=>{ hk.cleanup = effect(); });
+	Lilact.layout_effects.add( async ()=>{ hk.cleanup = await effect(); });
 	
 	Lilact.clearTimeout( Lilact.effect_timeout );
 	Lilact.setTimeout( Lilact.processEffects, 0 );
@@ -304,7 +304,7 @@ export function useLayoutEffect(effect, deps=undefined)
  * 						used to determine when to re-run the effect.
  * @returns {void}
  */
-export function useEffect(effect, deps=undefined)
+export async function useEffect(effect, deps=undefined)
 {
 	if( deps!==undefined && (typeof(deps)!=='object' || deps.constructor.name!=='Array') ) {
 		throw new Error("Effect dependencies must be an array, object or omitted.");
@@ -317,11 +317,11 @@ export function useEffect(effect, deps=undefined)
 	}
 
 	if(hk?.cleanup) {
-		hk.cleanup();
+		await hk.cleanup();
 	}
 
 	hk.deps = deps;
-	Lilact.passive_effects.add( ()=>{ hk.cleanup = effect(); });
+	Lilact.passive_effects.add( async ()=>{ hk.cleanup = await effect(); });
 
 	Lilact.clearTimeout( Lilact.effect_timeout );
 	Lilact.setTimeout( Lilact.processEffects, 0 );
@@ -336,7 +336,7 @@ export function useEffect(effect, deps=undefined)
  * 						used to determine when to re-run the effect.
  * @returns void
  */
-export function useInsertionEffect(effect, deps=undefined)
+export async function useInsertionEffect(effect, deps=undefined)
 {
 	if( deps!==undefined && (typeof(deps)!=='object' || deps.constructor.name!=='Array') ) {
 		throw new Error("Insertion effect dependencies must be an array, object, or omitted.");
@@ -349,11 +349,11 @@ export function useInsertionEffect(effect, deps=undefined)
 	}
 
 	if(hk?.cleanup) {
-		hk.cleanup();
+		await hk.cleanup();
 	}
 
 	hk.deps = deps;
-	Lilact.insertion_effects.add( ()=>{ hk.cleanup = effect(); });
+	Lilact.insertion_effects.add( async ()=>{ hk.cleanup = await effect(); });
 
 	Lilact.clearTimeout( Lilact.effect_timeout );
 	Lilact.setTimeout( Lilact.processEffects, 0 );

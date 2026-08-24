@@ -148,6 +148,10 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 if(DEBUG) {
+	window.addEventListener('unhandledrejection', (e) => {
+		Lilact.globalErrorHandler(e.reason);
+	});
+
 	window.addEventListener('error', (e) => {
 		Lilact.globalErrorHandler(e);
 	});

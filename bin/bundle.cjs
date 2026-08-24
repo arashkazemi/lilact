@@ -118,11 +118,12 @@ async function run() {
 
 	if (!userEntry) {
 		console.error(
-			"Usage: lilact-bundler --watch --minify --entry ./path/to/entry.js --mode production --out ./dist"
+			"Usage: lilact-bundler --watch --split --minify --entry ./path/to/entry.js --mode production --out ./dist --name bundle"
 			);
 		process.exit(1);
 	}
 
+	const name = args.name ?? "bundle";
 	const mode = args.mode ?? "production";
 	const watch = args?.watch === true;
 	const minify = args?.minify === true;
@@ -148,7 +149,7 @@ async function run() {
 	};
 
 	const ctx = await esbuild.context({
-		entryPoints: {bundle: userEntry},
+		entryPoints: {[name]: userEntry},
 		bundle: true,
 		format: "esm",
 		platform: "browser",
