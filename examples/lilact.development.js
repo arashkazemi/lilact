@@ -3633,9 +3633,9 @@ function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, { isInline, i
         mappings,
         factory: "createComponent",
         appendSourcemap: false,
-        blocks_info: lilact_default.blocks_info,
         injectTraceLabels: true,
-        produceCJS: true
+        produceCJS: true,
+        blocks_info: lilact_default.blocks_info
       }
     );
   } catch (e) {
@@ -3675,6 +3675,7 @@ function require2(path2) {
     if (el) {
       return run(el.innerText, path2);
     }
+    throw new Error(`Required element not found (${path2})`);
   } else {
     if (requirer && requirer.path) {
       path2 = joinPaths(requirer.path, path2);
@@ -3704,6 +3705,10 @@ function require2(path2) {
     } else {
       const p = (_j = (_i = lilact_default).resolver) == null ? void 0 : _j.call(_i, path2);
       if (p) {
+        if (path2.endsWith(".css")) {
+          injectGlobal(p);
+          return;
+        }
         return run(p, path2, false);
       } else {
         const request = new XMLHttpRequest();

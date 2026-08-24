@@ -94,10 +94,11 @@ export function run(jsx, path=`InlineJSX-${++Lilact.eval_num}`, {isInline, isMod
 			mappings,
 			factory: "createComponent",
 			appendSourcemap: false,
-			blocks_info: Lilact.blocks_info,
 
 			injectTraceLabels: true,
 			produceCJS: true,
+
+			blocks_info: Lilact.blocks_info,
 		} );
 	}
 	catch(e) {
@@ -170,6 +171,7 @@ export function require(path)
 			return run(el.innerText, path);
 		}
 
+		throw new Error(`Required element not found (${path})`);
 	}
 	else {
 		if(requirer && requirer.path) {
@@ -205,6 +207,10 @@ export function require(path)
 		else {
 			const p = Lilact.resolver?.(path);
 			if(p) {
+				if(path.endsWith(".css")) {
+					injectGlobal(p);
+					return;
+				}
 				return run(p, path, false);
 			}
 			else {

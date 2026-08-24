@@ -1190,7 +1190,7 @@ export function transpileJSX( jsx, {
 	if(appendSourcemap) {
 		out += inline_sm;
 	}
-	//console.log(out);
+	// console.log(out);
 
 	return out;
 }
