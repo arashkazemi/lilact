@@ -1220,9 +1220,66 @@ export function createPortal(children, element)
 }
 
 
+/**
+ * Creates a new component by cloning an existing component and applying a
+ * partial props update.
+ *
+ * The original component is not mutated. Existing props are copied first,
+ * then the properties in `propsPatch` are applied over them. Passing a prop
+ * with the value `undefined` follows the implementation's normal prop-merging
+ * behavior.
+ *
+ * If one or more `children` arguments are provided, they replace the cloned
+ * component's existing children. If no children are provided, the original
+ * children are preserved.
+ *
+ * @param {Component} component
+ * The element to clone.
+ *
+ * @param {object} [propsPatch]
+ * Props to apply to the cloned element. Existing props are preserved unless
+ * they are overridden by a property in this object.
+ *
+ * @param {Array} children
+ * Optional replacement children. Multiple children are supported and are
+ * passed to the cloned element in the same order.
+ *
+ * @returns {Component}
+ * A new element with the patched props and, when provided, replacement
+ * children.
+ *
+ * @example
+ * const button = (
+ *   <Button variant="secondary" disabled={false}>
+ *     Save
+ *   </Button>
+ * );
+ *
+ * const clonedButton = cloneComponent(
+ *   button,
+ *   { disabled: true, 'aria-label': 'Save changes' },
+ *   'Save changes'
+ * );
+ *
+ * @example
+ * const panel = <Panel className="compact">Old content</Panel>;
+ *
+ * // Existing children are replaced when children are provided.
+ * const updatedPanel = cloneComponent(
+ *   panel,
+ *   { className: 'expanded' },
+ *   <Heading>New content</Heading>
+ * );
+ */
 export function cloneComponent(component, propsPatch, ...children)
 {
-	return { entity: component.entity, props: {...component.props, ...propsPatch, children}, [CORE]: null };
+	const cc = { entity: component.entity, props: {...component.props, ...propsPatch }, [CORE]: null };
+
+	if(children?.length) {
+		cc.props.children = children;
+	}
+
+	return cc;
 }
 
 export const cloneElement = cloneComponent;

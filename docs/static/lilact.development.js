@@ -3121,7 +3121,11 @@ function createPortal(children, element) {
   return createComponent2(lilact_default.Portal, { "view": element }, children);
 }
 function cloneComponent(component, propsPatch, ...children) {
-  return { entity: component.entity, props: { ...component.props, ...propsPatch, children }, [CORE]: null };
+  const cc = { entity: component.entity, props: { ...component.props, ...propsPatch }, [CORE]: null };
+  if (children == null ? void 0 : children.length) {
+    cc.props.children = children;
+  }
+  return cc;
 }
 var cloneElement = cloneComponent;
 function render(component, element) {
