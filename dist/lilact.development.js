@@ -3656,7 +3656,7 @@ function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, { isInline, i
     globalThis.createComponent = lilact_default.createComponent;
     globalThis.Fragment = lilact_default.Fragment;
     const res = eval(processed);
-    if (isModule && module.exports) return module.exports;
+    if (!isEmpty(module.exports)) return module.exports;
     return res;
   } catch (e) {
     e = lilact_default.traceError(e);
@@ -3701,7 +3701,7 @@ function require2(path2) {
           injectGlobal(res2);
           return;
         }
-        res2 = run(res2, path2, false);
+        res2 = run(res2, path2, { isInline: false });
         return (_a2 = res2 == null ? void 0 : res2.default) != null ? _a2 : res2;
       }).catch((err) => {
         throw err;
@@ -3713,17 +3713,17 @@ function require2(path2) {
           injectGlobal(p);
           return;
         }
-        return run(p, path2, false);
+        return run(p, path2, { isInline: false });
       } else {
         const request = new XMLHttpRequest();
-        request.open("GET", path2, { isInline: false });
+        request.open("GET", path2, false);
         request.send(null);
         if (request.status === 200) {
           if (path2.endsWith(".css")) {
             injectGlobal(res);
             return;
           }
-          return run(request.responseText, path2, false);
+          return run(request.responseText, path2, { isInline: false });
         }
       }
     }

@@ -28,6 +28,7 @@
 
 */
 import Lilact from './lilact.jsx';
+import {isEmpty} from './misc.jsx';
 
 import { CORE, COMPONENT, LAZY } from "./symbols.jsx"
 import { injectGlobal } from "@emotion/css"
@@ -123,7 +124,8 @@ if(DEBUG) {
 
 		//const res = new Function( "module", processed )(module);
 		const res = eval(processed);
-		if(isModule && module.exports) return module.exports;
+
+		if( !isEmpty(module.exports) ) return module.exports;
 		return res;
 	}
 	catch(e) {
@@ -197,7 +199,7 @@ export function require(path)
 							injectGlobal(res);
 							return;
 						}
-						res = run(res, path, false);
+						res = run(res, path, {isInline:false});
 						return res?.default ?? res;
 					})
 					.catch(err => {
@@ -211,18 +213,18 @@ export function require(path)
 					injectGlobal(p);
 					return;
 				}
-				return run(p, path, false);
+				return run(p, path, {isInline:false});
 			}
 			else {
 				const request = new XMLHttpRequest();
-				request.open("GET", path, {isInline:false});
+				request.open("GET", path, false);
 				request.send(null);
 				if (request.status === 200) {
 					if(path.endsWith(".css")) {
 						injectGlobal(res);
 						return;
 					}
-					return run(request.responseText, path, false);
+					return run(request.responseText, path, {isInline:false});
 				}
 			}
 		}
