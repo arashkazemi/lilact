@@ -976,6 +976,7 @@ export function transpileJSX( jsx, {
 	discardComments = false,
 
 	produceCJS = false,
+	logErrors = false,
 
 	// lilact internal
 	blocks_info = {
@@ -992,9 +993,12 @@ export function transpileJSX( jsx, {
 	const eols = scanEOLs(jsx);
 
 	raiseError = ((eols, msg, index)=>{
+		const rc = getRowCol(eols, index);
+	
 		const er = new Error(msg);
+		if(logErrors) console.error(`JSXParserError: ${msg} [file ${path} at line ${rc[0]}]`);
+		[er.lineNumber, er.columnNumber] = rc;
 		er.name = 'JSXParseError';
-		[er.lineNumber, er.columnNumber] = getRowCol(eols, index);
 		er.fileName = path;
 		er.lilact_trace = 'parse';
 		throw er;

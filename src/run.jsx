@@ -129,7 +129,7 @@ if(DEBUG) {
 		return res;
 	}
 	catch(e) {
-		e = Lilact.traceError(e);
+		e = Lilact.traceError(e, path);
 		throw e;
 	}
 }

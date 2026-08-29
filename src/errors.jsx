@@ -137,7 +137,7 @@ export function scanBlockLabels(code, path)
  * @returns A new object that includes `path`, `row`, `col`, `msg`, `name`, and optional `stack`. 
  * The exception itself is stored as `err`.
  */
-export function traceError(error)
+export function traceError(error, run_path)
 {
 	if(error?.is_traced) {
 		return error;
@@ -146,7 +146,7 @@ export function traceError(error)
 	const loc = parseEvalLocationFromStack(error.stack);
 
 	const obj = {
-		fileName: loc.url?.slice(6) || error.fileName,
+		fileName: loc.url?.slice(6) || run_path || error.fileName,
 		
 		lineNumber: loc.line,
 		columnNumber: loc.col,
@@ -173,37 +173,44 @@ export function traceError(error)
 			obj.lineNumber = mloc.line;
 			obj.columnNumber = mloc.col;
 		}
-		else if( error.lilact_trace!==undefined) {
+		else {
 
 			let loc = getErrorLocation(error);
 
-			let mps;
-			let blk;
+			if( error.lilact_trace!==undefined) {
+				let mps;
+				let blk;
 
-			if(typeof(error.lilact_trace)==='object') {
-				blk = Lilact.blocks_info.labels[error.lilact_trace[0]];
+				if(typeof(error.lilact_trace)==='object') {
+					blk = Lilact.blocks_info.labels[error.lilact_trace[0]];
+				}
+				else {
+					blk = Lilact.blocks_info.labels[error.lilact_trace];
+				}
+
+				if(blk) {
+					obj.fileName = blk.path;
+					obj.label = blk.label;
+
+					mps = required_scripts[blk.path].mappings;
+
+					loc = mapLocation(mps, loc.line-1, loc.col-1);
+				}
 			}
-			else {
-				blk = Lilact.blocks_info.labels[error.lilact_trace];
-			}
 
-			if(blk) {
-				obj.fileName = blk.path;
-				obj.label = blk.label;
-
-				mps = required_scripts[blk.path].mappings;
-
-				loc = mapLocation(mps, loc.line-1, loc.col-1);
-
-				obj.lineNumber = loc.line;
-				obj.columnNumber = loc.col;
-			}
+			obj.lineNumber = loc.line;
+			obj.columnNumber = loc.col;
 		}
 		
 	}
 	else {
 		const loc = getErrorLocation(error);
-		if(error.fileName) obj.fileName = error.fileName;
+
+		//if(!obj.fileName) {
+			if(error.fileName) obj.fileName = error.fileName;
+			else if(run_path) obj.fileName = run_path;
+		//}
+
 		obj.lineNumber = loc.line;
 		obj.columnNumber = loc.col;
 	}

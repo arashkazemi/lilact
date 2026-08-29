@@ -43,6 +43,7 @@ function createLilactJsxPlugin({ mode }) {
         const out = transpileJSX(source, {
           path: args.path,
           appendSourcemap: DEBUG,
+          logErrors: true
         });
 
         return { contents: out, loader: "js" };

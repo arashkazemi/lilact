@@ -3659,7 +3659,7 @@ function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, { isInline, i
     if (!isEmpty(module.exports)) return module.exports;
     return res;
   } catch (e) {
-    e = lilact_default.traceError(e);
+    e = lilact_default.traceError(e, path);
     throw e;
   }
 }
@@ -4509,14 +4509,14 @@ function scanBlockLabels(code2, path2) {
     }
   );
 }
-function traceError(error2) {
+function traceError(error2, run_path) {
   var _a;
   if (error2 == null ? void 0 : error2.is_traced) {
     return error2;
   }
   const loc = parseEvalLocationFromStack(error2.stack);
   const obj = {
-    fileName: ((_a = loc.url) == null ? void 0 : _a.slice(6)) || error2.fileName,
+    fileName: ((_a = loc.url) == null ? void 0 : _a.slice(6)) || run_path || error2.fileName,
     lineNumber: loc.line,
     columnNumber: loc.col,
     message: error2.message,
@@ -4533,27 +4533,30 @@ function traceError(error2) {
       const mloc = mapLocation(mps, obj.lineNumber - 1, obj.columnNumber - 1);
       obj.lineNumber = mloc.line;
       obj.columnNumber = mloc.col;
-    } else if (error2.lilact_trace !== void 0) {
+    } else {
       let loc2 = getErrorLocation(error2);
-      let mps2;
-      let blk;
-      if (typeof error2.lilact_trace === "object") {
-        blk = lilact_default.blocks_info.labels[error2.lilact_trace[0]];
-      } else {
-        blk = lilact_default.blocks_info.labels[error2.lilact_trace];
+      if (error2.lilact_trace !== void 0) {
+        let mps2;
+        let blk;
+        if (typeof error2.lilact_trace === "object") {
+          blk = lilact_default.blocks_info.labels[error2.lilact_trace[0]];
+        } else {
+          blk = lilact_default.blocks_info.labels[error2.lilact_trace];
+        }
+        if (blk) {
+          obj.fileName = blk.path;
+          obj.label = blk.label;
+          mps2 = required_scripts[blk.path].mappings;
+          loc2 = mapLocation(mps2, loc2.line - 1, loc2.col - 1);
+        }
       }
-      if (blk) {
-        obj.fileName = blk.path;
-        obj.label = blk.label;
-        mps2 = required_scripts[blk.path].mappings;
-        loc2 = mapLocation(mps2, loc2.line - 1, loc2.col - 1);
-        obj.lineNumber = loc2.line;
-        obj.columnNumber = loc2.col;
-      }
+      obj.lineNumber = loc2.line;
+      obj.columnNumber = loc2.col;
     }
   } else {
     const loc2 = getErrorLocation(error2);
     if (error2.fileName) obj.fileName = error2.fileName;
+    else if (run_path) obj.fileName = run_path;
     obj.lineNumber = loc2.line;
     obj.columnNumber = loc2.col;
   }
@@ -6463,6 +6466,7 @@ function transpileJSX(jsx2, {
   injectTraceLabels = false,
   discardComments = false,
   produceCJS = false,
+  logErrors = false,
   // lilact internal
   blocks_info: blocks_info2 = {
     labels: {},
@@ -6475,9 +6479,11 @@ function transpileJSX(jsx2, {
   (_b = transpilerConfig.injectTraceLabels) != null ? _b : transpilerConfig.injectTraceLabels = injectTraceLabels;
   const eols = scanEOLs(jsx2);
   raiseError = ((eols2, msg, index2) => {
+    const rc = getRowCol(eols2, index2);
     const er = new Error(msg);
+    if (logErrors) console.error(`JSXParserError: ${msg} [file ${path2} at line ${rc[0]}]`);
+    [er.lineNumber, er.columnNumber] = rc;
     er.name = "JSXParseError";
-    [er.lineNumber, er.columnNumber] = getRowCol(eols2, index2);
     er.fileName = path2;
     er.lilact_trace = "parse";
     throw er;
