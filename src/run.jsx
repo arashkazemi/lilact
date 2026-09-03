@@ -27,297 +27,381 @@
 	THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
-import Lilact from './lilact.jsx';
-import {isEmpty} from './misc.jsx';
+/*
+Lilact
+Copyright (C) 2024-2026 Arash Kazemi
+BSD-2-Clause
+*/
 
-import { CORE, COMPONENT, LAZY } from "./symbols.jsx"
-import { injectGlobal } from "@emotion/css"
+import Lilact from "./lilact.jsx";
+import { isEmpty } from "./misc.jsx";
+import { LAZY } from "./symbols.jsx";
+import { injectGlobal } from "@emotion/css";
 
 function joinPaths(basePath, relativePath) {
-	const isAbs = relativePath.startsWith("/");
-	const stack = [];
+  const isAbsolute = relativePath.startsWith("/");
+  const stack = [];
 
-	const parts = (isAbs ? "" : basePath).split("/").filter(Boolean);
-	for (const p of parts) stack.push(p);
+  const parts = (isAbsolute ? "" : basePath)
+    .split("/")
+    .filter(Boolean);
 
-	if(!basePath.endsWith("/")) stack.pop();
+  for (const part of parts) {
+    stack.push(part);
+  }
 
-	const relParts = relativePath.split("/");
+  if (!basePath.endsWith("/")) {
+    stack.pop();
+  }
 
-	for (const p of relParts) {
-		if (p === "" || p === ".") continue;
-		if (p === "..") {
-			if (stack.length > 0) stack.pop();
-		} else {
-			stack.push(p);
-		}
-	}
+  for (const part of relativePath.split("/")) {
+    if (part === "" || part === ".") continue;
 
-	return (isAbs ? "/" : "") + stack.join("/");
+    if (part === "..") {
+      if (stack.length > 0) stack.pop();
+    } else {
+      stack.push(part);
+    }
+  }
+
+  return `${isAbsolute ? "/" : ""}${stack.join("/")}`;
 }
 
-// Examples:
-//console.log(joinPaths("a/b/c", "./../d")); // a/b/d
-//console.log(joinPaths("a/b/c", "../../d")); // a/d
+function asError(value, fallbackMessage = "Unknown error") {
+  if (value instanceof Error) return value;
+
+  if (value && typeof value === "object") {
+    if (value.error instanceof Error) return value.error;
+
+    const error = new Error(
+      value.message == null ? fallbackMessage : String(value.message)
+    );
+
+    if (value.name) error.name = value.name;
+
+    if (value.stack) {
+      Object.defineProperty(error, "stack", {
+        value: value.stack,
+        configurable: true,
+      });
+    }
+
+    for (const key of Object.keys(value)) {
+      if (!(key in error)) error[key] = value[key];
+    }
+
+    return error;
+  }
+
+  return new Error(
+    value == null ? fallbackMessage : String(value)
+  );
+}
+
+function attachPath(error, path) {
+  const result = asError(error);
+
+  if (result.fileName == null) result.fileName = path;
+
+  return result;
+}
+
+function reportRuntimeError(error, path) {
+  const withPath = attachPath(error, path);
+
+  /*
+   * lilact.jsx may expose traceError on the public namespace. Avoid a
+   * static import here because errors.jsx already imports run.jsx.
+   */
+  if (typeof Lilact.traceError === "function") {
+    return Lilact.traceError(withPath, path);
+  }
+
+  Lilact.error = withPath;
+  return withPath;
+}
 
 /** @ignore */
 export const required_scripts = {};
 
-
 /**
- * Runs a jsx script. All scripts can access Lilact namespace as a global object. 
- *
- * @param jsx - The code to run.
- * @param path - The optional path to be used in reporting errors.
- * 
- * @returns An array representation of the children.
+ * Transpiles and evaluates one JSX module.
  */
-export function run(jsx, path=`InlineJSX-${++Lilact.eval_num}`, {isInline, isModule}={isInline:true, isModule:true})
-{
-	const mappings = [];
-	const module = { 	
-		mappings,
-		isInline,
-		path,
-		code: jsx,
-		exports: {}
-	};
+export function run(
+  jsx,
+  path = `InlineJSX-${++Lilact.eval_num}`,
+  {
+    isInline = true,
+    isModule = true,
+  } = {}
+) {
+  const mappings = [];
 
-	let processed;
+  const module = {
+    mappings,
+    isInline,
+    isModule,
+    path,
+    code: String(jsx),
+    exports: {},
+  };
 
+  /*
+   * Register the module before transpiling. This makes the original source
+   * available if transpilation or evaluation fails.
+   */
+  required_scripts[path] = module;
 
-	required_scripts[path] = module;
+  let processed;
 
-	try {
-		processed = Lilact.transpileJSX( jsx,
-		{
-			path,
-			mappings,
-			factory: "createComponent",
-			appendSourcemap: false,
+  try {
+    processed = Lilact.transpileJSX(String(jsx), {
+      path,
+      mappings,
+      factory: "createComponent",
+      appendSourcemap: false,
+      injectTraceLabels: true,
+      produceCJS: true,
+      blocks_info: Lilact.blocks_info,
+    });
+  } catch (error) {
+    const parserError = attachPath(error, path);
+    parserError.sourcePhase = "transpile";
+    module.error = parserError;
+    Lilact.error = parserError;
+    throw parserError;
+  }
 
-			injectTraceLabels: true,
-			produceCJS: true,
+  if (typeof DEBUG !== "undefined" && DEBUG) {
+    module.processed = processed;
+  }
 
-			blocks_info: Lilact.blocks_info,
-		} );
-	}
-	catch(e) {
-		//e = Lilact.traceError(e);
-		Lilact.error = e;
-		throw e;
-	}
+  /*
+   * The sourceURL must be the final source directive in the evaluated
+   * program. Browsers use it differently, but this format works for the
+   * common eval stack formats.
+   */
+  processed = `${processed}\n//# sourceURL=eval:/${path}`;
 
-if(DEBUG) {
-	required_scripts[path].processed = processed;
-}		
-	
-	processed += "\n//# sourceURL=eval:/" + path;
+  /*
+   * Register block labels using the exact processed source that will be
+   * evaluated.
+   */
+  if (typeof Lilact.scanBlockLabels === "function") {
+    Lilact.scanBlockLabels(processed, path);
+  }
 
-	// todo: this seems to be only useful in safari, should be assessed later
-	Lilact.scanBlockLabels(processed, path);
+  try {
+    globalThis.Lilact = Lilact;
+    globalThis.createComponent = Lilact.createComponent;
+    globalThis.Fragment = Lilact.Fragment;
 
-	try {
-		globalThis.Lilact = Lilact;
-		globalThis.createComponent = Lilact.createComponent;
-		globalThis.Fragment = Lilact.Fragment;
+    /*
+     * This must remain a direct eval. Indirect eval changes the scope and
+     * breaks the module runtime.
+     */
+    const result = eval(processed);
 
-		//const res = new Function( "module", processed )(module);
-		const res = eval(processed);
+    if (!isEmpty(module.exports)) {
+      return module.exports;
+    }
 
-		if( !isEmpty(module.exports) ) return module.exports;
-		return res;
-	}
-	catch(e) {
-		e = Lilact.traceError(e, path);
-		throw e;
-	}
+    return result;
+  } catch (error) {
+    const runtimeError = reportRuntimeError(error, path);
+    runtimeError.sourcePhase = "runtime";
+    module.error = runtimeError;
+    throw runtimeError;
+  }
 }
 
-
 /**
- * Loads a jsx script from a path. `require` loads synchronously, as it is expected to be loaded on the next instruction.
- * 
- * If the path is in the format #id, it will query the document for a script element with the given 
- * id and run its contents.
- * 
- * If require is called inside the function given to lazy, it will run async. See `lazy`.
- * 
- * All required scripts can access Lilact namespace as a global object. 
- * 
- * @param path - The path to the required file. Must be either absolute path or relative to the current 
- * module or document’s URL (the page/location that initiated the request).
- * 
- * @returns An array representation of the children.
+ * Synchronously or asynchronously loads a JSX, JavaScript, or CSS resource.
  */
-export function require(path)
-{
-	let forceUpdate, checkExport, requirer, isLazy;
+export function require(path) {
+  let forceUpdate;
+  let checkExport;
+  let requirer;
+  let isLazy;
 
-	// note: instead of named props, just to bypass typedoc.
-	if(arguments.length===2 && typeof(arguments[1]==='object')) {
-		forceUpdate = arguments[1]?.forceUpdate;
-		checkExport = arguments[1]?.checkExport;
-		requirer = arguments[1]?.requirer;
-		isLazy = arguments[1]?.isLazy;
-	}
+  if (
+    arguments.length === 2 &&
+    arguments[1] &&
+    typeof arguments[1] === "object"
+  ) {
+    forceUpdate = arguments[1].forceUpdate;
+    checkExport = arguments[1].checkExport;
+    requirer = arguments[1].requirer;
+    isLazy = arguments[1].isLazy;
+  }
 
-	if(Lilact.importObjectPaths?.[path]) return Lilact.importObjectPaths[path];
-	if(required_scripts[path] && !forceUpdate) return required_scripts[path].exports;
-	
+  if (Lilact.importObjectPaths?.[path]) {
+    return Lilact.importObjectPaths[path];
+  }
 
-	if(path[0]==='#') {
-		const el = document.getElementById(path);
+  if (required_scripts[path] && !forceUpdate) {
+    return required_scripts[path].exports;
+  }
 
-		if(el) {
-			return run(el.innerText, path);
-		}
+  if (path[0] === "#") {
+    const element = document.getElementById(path.slice(1));
 
-		throw new Error(`Required element not found (${path})`);
-	}
-	else {
-		if(requirer && requirer.path) {
-			path = joinPaths(requirer.path, path);
-		}
+    if (!element) {
+      const error = new Error(
+        `Required element not found (${path})`
+      );
+      error.fileName = path;
+      throw error;
+    }
 
-		if(Lilact?.[LAZY] || isLazy) {
-			Lilact[LAZY]=false;
+    return run(element.textContent || "", path);
+  }
 
-			let p = Lilact.resolver?.(path);
+  if (requirer?.path) {
+    path = joinPaths(requirer.path, path);
+  }
 
-			if(p) {
-				p = Promise.resolve(p);
-			}
-			else {
-				p = fetch(path).then(res => {
-					if (!res.ok) throw new Error(`HTTP ${res.status}`);
-					return res.text();
-				});
-			}
-			return  p.then(res => {
-						if(path.endsWith(".css")) {
-							injectGlobal(res);
-							return;
-						}
-						res = run(res, path, {isInline:false});
-						return res?.default ?? res;
-					})
-					.catch(err => {
-						throw err;
-					});
-		}
-		else {
-			const p = Lilact.resolver?.(path);
-			if(p) {
-				if(path.endsWith(".css")) {
-					injectGlobal(p);
-					return;
-				}
-				return run(p, path, {isInline:false});
-			}
-			else {
-				const request = new XMLHttpRequest();
-				request.open("GET", path, false);
-				request.send(null);
-				if (request.status === 200) {
-					if(path.endsWith(".css")) {
-						injectGlobal(res);
-						return;
-					}
-					return run(request.responseText, path, {isInline:false});
-				}
-			}
-		}
-	}
+  const loadAsync =
+    Boolean(Lilact?.[LAZY]) || Boolean(isLazy);
 
-	throw new Error(`Required resource not found (${path})`);
+  if (loadAsync) {
+    Lilact[LAZY] = false;
+
+    let request = Lilact.resolver?.(path);
+
+    if (request === undefined || request === null) {
+      request = fetch(path).then((response) => {
+        if (!response.ok) {
+          const error = new Error(
+            `Unable to load ${path}: HTTP ${response.status}`
+          );
+          error.fileName = path;
+          throw error;
+        }
+
+        return response.text();
+      });
+    } else {
+      request = Promise.resolve(request);
+    }
+
+    return request
+      .then((source) => {
+        if (path.endsWith(".css")) {
+          injectGlobal(String(source));
+          return;
+        }
+
+        return run(String(source), path, {
+          isInline: false,
+          isModule: true,
+        });
+      })
+      .then((result) => {
+        if (path.endsWith(".css")) return result;
+        return result?.default ?? result;
+      })
+      .catch((error) => {
+        throw reportRuntimeError(error, path);
+      });
+  }
+
+  const resolved = Lilact.resolver?.(path);
+
+  if (resolved !== undefined && resolved !== null) {
+    if (path.endsWith(".css")) {
+      injectGlobal(String(resolved));
+      return;
+    }
+
+    return run(String(resolved), path, {
+      isInline: false,
+      isModule: true,
+    });
+  }
+
+  const request = new XMLHttpRequest();
+
+  try {
+    request.open("GET", path, false);
+    request.send(null);
+  } catch (error) {
+    throw reportRuntimeError(error, path);
+  }
+
+  if (request.status >= 200 && request.status < 300) {
+    if (path.endsWith(".css")) {
+      injectGlobal(request.responseText);
+      return;
+    }
+
+    return run(request.responseText, path, {
+      isInline: false,
+      isModule: true,
+    });
+  }
+
+  const error = new Error(
+    `Unable to load ${path}: HTTP ${request.status || 0}`
+  );
+  error.fileName = path;
+  throw error;
 }
 
-
 /**
- * Wrapper that enables async, code-split component loading. `lazy` should be used
- * outside the component definintion or it will produce new components on each rerender.
- * 
- * Note that in factory function you should use require instead of `import`. Dynamic `import` 
- * would work, but it will not be wired correctly to the `Lilact` runtime.
- * 
- * Example: 
- * ``` 
- * const StopWatch = lazy( () => require('./stopwatch.jsx') );
- * ```
- * 
- * @param factory - A function with **no arguments** that returns a `Promise`.
- * The promise must resolve to a module whose module.exports.default is a Lilact component
- * or otherwise it will be whatever the module.exports is set to.
- * 
- * @returns A Lilact component that should be rendered inside a `Suspense` boundary.
+ * Enables async, code-split component loading.
  */
 export function lazy(factory) {
-	let status = "pending"; // pending | success | error
-	let result;             // component | error
+  let status = "pending";
+  let result;
 
-	Lilact[LAZY] = true;
-	result = factory();
+  Lilact[LAZY] = true;
 
-	if(Lilact.isThenable(result)) {
-		result.then(
-			(mod) => {
-				status = "success";
-				result = mod;
-				return result;
-			},
-			(err) => {
-				status = "error";
-				result = err;
-				throw err;
-			}
-		);
-	}
-	else {
-		status = "success";
-	}
+  try {
+    result = factory();
+  } catch (error) {
+    status = "error";
+    result = error;
+  }
 
-	function LazyComponent(props) {
-		if (status === "pending") throw result;
-		if (status === "error") throw result;   
-		const Component = result;
-		return <Component {...props} />;
-	}
+  if (Lilact.isThenable(result)) {
+    result.then(
+      (module) => {
+        status = "success";
+        result = module;
+      },
+      (error) => {
+        status = "error";
+        result = error;
+      }
+    );
+  } else if (status !== "error") {
+    status = "success";
+  }
 
-	return LazyComponent;
+  function LazyComponent(props) {
+    if (status === "pending") throw result;
+    if (status === "error") throw result;
+
+    const Component = result;
+    return <Component {...props} />;
+  }
+
+  return LazyComponent;
 }
 
 function scanScriptTagsWithType() {
-	const scripts = Array.from(
-		document.querySelectorAll('script[type="text/jsx"]')
-	);
-
-	return scripts.map((el) => ({
-		src: el.getAttribute("src") ?? null,
-		content: el.textContent ?? ""
-	}));
+  return Array.from(
+    document.querySelectorAll('script[type="text/jsx"]')
+  ).map((element) => ({
+    src: element.getAttribute("src"),
+    content: element.textContent || "",
+  }));
 }
 
-/**
- * Scans the whole documents and runs all the script elements with type `text/jsx`.
- * It is automatically attached to document.onload when Lilact is loaded.
- * 
- * If element src is set, it will be loaded via `require`.
- * If element has inner content, it will be executed via `run`.
- * 
- * If both are present, first the src is loaded and then the inner content is executed.
- *
- * Note that it won't detect such elements that are added after document.onload.
- * @returns {void}
- */
-
-export function runScripts()
-{
-	const scripts = scanScriptTagsWithType();
-
-	for(const s of scripts) {
-		if(s.src) require(s.src);
-		if(s.content) run(s.content);
-	}
+export function runScripts() {
+  for (const script of scanScriptTagsWithType()) {
+    if (script.src) require(script.src);
+    if (script.content) run(script.content);
+  }
 }
-
