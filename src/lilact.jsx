@@ -143,8 +143,10 @@ globalThis.createComponent = Lilact.createComponent;
 globalThis.Fragment = Lilact.Fragment;
 globalThis.require = Lilact.require;
 
-document.addEventListener('DOMContentLoaded', () => {
-  Lilact.runScripts();
+document.addEventListener("DOMContentLoaded", () => {
+  Lilact.runScripts().catch(error => {
+    Lilact.globalErrorHandler?.(error);
+  });
 });
 
 if(DEBUG) {

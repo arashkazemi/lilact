@@ -361,9 +361,9 @@ function scriptTags() {
   }));
 }
 
-export function runScripts() {
+export async function runScripts() {
   for (const script of scriptTags()) {
-    if (script.src) require(script.src);
+    if (script.src) await require(script.src);
     if (script.content) run(script.content);
   }
 }

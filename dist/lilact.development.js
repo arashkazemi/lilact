@@ -1930,10 +1930,10 @@ function getComponentByPointer() {
   const pr = new Promise((res, rej) => {
     resolve_func = res;
   });
-  function click_handler(event2) {
-    event2.stopImmediatePropagation();
+  function click_handler(event) {
+    event.stopImmediatePropagation();
     window.removeEventListener("click", click_handler, true);
-    let t = event2.target;
+    let t = event.target;
     while (!t[COMPONENT] && t.parentNode) {
       t = t.parentNode;
     }
@@ -3351,8 +3351,8 @@ function useState(initialValue) {
   return [hk.value, hk.set_func];
 }
 function useCallback(callback, deps = void 0) {
-  if (deps !== void 0 && (typeof deps !== "object" || deps.constructor.name !== "Array")) {
-    throw new Error("Callback dependencies must be an array or omitted.");
+  if (deps !== void 0 && !Array.isArray(deps) && deps !== null && typeof deps !== "object") {
+    throw new Error("Callback dependencies must be an array, object  or omitted.");
   }
   const hk = useHook();
   if (!isEmpty(hk)) {
@@ -3445,7 +3445,7 @@ function useRef(initialValue = null) {
   return hk;
 }
 async function useLayoutEffect(effect, deps = void 0) {
-  if (deps !== void 0 && (typeof deps !== "object" && deps.constructor.name !== "Array")) {
+  if (deps !== void 0 && !Array.isArray(deps) && deps !== null && typeof deps !== "object") {
     throw new Error("Layout effect dependencies must be an array, object or omitted.");
   }
   const hk = useHook();
@@ -3464,7 +3464,7 @@ async function useLayoutEffect(effect, deps = void 0) {
   lilact_default.setTimeout(lilact_default.processEffects, 0);
 }
 async function useEffect(effect, deps = void 0) {
-  if (deps !== void 0 && (typeof deps !== "object" && deps.constructor.name !== "Array")) {
+  if (deps !== void 0 && !Array.isArray(deps) && deps !== null && typeof deps !== "object") {
     throw new Error("Effect dependencies must be an array, object or omitted.");
   }
   const hk = useHook();
@@ -3483,7 +3483,7 @@ async function useEffect(effect, deps = void 0) {
   lilact_default.setTimeout(lilact_default.processEffects, 0);
 }
 async function useInsertionEffect(effect, deps = void 0) {
-  if (deps !== void 0 && (typeof deps !== "object" && deps.constructor.name !== "Array")) {
+  if (deps !== void 0 && !Array.isArray(deps) && deps !== null && typeof deps !== "object") {
     throw new Error("Insertion effect dependencies must be an array, object, or omitted.");
   }
   const hk = useHook();
@@ -3502,7 +3502,7 @@ async function useInsertionEffect(effect, deps = void 0) {
   lilact_default.setTimeout(lilact_default.processEffects, 0);
 }
 function useMemo(factory, deps = void 0) {
-  if (deps !== void 0 && (typeof deps !== "object" && deps.constructor.name !== "Array")) {
+  if (deps !== void 0 && !Array.isArray(deps) && deps !== null && typeof deps !== "object") {
     throw new Error("Memo dependencies must be an array or omitted.");
   }
   const hk = useHook();
@@ -3520,11 +3520,11 @@ function useActionState(action, initialState) {
   const [is_pending, tran_start_func] = useTransition();
   if (isEmpty(hk)) {
     hk.state = initialState;
-    hk.form_action = (sub) => {
+    hk.form_action = (event) => {
       event.preventDefault();
       tran_start_func(
         async () => {
-          const form_data = new FormData(sub.target, sub.submitter);
+          const form_data = new FormData(event.target, event.submitter);
           hk.state = await action(hk.state, form_data);
         },
         []
@@ -3585,7 +3585,7 @@ function useImperativeHandle(ref, factory, deps = void 0) {
   if (typeof (ref == null ? void 0 : ref.current) !== "object") {
     ref.current = {};
   }
-  Object.assign(ref.current, factory(), 0);
+  Object.assign(ref.current, factory());
 }
 function useDebugValue(val, formatter = (x) => x) {
   if (true) {
@@ -3838,9 +3838,9 @@ function scriptTags() {
     content: element.textContent || ""
   }));
 }
-function runScripts() {
+async function runScripts() {
   for (const script of scriptTags()) {
-    if (script.src) require2(script.src);
+    if (script.src) await require2(script.src);
     if (script.content) run(script.content);
   }
 }
@@ -6805,7 +6805,10 @@ globalThis.createComponent = Lilact2.createComponent;
 globalThis.Fragment = Lilact2.Fragment;
 globalThis.require = Lilact2.require;
 document.addEventListener("DOMContentLoaded", () => {
-  Lilact2.runScripts();
+  Lilact2.runScripts().catch((error2) => {
+    var _a;
+    (_a = Lilact2.globalErrorHandler) == null ? void 0 : _a.call(Lilact2, error2);
+  });
 });
 if (true) {
   window.addEventListener("unhandledrejection", (e) => {

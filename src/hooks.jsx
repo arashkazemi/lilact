@@ -87,8 +87,12 @@ export function useState(initialValue)
  */
 export function useCallback(callback, deps=undefined)
 {
-	if( deps!==undefined && (typeof(deps)!=='object' || deps.constructor.name!=='Array') ) {
-		throw new Error("Callback dependencies must be an array or omitted.");
+	if(
+	    deps !== undefined && !Array.isArray(deps) &&
+	    deps !== null && typeof deps !== "object"
+	  ) 
+	{
+		throw new Error("Callback dependencies must be an array, object  or omitted.");
 	}
 
 	const hk = useHook();
@@ -275,7 +279,11 @@ export function useRef(initialValue = null)
  */
 export async function useLayoutEffect(effect, deps=undefined)
 {
-	if( deps!==undefined && (typeof(deps)!=='object' && deps.constructor.name!=='Array') ) {
+	if(
+	    deps !== undefined && !Array.isArray(deps) &&
+	    deps !== null && typeof deps !== "object"
+	  ) 
+	{
 		throw new Error("Layout effect dependencies must be an array, object or omitted.");
 	}
 
@@ -307,7 +315,11 @@ export async function useLayoutEffect(effect, deps=undefined)
  */
 export async function useEffect(effect, deps=undefined)
 {
-	if( deps!==undefined && (typeof(deps)!=='object' && deps.constructor.name!=='Array') ) {
+	if(
+	    deps !== undefined && !Array.isArray(deps) &&
+	    deps !== null && typeof deps !== "object"
+	  ) 
+	{
 		throw new Error("Effect dependencies must be an array, object or omitted.");
 	}
 
@@ -340,7 +352,11 @@ export async function useEffect(effect, deps=undefined)
  */
 export async function useInsertionEffect(effect, deps=undefined)
 {
-	if( deps!==undefined && (typeof(deps)!=='object' && deps.constructor.name!=='Array') ) {
+	if(
+	    deps !== undefined && !Array.isArray(deps) &&
+	    deps !== null && typeof deps !== "object"
+	  ) 
+	{
 		throw new Error("Insertion effect dependencies must be an array, object, or omitted.");
 	}
 
@@ -373,7 +389,11 @@ export async function useInsertionEffect(effect, deps=undefined)
  */
 export function useMemo(factory,deps=undefined)
 {
-	if( deps!==undefined && (typeof(deps)!=='object' && deps.constructor.name!=='Array') ) {
+	if(
+	    deps !== undefined && !Array.isArray(deps) &&
+	    deps !== null && typeof deps !== "object"
+	  ) 
+	{
 		throw new Error("Memo dependencies must be an array or omitted.");
 	}
 
@@ -407,12 +427,12 @@ export function useActionState(action, initialState)
 
 		hk.state = initialState;
 
-		hk.form_action = (sub)=>{
+		hk.form_action = (event)=>{
 			event.preventDefault();
 
 			tran_start_func(
 					async ()=> {
-						const form_data = new FormData(sub.target, sub.submitter);
+						const form_data = new FormData(event.target, event.submitter);
 						hk.state = await action(hk.state, form_data);
 					},
 					[]
@@ -526,7 +546,7 @@ export function useImperativeHandle(ref, factory, deps=undefined)
 	if(typeof ref?.current !== 'object') {
 		ref.current = {};
 	}
-	Object.assign( ref.current, factory(), 0 );	
+	Object.assign( ref.current, factory());	
 
 }
 
