@@ -88,9 +88,9 @@ export function useState(initialValue)
 export function useCallback(callback, deps=undefined)
 {
 	if(
-	    deps !== undefined && !Array.isArray(deps) &&
-	    deps !== null && typeof deps !== "object"
-	  ) 
+			deps !== undefined && !Array.isArray(deps) &&
+			deps !== null && typeof deps !== "object"
+		) 
 	{
 		throw new Error("Callback dependencies must be an array, object  or omitted.");
 	}
@@ -137,22 +137,17 @@ export function createContext(defaultValue)
  * @param {any} context - Context object created by `createContext`.
  * @returns {any} Current context value.
  */
-export function useContext(context)
-{
-	let core = Lilact.current_component[0].parent;
+export function useContext(context) {
+	let core = Lilact.current_component[0]?.parent;
 
-	while(core.entity!==context.Provider && core.parent) {
+	while (core && core.entity !== context.Provider) {
 		core = core.parent;
 	}
 
-	if(core.parent) {
-		let v = core.props?.value;
-		return v??=context.default;
-	}
-
-	return context.default;
+	return core
+		? core.props?.value ?? context.default
+		: context.default;
 }
-
 /**
  * Returns a stable, unique ID that is consistent across renders.
  *
@@ -182,26 +177,24 @@ export function useTransition()
 	if( isEmpty(hk) ) {
 		hk.count=0;
 
-		hk.func =
-
-		(async function(core, hk, fn) {
-
-			if(hk.count===0) {
+		hk.func = (async function(core, hk, fn) {
+			if (hk.count === 0) {
 				core.component.forceUpdate();
 			}
 
 			hk.count++;
 
-			await fn();
+			try {
+				return await fn();
+			} finally {
+				hk.count--;
 
-			hk.count--;
-
-			if(hk.count===0) {
-				core.component.forceUpdate();
+				if (hk.count === 0) {
+					core.component.forceUpdate();
+				}
 			}
-		}
+		}).bind(undefined, Lilact.current_component[0], hk);
 
-		).bind(undefined, Lilact.current_component[0], hk);
 	}
 
 	return [ hk.count!=0, hk.func ];
@@ -280,9 +273,9 @@ export function useRef(initialValue = null)
 export async function useLayoutEffect(effect, deps=undefined)
 {
 	if(
-	    deps !== undefined && !Array.isArray(deps) &&
-	    deps !== null && typeof deps !== "object"
-	  ) 
+			deps !== undefined && !Array.isArray(deps) &&
+			deps !== null && typeof deps !== "object"
+		) 
 	{
 		throw new Error("Layout effect dependencies must be an array, object or omitted.");
 	}
@@ -295,8 +288,8 @@ export async function useLayoutEffect(effect, deps=undefined)
 
 	if(hk?.cleanup) {
 		await hk.cleanup();
-  		hk.cleanup = undefined;
-  	}
+			hk.cleanup = undefined;
+		}
 
 	hk.deps = deps;
 	Lilact.layout_effects.add( async ()=>{ hk.cleanup = await effect(); });
@@ -316,9 +309,9 @@ export async function useLayoutEffect(effect, deps=undefined)
 export async function useEffect(effect, deps=undefined)
 {
 	if(
-	    deps !== undefined && !Array.isArray(deps) &&
-	    deps !== null && typeof deps !== "object"
-	  ) 
+			deps !== undefined && !Array.isArray(deps) &&
+			deps !== null && typeof deps !== "object"
+		) 
 	{
 		throw new Error("Effect dependencies must be an array, object or omitted.");
 	}
@@ -331,7 +324,7 @@ export async function useEffect(effect, deps=undefined)
 
 	if(hk?.cleanup) {
 		await hk.cleanup();
-  		hk.cleanup = undefined;
+			hk.cleanup = undefined;
 	}
 
 	hk.deps = deps;
@@ -353,9 +346,9 @@ export async function useEffect(effect, deps=undefined)
 export async function useInsertionEffect(effect, deps=undefined)
 {
 	if(
-	    deps !== undefined && !Array.isArray(deps) &&
-	    deps !== null && typeof deps !== "object"
-	  ) 
+			deps !== undefined && !Array.isArray(deps) &&
+			deps !== null && typeof deps !== "object"
+		) 
 	{
 		throw new Error("Insertion effect dependencies must be an array, object, or omitted.");
 	}
@@ -368,7 +361,7 @@ export async function useInsertionEffect(effect, deps=undefined)
 
 	if(hk?.cleanup) {
 		await hk.cleanup();
-  		hk.cleanup = undefined;
+			hk.cleanup = undefined;
 	}
 
 	hk.deps = deps;
@@ -390,9 +383,9 @@ export async function useInsertionEffect(effect, deps=undefined)
 export function useMemo(factory,deps=undefined)
 {
 	if(
-	    deps !== undefined && !Array.isArray(deps) &&
-	    deps !== null && typeof deps !== "object"
-	  ) 
+			deps !== undefined && !Array.isArray(deps) &&
+			deps !== null && typeof deps !== "object"
+		) 
 	{
 		throw new Error("Memo dependencies must be an array or omitted.");
 	}
@@ -453,24 +446,27 @@ export function useActionState(action, initialState)
  * @param {Function} [init] - Optional initializer function for lazy initial state.
  * @returns {any} Hook result `[state, dispatch]`.
  */
-export function useReducer(reducer, initialArg, init)
-{
+export function useReducer(reducer, initialArg, init) {
 	const hk = useHook();
 
-	if( isEmpty(hk) ) {
-		hk.reducer = reducer;
-		hk.state = init?init(initialArg):initialArg;
+	if(isEmpty(hk)) {
+		hk.state = init ? init(initialArg) : initialArg;
+
 		hk.dispatch = function(core, hk, action) {
-			const newst = hk.reducer(hk.state, action);
-			if(!Lilact.defaultIsEqual(newst,hk.state)) {
-				hk.state = newst;
+			const newState = hk.reducer(hk.state, action);
+
+			if (!Lilact.defaultIsEqual(newState, hk.state)) {
+				hk.state = newState;
 				core.component.forceUpdate();
 			}
 		}.bind(undefined, Lilact.current_component[0], hk);
 	}
 
+	hk.reducer = reducer;
+
 	return [hk.state, hk.dispatch];
 }
+
 
 
 

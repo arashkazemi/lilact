@@ -54,9 +54,12 @@ const typeOf = (input) => {
  * @param value - Value to inspect.
  * @returns True if the value is a class component; otherwise false.
  */
-export const isValidComponent = (value) => {
-	return value[CORE]!==undefined || value[TEXT]!==undefined;
-}
+export const isValidComponent = value => {
+  return Boolean(
+    value &&
+    (value[CORE] !== undefined || value[TEXT] !== undefined)
+  );
+};
 
 /**
  * Checks whether a value is a Lilact component. It is the same as `isValidComponent`.
@@ -359,23 +362,48 @@ export function isEmpty(value)  {
  * @returns True if shallowly equal; otherwise false.
  */
 export const shallowEqual = (source, target, ignore) => {
-	if (typeOf(source) !== typeOf(target)) {
-		return false;
-	}
+  if (Object.is(source, target)) {
+    return true;
+  }
 
-	if (typeOf(source) === "array") {
-		if (source.length !== target.length) {
-			return false;
-		}
-		return source.every((el, index) => el === target[index] || index===ignore );
-	} else if (typeOf(source) === "object") {
-		return Object.keys(source).every((key) => source[key] === target[key] || key===ignore );
-	} else if (typeOf(source) === "date") {
-		return source.getTime() === target.getTime();
-	}
+  if (typeOf(source) !== typeOf(target)) {
+    return false;
+  }
 
-	return source === target;
-}
+  if (typeOf(source) === "array") {
+    if (source.length !== target.length) {
+      return false;
+    }
+
+    return source.every(
+      (value, index) =>
+        index === ignore || Object.is(value, target[index])
+    );
+  }
+
+  if (typeOf(source) === "object") {
+    const sourceKeys = Object.keys(source)
+      .filter(key => key !== ignore);
+
+    const targetKeys = Object.keys(target)
+      .filter(key => key !== ignore);
+
+    if (sourceKeys.length !== targetKeys.length) {
+      return false;
+    }
+
+    return sourceKeys.every(key =>
+      Object.prototype.hasOwnProperty.call(target, key) &&
+      Object.is(source[key], target[key])
+    );
+  }
+
+  if (typeOf(source) === "date") {
+    return source.getTime() === target.getTime();
+  }
+
+  return Object.is(source, target);
+};
 
 
 /**

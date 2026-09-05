@@ -1760,7 +1760,9 @@ var typeOf = (input) => {
   return type;
 };
 var isValidComponent = (value) => {
-  return value[CORE] !== void 0 || value[TEXT] !== void 0;
+  return Boolean(
+    value && (value[CORE] !== void 0 || value[TEXT] !== void 0)
+  );
 };
 var isValidElement = isValidComponent;
 var findDOMNode = (component) => {
@@ -1948,6 +1950,9 @@ function isEmpty(value) {
   return true;
 }
 var shallowEqual = (source, target, ignore) => {
+  if (Object.is(source, target)) {
+    return true;
+  }
   if (typeOf(source) !== typeOf(target)) {
     return false;
   }
@@ -1955,13 +1960,24 @@ var shallowEqual = (source, target, ignore) => {
     if (source.length !== target.length) {
       return false;
     }
-    return source.every((el, index2) => el === target[index2] || index2 === ignore);
-  } else if (typeOf(source) === "object") {
-    return Object.keys(source).every((key) => source[key] === target[key] || key === ignore);
-  } else if (typeOf(source) === "date") {
+    return source.every(
+      (value, index2) => index2 === ignore || Object.is(value, target[index2])
+    );
+  }
+  if (typeOf(source) === "object") {
+    const sourceKeys = Object.keys(source).filter((key) => key !== ignore);
+    const targetKeys = Object.keys(target).filter((key) => key !== ignore);
+    if (sourceKeys.length !== targetKeys.length) {
+      return false;
+    }
+    return sourceKeys.every(
+      (key) => Object.prototype.hasOwnProperty.call(target, key) && Object.is(source[key], target[key])
+    );
+  }
+  if (typeOf(source) === "date") {
     return source.getTime() === target.getTime();
   }
-  return source === target;
+  return Object.is(source, target);
 };
 function deepEqual(source, target) {
   if (typeOf(source) !== typeOf(target)) {
@@ -2990,11 +3006,16 @@ var Component = class {
   * @type {string}
   */
   displayName() {
-    var _a, _b;
-    if ((_a = this[CORE].entity) == null ? void 0 : _a.displayName) return (_b = this[CORE].entity) == null ? void 0 : _b.displayName;
-    if (typeof this[CORE].entity === "string") return this[CORE].entity;
-    if (isClass(this[CORE].entity)) this[CORE].entity.constructor.name;
-    if (typeof this[CORE].entity === "function") return this[CORE].entity.name;
+    const entity = this[CORE].entity;
+    if (entity == null ? void 0 : entity.displayName) {
+      return typeof entity.displayName === "function" ? entity.displayName() : entity.displayName;
+    }
+    if (typeof entity === "string") {
+      return entity;
+    }
+    if (typeof entity === "function") {
+      return entity.name || "Component";
+    }
     return "Component";
   }
   constructor(props) {
@@ -3377,16 +3398,12 @@ function createContext(defaultValue) {
   };
 }
 function useContext(context2) {
-  var _a;
-  let core = lilact_default.current_component[0].parent;
-  while (core.entity !== context2.Provider && core.parent) {
+  var _a, _b, _c;
+  let core = (_a = lilact_default.current_component[0]) == null ? void 0 : _a.parent;
+  while (core && core.entity !== context2.Provider) {
     core = core.parent;
   }
-  if (core.parent) {
-    let v = (_a = core.props) == null ? void 0 : _a.value;
-    return v != null ? v : v = context2.default;
-  }
-  return context2.default;
+  return core ? (_c = (_b = core.props) == null ? void 0 : _b.value) != null ? _c : context2.default : context2.default;
 }
 function useId(prefix2 = "N") {
   const hk = useHook();
@@ -3404,10 +3421,13 @@ function useTransition() {
         core.component.forceUpdate();
       }
       hk2.count++;
-      await fn();
-      hk2.count--;
-      if (hk2.count === 0) {
-        core.component.forceUpdate();
+      try {
+        return await fn();
+      } finally {
+        hk2.count--;
+        if (hk2.count === 0) {
+          core.component.forceUpdate();
+        }
       }
     }).bind(void 0, lilact_default.current_component[0], hk);
   }
@@ -3537,16 +3557,16 @@ function useActionState(action, initialState) {
 function useReducer(reducer, initialArg, init) {
   const hk = useHook();
   if (isEmpty(hk)) {
-    hk.reducer = reducer;
     hk.state = init ? init(initialArg) : initialArg;
     hk.dispatch = function(core, hk2, action) {
-      const newst = hk2.reducer(hk2.state, action);
-      if (!lilact_default.defaultIsEqual(newst, hk2.state)) {
-        hk2.state = newst;
+      const newState = hk2.reducer(hk2.state, action);
+      if (!lilact_default.defaultIsEqual(newState, hk2.state)) {
+        hk2.state = newState;
         core.component.forceUpdate();
       }
     }.bind(void 0, lilact_default.current_component[0], hk);
   }
+  hk.reducer = reducer;
   return [hk.state, hk.dispatch];
 }
 function useDeferredValue(value, initialValue) {
@@ -3608,11 +3628,16 @@ __export(run_exports, {
 function joinPaths(basePath, relativePath) {
   const absolute = relativePath.startsWith("/");
   const parts = (absolute ? "" : basePath).split("/").filter(Boolean);
-  if (!absolute && !basePath.endsWith("/")) parts.pop();
+  if (!absolute && !basePath.endsWith("/")) {
+    parts.pop();
+  }
   for (const part of relativePath.split("/")) {
     if (!part || part === ".") continue;
-    if (part === "..") parts.pop();
-    else parts.push(part);
+    if (part === "..") {
+      parts.pop();
+    } else {
+      parts.push(part);
+    }
   }
   return `${absolute ? "/" : ""}${parts.join("/")}`;
 }
@@ -3626,7 +3651,9 @@ function asError(value, fallback = "Unknown error") {
     if (value.name) error2.name = value.name;
     if (value.stack) error2.stack = value.stack;
     for (const key of Object.keys(value)) {
-      if (!(key in error2)) error2[key] = value[key];
+      if (!(key in error2)) {
+        error2[key] = value[key];
+      }
     }
   }
   return error2;
@@ -3640,7 +3667,9 @@ function markSource(value, path2) {
 }
 function report(value, path2) {
   const error2 = markSource(value, path2);
-  if (error2.isTraced) return error2;
+  if (error2.isTraced) {
+    return error2;
+  }
   if (typeof lilact_default.traceError === "function") {
     return lilact_default.traceError(error2, path2);
   }
@@ -3648,20 +3677,50 @@ function report(value, path2) {
   return error2;
 }
 var required_scripts = {};
+function createModule(path2, {
+  code: code2 = "",
+  isInline: isInline2 = false,
+  isModule: isModule2 = true
+} = {}) {
+  const module2 = {
+    path: path2,
+    code: String(code2),
+    mappings: [],
+    exports: {},
+    isInline: isInline2,
+    isModule: isModule2,
+    // True only after the module has been successfully evaluated.
+    loaded: false,
+    // The promise for the request currently loading this resource.
+    // This is deliberately stored on the module to deduplicate requests.
+    request: void 0,
+    error: void 0
+  };
+  required_scripts[path2] = module2;
+  return module2;
+}
 function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, {
   isInline = true,
   isModule = true
 } = {}) {
   var _a, _b;
-  const module = {
-    path,
-    code: String(jsx),
-    mappings: [],
-    exports: {},
-    isInline,
-    isModule
-  };
-  required_scripts[path] = module;
+  let module = required_scripts[path];
+  if (!module) {
+    module = createModule(path, {
+      code: jsx,
+      isInline,
+      isModule
+    });
+  } else {
+    module.path = path;
+    module.code = String(jsx);
+    module.mappings = [];
+    module.exports = {};
+    module.isInline = isInline;
+    module.isModule = isModule;
+    module.loaded = false;
+    module.error = void 0;
+  }
   let processed;
   try {
     processed = lilact_default.transpileJSX(String(jsx), {
@@ -3691,6 +3750,7 @@ function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, {
     globalThis.createComponent = lilact_default.createComponent;
     globalThis.Fragment = lilact_default.Fragment;
     const result = eval(processed);
+    module.loaded = true;
     return isEmpty(module.exports) ? result : module.exports;
   } catch (value) {
     const error2 = report(value, path);
@@ -3699,8 +3759,64 @@ function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, {
     throw error2;
   }
 }
+function getOrCreateModule(path2, options = {}) {
+  return required_scripts[path2] || createModule(path2, options);
+}
+function loadAsyncResource(path2, module2) {
+  var _a, _b;
+  let source;
+  try {
+    const resolved = (_b = (_a = lilact_default).resolver) == null ? void 0 : _b.call(_a, path2);
+    if (resolved == null) {
+      if (module2.code && !module2.loaded) {
+        source = Promise.resolve(module2.code);
+      } else {
+        source = fetch(path2).then((response) => {
+          if (!response.ok) {
+            throw report(
+              new Error(
+                `Unable to load ${path2}: HTTP ${response.status}`
+              ),
+              path2
+            );
+          }
+          return response.text();
+        });
+      }
+    } else {
+      source = Promise.resolve(resolved);
+    }
+  } catch (value) {
+    source = Promise.reject(report(value, path2));
+  }
+  let request;
+  request = Promise.resolve(source).then((sourceText) => {
+    module2.code = String(sourceText);
+    if (path2.endsWith(".css")) {
+      injectGlobal(module2.code);
+      module2.loaded = true;
+      return void 0;
+    }
+    return run(module2.code, path2, {
+      isInline: false,
+      isModule: true
+    });
+  }).then((result2) => {
+    var _a2;
+    return (_a2 = result2 == null ? void 0 : result2.default) != null ? _a2 : result2;
+  }).catch((error2) => {
+    module2.error = report(error2, path2);
+    throw module2.error;
+  }).finally(() => {
+    if (module2.request === request) {
+      module2.request = void 0;
+    }
+  });
+  module2.request = request;
+  return request;
+}
 function require2(path2) {
-  var _a, _b, _c, _d, _e, _f;
+  var _a, _b, _c, _d;
   let options = {};
   if (arguments.length === 2 && arguments[1] && typeof arguments[1] === "object") {
     options = arguments[1];
@@ -3708,12 +3824,16 @@ function require2(path2) {
   if ((_a = lilact_default.importObjectPaths) == null ? void 0 : _a[path2]) {
     return lilact_default.importObjectPaths[path2];
   }
-  const loadAsync = Boolean(lilact_default[LAZY]) || Boolean(options.isLazy);
   if ((_b = options.requirer) == null ? void 0 : _b.path) {
     path2 = joinPaths(options.requirer.path, path2);
   }
-  if (required_scripts[path2] && !options.forceUpdate && !loadAsync) {
-    return required_scripts[path2].exports;
+  const loadAsync = Boolean(lilact_default[LAZY]) || Boolean(options.isLazy);
+  const module2 = getOrCreateModule(path2, {
+    isInline: false,
+    isModule: true
+  });
+  if (module2.loaded && !options.forceUpdate && !loadAsync) {
+    return module2.exports;
   }
   if (path2.startsWith("#")) {
     const element = document.getElementById(path2.slice(1));
@@ -3727,49 +3847,18 @@ function require2(path2) {
   }
   if (loadAsync) {
     lilact_default[LAZY] = false;
-    let request2 = (_d = (_c = lilact_default).resolver) == null ? void 0 : _d.call(_c, path2);
-    if (request2 == null) {
-      if (required_scripts[path2] && !options.forceUpdate) {
-        request2 = Promise.resolve(required_scripts[path2].code);
-      } else {
-        request2 = fetch(path2).then((response) => {
-          if (!response.ok) {
-            throw report(
-              new Error(
-                `Unable to load ${path2}: HTTP ${response.status}`
-              ),
-              path2
-            );
-          }
-          return response.text();
-        });
-      }
-    } else {
-      request2 = Promise.resolve(request2);
+    if (module2.request) {
+      return module2.request;
     }
-    return request2.then((source) => {
-      if (path2.endsWith(".css")) {
-        injectGlobal(String(source));
-        return;
-      }
-      return run(String(source), path2, {
-        isInline: false,
-        isModule: true
-      });
-    }).then(
-      (result2) => {
-        var _a2;
-        return (_a2 = result2 == null ? void 0 : result2.default) != null ? _a2 : result2;
-      }
-    ).catch((error2) => {
-      throw report(error2, path2);
-    });
+    return loadAsyncResource(path2, module2);
   }
-  const resolved = (_f = (_e = lilact_default).resolver) == null ? void 0 : _f.call(_e, path2);
+  const resolved = (_d = (_c = lilact_default).resolver) == null ? void 0 : _d.call(_c, path2);
   if (resolved != null) {
     if (path2.endsWith(".css")) {
       injectGlobal(String(resolved));
-      return;
+      module2.code = String(resolved);
+      module2.loaded = true;
+      return void 0;
     }
     return run(String(resolved), path2, {
       isInline: false,
@@ -3785,8 +3874,10 @@ function require2(path2) {
   }
   if (request.status >= 200 && request.status < 300) {
     if (path2.endsWith(".css")) {
-      injectGlobal(request.responseText);
-      return;
+      module2.code = request.responseText;
+      injectGlobal(module2.code);
+      module2.loaded = true;
+      return void 0;
     }
     return run(request.responseText, path2, {
       isInline: false,
@@ -3794,7 +3885,9 @@ function require2(path2) {
     });
   }
   throw report(
-    new Error(`Unable to load ${path2}: HTTP ${request.status || 0}`),
+    new Error(
+      `Unable to load ${path2}: HTTP ${request.status || 0}`
+    ),
     path2
   );
 }
@@ -3823,8 +3916,12 @@ function lazy(factory) {
     status = "success";
   }
   function LazyComponent(props) {
-    if (status === "pending") throw result2;
-    if (status === "error") throw result2;
+    if (status === "pending") {
+      throw result2;
+    }
+    if (status === "error") {
+      throw result2;
+    }
     const Component2 = result2;
     return createComponent(Component2, { ...props });
   }
@@ -3840,8 +3937,11 @@ function scriptTags() {
 }
 async function runScripts() {
   for (const script of scriptTags()) {
-    if (script.src) await require2(script.src);
-    if (script.content) run(script.content);
+    if (script.src) {
+      await require2(script.src);
+    } else if (script.content) {
+      run(script.content);
+    }
   }
 }
 
@@ -4671,47 +4771,47 @@ function globalErrorHandler(eventOrError) {
     error2.lineNumber
   );
   const className = css(`
-    background: linear-gradient(135deg, #fff2f2d4, #ffffffd4);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,.25);
-    border-radius: 5px;
-    box-shadow: 0 10px 30px rgba(0,0,0,.35);
-    overflow: hidden;
-    min-width: 400px;
-    width: 66%;
+		background: linear-gradient(135deg, #fff2f2d4, #ffffffd4);
+		backdrop-filter: blur(10px);
+		border: 1px solid rgba(255,255,255,.25);
+		border-radius: 5px;
+		box-shadow: 0 10px 30px rgba(0,0,0,.35);
+		overflow: hidden;
+		min-width: 400px;
+		width: 66%;
 
-    red {
-      color: #d00;
-    }
+		red {
+			color: #d00;
+		}
 
-    code {
-      border: 1px solid #0003;
-      overflow: auto;
-      padding: 10px;
-      display: block;
-    }
-  `);
+		code {
+			border: 1px solid #0003;
+			overflow: auto;
+			padding: 10px;
+			display: block;
+		}
+	`);
   const dialog = document.createElement("dialog");
   dialog.className = className;
   const location = error2.fileName ? `At ${escapeHtml(error2.fileName)}` : "";
   const line2 = Number.isFinite(error2.lineNumber) ? `: Line ${error2.lineNumber + 1}` : "";
   const componentStack = ((_a = error2._error) == null ? void 0 : _a.componentStackLog) || ((_b = error2._error) == null ? void 0 : _b.componentStack) || "";
   dialog.innerHTML = `
-    <h3><red>Error!</red></h3>
-    <b>${location}${line2}</b><br><br>
-    <b>${escapeHtml(error2.name)}</b>:
-    <span>${escapeHtml(error2.message)}</span>
-    <br><br>
+		<h3><red>Error!</red></h3>
+		<b>${location}${line2}</b><br><br>
+		<b>${escapeHtml(error2.name)}</b>:
+		<span>${escapeHtml(error2.message)}</span>
+		<br><br>
 
-    ${excerpt ? "<code><pre></pre><red><pre></pre></red><pre></pre></code>" : ""}
+		${excerpt ? "<code><pre></pre><red><pre></pre></red><pre></pre></code>" : ""}
 
-    ${componentStack ? `
-          <br>
-          Component Stack:
-          <br>
-          <code><pre>${escapeHtml(componentStack)}</pre></code>
-        ` : ""}
-  `;
+		${componentStack ? `
+					<br>
+					Component Stack:
+					<br>
+					<code><pre>${escapeHtml(componentStack)}</pre></code>
+				` : ""}
+	`;
   if (excerpt) {
     const pre = dialog.querySelectorAll("pre");
     pre[0].innerText = excerpt.before;

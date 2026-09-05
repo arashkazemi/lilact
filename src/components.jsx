@@ -639,9 +639,9 @@ const renderErrorHandler = (c, e) =>
 	}
 
 	let stack_log = Array.prototype
-			          .map.call(stack, x => (`in  ${typeof(x.component.displayName)==='function'?
-			          									x.component.displayName():x.component.displayName}` ) ) 
-			          .join('\n');
+								.map.call(stack, x => (`in  ${typeof(x.component.displayName)==='function'?
+																	x.component.displayName():x.component.displayName}` ) ) 
+								.join('\n');
 
 	e.componentStack = stack;
 	e.componentStackLog = stack_log;
@@ -774,8 +774,8 @@ function doUpdates()
 	- Layout effects (run immediately after insertion effects, still before paint).
 	- Passive effects (useEffect)
 
-    schedule them for after paint using requestAnimationFrame, typically:
-        run the “after paint” work in the next frame or in a callback scheduled such that it runs after the browser has performed the paint.
+		schedule them for after paint using requestAnimationFrame, typically:
+				run the “after paint” work in the next frame or in a callback scheduled such that it runs after the browser has performed the paint.
 
 
 	Current task: render → DOM updates → insertion effects → layout effects
@@ -971,15 +971,26 @@ export class Component
 	* It can also be set for function components.
 	* @type {string}
 	*/
-	displayName()
-	{
-		if(this[CORE].entity?.displayName) return this[CORE].entity?.displayName;
-		if(typeof(this[CORE].entity)==='string') return this[CORE].entity;
-		if( isClass(this[CORE].entity) ) this[CORE].entity.constructor.name;
-		if( typeof(this[CORE].entity)==='function' ) return this[CORE].entity.name;
+	displayName() {
+		const entity = this[CORE].entity;
+
+		if (entity?.displayName) {
+			return typeof entity.displayName === "function"
+				? entity.displayName()
+				: entity.displayName;
+		}
+
+		if (typeof entity === "string") {
+			return entity;
+		}
+
+		if (typeof entity === "function") {
+			return entity.name || "Component";
+		}
+
 		return "Component";
 	}
-
+	
 	constructor(props)
 	{
 		this[CORE] = new ComponentCore(this, props);
@@ -1385,7 +1396,7 @@ export const events_set = new Set([
 /** @ignore */
 export const capture_events_set = {};
 for (const x of events_set) {
-  capture_events_set[x+"capture"] = x;
+	capture_events_set[x+"capture"] = x;
 }
 
 /** @ignore */
