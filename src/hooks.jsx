@@ -275,7 +275,7 @@ export function useRef(initialValue = null)
  */
 export async function useLayoutEffect(effect, deps=undefined)
 {
-	if( deps!==undefined && (typeof(deps)!=='object' || deps.constructor.name!=='Array') ) {
+	if( deps!==undefined && (typeof(deps)!=='object' && deps.constructor.name!=='Array') ) {
 		throw new Error("Layout effect dependencies must be an array, object or omitted.");
 	}
 
@@ -287,7 +287,8 @@ export async function useLayoutEffect(effect, deps=undefined)
 
 	if(hk?.cleanup) {
 		await hk.cleanup();
-	}
+  		hk.cleanup = undefined;
+  	}
 
 	hk.deps = deps;
 	Lilact.layout_effects.add( async ()=>{ hk.cleanup = await effect(); });
@@ -306,7 +307,7 @@ export async function useLayoutEffect(effect, deps=undefined)
  */
 export async function useEffect(effect, deps=undefined)
 {
-	if( deps!==undefined && (typeof(deps)!=='object' || deps.constructor.name!=='Array') ) {
+	if( deps!==undefined && (typeof(deps)!=='object' && deps.constructor.name!=='Array') ) {
 		throw new Error("Effect dependencies must be an array, object or omitted.");
 	}
 
@@ -318,6 +319,7 @@ export async function useEffect(effect, deps=undefined)
 
 	if(hk?.cleanup) {
 		await hk.cleanup();
+  		hk.cleanup = undefined;
 	}
 
 	hk.deps = deps;
@@ -338,7 +340,7 @@ export async function useEffect(effect, deps=undefined)
  */
 export async function useInsertionEffect(effect, deps=undefined)
 {
-	if( deps!==undefined && (typeof(deps)!=='object' || deps.constructor.name!=='Array') ) {
+	if( deps!==undefined && (typeof(deps)!=='object' && deps.constructor.name!=='Array') ) {
 		throw new Error("Insertion effect dependencies must be an array, object, or omitted.");
 	}
 
@@ -350,6 +352,7 @@ export async function useInsertionEffect(effect, deps=undefined)
 
 	if(hk?.cleanup) {
 		await hk.cleanup();
+  		hk.cleanup = undefined;
 	}
 
 	hk.deps = deps;
@@ -370,7 +373,7 @@ export async function useInsertionEffect(effect, deps=undefined)
  */
 export function useMemo(factory,deps=undefined)
 {
-	if( deps!==undefined && (typeof(deps)!=='object' || deps.constructor.name!=='Array') ) {
+	if( deps!==undefined && (typeof(deps)!=='object' && deps.constructor.name!=='Array') ) {
 		throw new Error("Memo dependencies must be an array or omitted.");
 	}
 

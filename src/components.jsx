@@ -371,7 +371,7 @@ if(DEBUG) {
 			if(this.outlet!==undefined) {
 				for(let c of this.outlet) {
 					if(c.cleanup) {
-						c.cleanup();
+						promises.push(c.cleanup());
 					}
 				}
 			}
@@ -379,7 +379,7 @@ if(DEBUG) {
 			if(this.props?.children!==undefined) {
 				for(let c of this.props.children) {
 					if(c.cleanup) {
-						c.cleanup();
+						promises.push(c.cleanup());
 					}
 				}
 			}
@@ -387,10 +387,12 @@ if(DEBUG) {
 			if(this.hooks!==undefined) {
 				for(let h of this.hooks) {
 					if(h.cleanup) {
-						h.cleanup();
+						promises.push(h.cleanup());
 					}
 				}
 			}
+
+			await Promise.all(promises);
 		}
 
 		catch(e) {
@@ -400,6 +402,9 @@ if(DEBUG) {
 
 	updateElementProps(patch, force=false) 
 	{
+		// note: string.slice(0,undefined) returns the complete string. that's why
+		// the slices are correct even if maxLength is not set.
+
 		if(this.entity==="input") {
 			if(!patch?.type) patch.type = 'text';
 			if(patch.type!==this.element.type) {
@@ -432,7 +437,7 @@ if(DEBUG) {
 					this.event_detachers[al]();
 				}
 				else {
-					this.element.setAttribute(a, undefined);
+					this.element.removeAttribute(a);
 				}
 			}
 		}
@@ -485,6 +490,7 @@ if(DEBUG) {
 				}
 				else if(boolean_html_attributes_set.has(a)) { // not lower cased(al), as it is set as a js property
 					this.element[a] = toBool(patch[a]);
+					if(!this.element[a]) this.element.removeAttribute(a);
 				}
 				else if(a==='autoFocus') { // not lower cased(al), as it is set as a js property
 					this.element['autofocus'] = toBool(patch[a]);

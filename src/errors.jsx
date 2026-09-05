@@ -27,21 +27,29 @@
 	THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
+/*
+Lilact
+Copyright (C) 2024-2026 Arash Kazemi <contact.arash.kazemi@gmail.com>
+BSD-2-Clause
+*/
+
 import Lilact from "./lilact.jsx";
 import { required_scripts } from "./run.jsx";
 import { css } from "@emotion/css";
 
-function finite(value) {
-  const number = Number(value);
-  return Number.isFinite(number) ? number : null;
+function number(value) {
+  const result = Number(value);
+  return Number.isFinite(result) ? result : null;
 }
 
-function errorValue(value) {
+function asError(value) {
   if (value instanceof Error) return value;
   if (value?.error instanceof Error) return value.error;
 
   const error = new Error(
-    value?.message == null ? String(value) : String(value.message)
+    value?.message == null
+      ? String(value)
+      : String(value.message)
   );
 
   if (value && typeof value === "object") {
@@ -56,15 +64,16 @@ function errorValue(value) {
   return error;
 }
 
-function parserError(error) {
+function isParserError(error) {
   return error?.name === "JSXParserError";
 }
 
-function sourceFromStack(stack) {
+function stackLocation(stack) {
   if (typeof stack !== "string") return null;
 
   for (const line of stack.split(/\r?\n/)) {
     const match = line.match(/(eval:\/.*):(\d+):(\d+)/);
+
     if (!match) continue;
 
     return {
@@ -78,12 +87,16 @@ function sourceFromStack(stack) {
 }
 
 function browserLocation(error) {
-  const line = finite(
-    error?.lineNumber ?? error?.lineno ?? error?.line
+  const line = number(
+    error?.lineNumber ??
+    error?.lineno ??
+    error?.line
   );
 
-  const column = finite(
-    error?.columnNumber ?? error?.colno ?? error?.column
+  const column = number(
+    error?.columnNumber ??
+    error?.colno ??
+    error?.column
   );
 
   return {
@@ -92,14 +105,16 @@ function browserLocation(error) {
   };
 }
 
-function blockTrace(error) {
+function traceBlock(error) {
   const trace = error?.lilact_trace;
   return Array.isArray(trace) ? trace[0] : trace;
 }
 
 function blockInfo(error) {
-  const trace = blockTrace(error);
-  return trace == null ? null : Lilact.blocks_info?.labels?.[trace];
+  const trace = traceBlock(error);
+  return trace == null
+    ? null
+    : Lilact.blocks_info?.labels?.[trace];
 }
 
 function mapLocation(mappings, line, column) {
@@ -113,11 +128,12 @@ function mapLocation(mappings, line, column) {
   }
 
   const valid = mappings
-    .filter(
-      mapping =>
-        Array.isArray(mapping) &&
-        mapping.length >= 4 &&
-        mapping.slice(0, 4).every(value => Number.isFinite(Number(value)))
+    .filter(mapping =>
+      Array.isArray(mapping) &&
+      mapping.length >= 4 &&
+      mapping
+        .slice(0, 4)
+        .every(value => Number.isFinite(Number(value)))
     )
     .sort((a, b) =>
       Number(a[0]) - Number(b[0]) ||
@@ -134,7 +150,10 @@ function mapLocation(mappings, line, column) {
 
     if (
       generatedLine < line ||
-      (generatedLine === line && generatedColumn <= column)
+      (
+        generatedLine === line &&
+        generatedColumn <= column
+      )
     ) {
       selected = mapping;
     } else {
@@ -148,7 +167,9 @@ function mapLocation(mappings, line, column) {
   const sourceColumn = Number(selected[3]);
 
   return {
-    line: sourceLine + line - generatedLine,
+    line:
+      sourceLine +
+      (line === generatedLine ? 0 : line - generatedLine),
     column:
       line === generatedLine
         ? Math.max(0, sourceColumn + column - generatedColumn)
@@ -156,120 +177,84 @@ function mapLocation(mappings, line, column) {
   };
 }
 
-function copyMetadata(source, target) {
-  if (!source || typeof source !== "object") return;
-
-  for (const key of [
-    "fileName",
-    "lineNumber",
-    "columnNumber",
-    "lineno",
-    "colno",
-    "line",
-    "column",
-    "componentStackLog",
-    "componentStack",
-    "lilact_trace",
-  	"lilact_source",
-    ]) {
-    if (source[key] !== undefined && target[key] === undefined) {
-      target[key] = source[key];
-    }
-  }
-}
-
-function blockLocation(error, result, fallbackPath) {
-  const block = blockInfo(error);
-  if (!block) return;
-
-  if (block.path) result.fileName = block.path;
-  else if (!result.fileName) result.fileName = fallbackPath;
-
-  if (Number.isFinite(block.line)) {
-    result.lineNumber = block.line;
-  }
-
-  if (Number.isFinite(block.col)) {
-    result.columnNumber = block.col;
-  }
-
-  if (block.desc) result.label = block.desc;
-}
-
 export function traceError(value, runPath) {
   if (value?.isTraced) return value;
 
-  const original = errorValue(value);
-  const source = original.lilact_source;
-  const stack = parserError(original)
+  const error = asError(value);
+  const source = error.lilact_source;
+  const stack = isParserError(error)
     ? null
-    : sourceFromStack(original.stack);
-
-  const browser = parserError(original)
+    : stackLocation(error.stack);
+  const browser = isParserError(error)
     ? {
-        line: finite(original.lineNumber),
-        column: finite(original.columnNumber),
+        line: number(error.lineNumber),
+        column: number(error.columnNumber),
       }
-    : browserLocation(original);
+    : browserLocation(error);
 
-  const sourcePath = source?.path || stack?.path;
-  const fileName = sourcePath || original.fileName || runPath || null;
+  /*
+   * lilact_source is authoritative. In particular, it prevents a syntax
+   * error from a nested eval from inheriting the caller's eval filename.
+   */
+  const fileName =
+    source?.path ||
+    stack?.path ||
+    error.fileName ||
+    runPath ||
+    null;
 
-  let lineNumber =
+  let line =
     stack?.line ??
     browser.line ??
     null;
 
-  let columnNumber =
+  let column =
     stack?.column ??
     browser.column ??
     null;
 
-	const result = {
-	  fileName,
-	  lineNumber,
-	  columnNumber,
-	  message:
-	    original.message == null
-	      ? String(original)
-	      : String(original.message),
-	  name: original.name || "Error",
-	  stack: original.stack || null,
-	  lilact_source: source || null,
-	  _error: original,
-	  isTraced: true,
-	};
+  const result = {
+    fileName,
+    lineNumber: line,
+    columnNumber: column,
+    message:
+      error.message == null
+        ? String(error)
+        : String(error.message),
+    name: error.name || "Error",
+    stack: error.stack || null,
+    lilact_source: source || null,
+    _error: error,
+    isTraced: true,
+  };
 
+  const module = fileName && required_scripts[fileName];
 
-  copyMetadata(value, result);
-  copyMetadata(original, result);
+  if (module) {
+    const mapped = mapLocation(
+      module.mappings,
+      result.lineNumber,
+      result.columnNumber
+    );
 
-  /*
-   * The originating module is more reliable than Firefox's propagated
-   * fileName and Chrome's sometimes-missing fileName.
-   */
-  if (sourcePath) result.fileName = sourcePath;
-
-  if (!parserError(original) && result.fileName) {
-    const module = required_scripts[result.fileName];
-
-    if (module?.mappings) {
-      const mapped = mapLocation(module.mappings, lineNumber, columnNumber);
-      result.lineNumber = mapped.line;
-      result.columnNumber = mapped.column;
-    }
+    result.lineNumber = mapped.line;
+    result.columnNumber = mapped.column;
   }
 
-  /*
-   * Block labels provide a useful fallback when the browser gives no
-   * usable source location.
-   */
+  const block = blockInfo(error);
+
   if (
-    result.lineNumber == null ||
-    result.columnNumber == null ||
-    !result.fileName
+    block &&
+    (
+      result.lineNumber == null ||
+      result.columnNumber == null ||
+      !result.fileName
+    )
   ) {
-    blockLocation(original, result, source?.path || runPath);
+    result.fileName ||= block.path || runPath || null;
+    result.lineNumber ??= block.line;
+    result.columnNumber ??= block.col;
+    result.label = block.desc;
   }
 
   Lilact.error = result;
@@ -298,20 +283,22 @@ function sourceExcerpt(module, line) {
 }
 
 export function globalErrorHandler(eventOrError) {
-  const raw =
+  const value =
     eventOrError?.error instanceof Error
       ? eventOrError.error
       : eventOrError?.reason !== undefined
         ? eventOrError.reason
         : eventOrError;
 
-  const traced = traceError(
-    raw,
+  const error = traceError(
+    value,
     eventOrError?.fileName || null
   );
 
-  const module = required_scripts[traced.fileName];
-  const excerpt = sourceExcerpt(module, traced.lineNumber);
+  const excerpt = sourceExcerpt(
+    required_scripts[error.fileName],
+    error.lineNumber
+  );
 
   const className = css(`
     background: linear-gradient(135deg, #fff2f2d4, #ffffffd4);
@@ -338,24 +325,24 @@ export function globalErrorHandler(eventOrError) {
   const dialog = document.createElement("dialog");
   dialog.className = className;
 
-  const location = traced.fileName
-    ? `At ${escapeHtml(traced.fileName)}`
+  const location = error.fileName
+    ? `At ${escapeHtml(error.fileName)}`
     : "";
 
-  const line = Number.isFinite(traced.lineNumber)
-    ? `: Line ${traced.lineNumber + 1}`
+  const line = Number.isFinite(error.lineNumber)
+    ? `: Line ${error.lineNumber + 1}`
     : "";
 
   const componentStack =
-    traced._error?.componentStackLog ||
-    traced._error?.componentStack ||
+    error._error?.componentStackLog ||
+    error._error?.componentStack ||
     "";
 
   dialog.innerHTML = `
     <h3><red>Error!</red></h3>
     <b>${location}${line}</b><br><br>
-    <b>${escapeHtml(traced.name)}</b>:
-    <span>${escapeHtml(traced.message)}</span>
+    <b>${escapeHtml(error.name)}</b>:
+    <span>${escapeHtml(error.message)}</span>
     <br><br>
 
     ${
@@ -391,7 +378,7 @@ export function globalErrorHandler(eventOrError) {
     dialog.setAttribute("open", "");
   }
 
-  return traced;
+  return error;
 }
 
 export function scanBlockLabels(code, path) {

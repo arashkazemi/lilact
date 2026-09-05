@@ -91,7 +91,7 @@ export function labeler(custom_words, x)
 		if(x.type==='comment') return 'C';
 		if(x.type==='regexp') return 'R';
 		if(x.type==='js') return 'J';
-		if(x.type==='paranthesis') return 'P';
+		if(x.type==='parenthesis') return 'P';
 		if(x.type==='string') return 'S';
 		if(x.type==='xml') return 'X';
 	}

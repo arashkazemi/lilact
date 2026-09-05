@@ -2579,24 +2579,25 @@ var ComponentCore = class {
       if (this.outlet !== void 0) {
         for (let c of this.outlet) {
           if (c.cleanup) {
-            c.cleanup();
+            promises.push(c.cleanup());
           }
         }
       }
       if (((_c = this.props) == null ? void 0 : _c.children) !== void 0) {
         for (let c of this.props.children) {
           if (c.cleanup) {
-            c.cleanup();
+            promises.push(c.cleanup());
           }
         }
       }
       if (this.hooks !== void 0) {
         for (let h of this.hooks) {
           if (h.cleanup) {
-            h.cleanup();
+            promises.push(h.cleanup());
           }
         }
       }
+      await Promise.all(promises);
     } catch (e) {
       throw e;
     }
@@ -2627,7 +2628,7 @@ var ComponentCore = class {
         if (events_set.has(al)) {
           this.event_detachers[al]();
         } else {
-          this.element.setAttribute(a, void 0);
+          this.element.removeAttribute(a);
         }
       }
     }
@@ -2670,6 +2671,7 @@ var ComponentCore = class {
           }
         } else if (boolean_html_attributes_set.has(a)) {
           this.element[a] = toBool(patch[a]);
+          if (!this.element[a]) this.element.removeAttribute(a);
         } else if (a === "autoFocus") {
           this.element["autofocus"] = toBool(patch[a]);
         } else if (a === "htmlFor") {
@@ -3443,7 +3445,7 @@ function useRef(initialValue = null) {
   return hk;
 }
 async function useLayoutEffect(effect, deps = void 0) {
-  if (deps !== void 0 && (typeof deps !== "object" || deps.constructor.name !== "Array")) {
+  if (deps !== void 0 && (typeof deps !== "object" && deps.constructor.name !== "Array")) {
     throw new Error("Layout effect dependencies must be an array, object or omitted.");
   }
   const hk = useHook();
@@ -3452,6 +3454,7 @@ async function useLayoutEffect(effect, deps = void 0) {
   }
   if (hk == null ? void 0 : hk.cleanup) {
     await hk.cleanup();
+    hk.cleanup = void 0;
   }
   hk.deps = deps;
   lilact_default.layout_effects.add(async () => {
@@ -3461,7 +3464,7 @@ async function useLayoutEffect(effect, deps = void 0) {
   lilact_default.setTimeout(lilact_default.processEffects, 0);
 }
 async function useEffect(effect, deps = void 0) {
-  if (deps !== void 0 && (typeof deps !== "object" || deps.constructor.name !== "Array")) {
+  if (deps !== void 0 && (typeof deps !== "object" && deps.constructor.name !== "Array")) {
     throw new Error("Effect dependencies must be an array, object or omitted.");
   }
   const hk = useHook();
@@ -3470,6 +3473,7 @@ async function useEffect(effect, deps = void 0) {
   }
   if (hk == null ? void 0 : hk.cleanup) {
     await hk.cleanup();
+    hk.cleanup = void 0;
   }
   hk.deps = deps;
   lilact_default.passive_effects.add(async () => {
@@ -3479,7 +3483,7 @@ async function useEffect(effect, deps = void 0) {
   lilact_default.setTimeout(lilact_default.processEffects, 0);
 }
 async function useInsertionEffect(effect, deps = void 0) {
-  if (deps !== void 0 && (typeof deps !== "object" || deps.constructor.name !== "Array")) {
+  if (deps !== void 0 && (typeof deps !== "object" && deps.constructor.name !== "Array")) {
     throw new Error("Insertion effect dependencies must be an array, object, or omitted.");
   }
   const hk = useHook();
@@ -3488,6 +3492,7 @@ async function useInsertionEffect(effect, deps = void 0) {
   }
   if (hk == null ? void 0 : hk.cleanup) {
     await hk.cleanup();
+    hk.cleanup = void 0;
   }
   hk.deps = deps;
   lilact_default.insertion_effects.add(async () => {
@@ -3497,7 +3502,7 @@ async function useInsertionEffect(effect, deps = void 0) {
   lilact_default.setTimeout(lilact_default.processEffects, 0);
 }
 function useMemo(factory, deps = void 0) {
-  if (deps !== void 0 && (typeof deps !== "object" || deps.constructor.name !== "Array")) {
+  if (deps !== void 0 && (typeof deps !== "object" && deps.constructor.name !== "Array")) {
     throw new Error("Memo dependencies must be an array or omitted.");
   }
   const hk = useHook();
@@ -3629,35 +3634,32 @@ function asError(value, fallback = "Unknown error") {
 function markSource(value, path2) {
   const error2 = asError(value);
   if (!error2.lilact_source) {
-    Object.defineProperty(error2, "lilact_source", {
-      value: { path: path2 },
-      configurable: true
-    });
+    error2.lilact_source = { path: path2 };
   }
   return error2;
 }
-function report(error2, path2) {
-  const marked = markSource(error2, path2);
-  if (marked.isTraced) return marked;
+function report(value, path2) {
+  const error2 = markSource(value, path2);
+  if (error2.isTraced) return error2;
   if (typeof lilact_default.traceError === "function") {
-    return lilact_default.traceError(marked, path2);
+    return lilact_default.traceError(error2, path2);
   }
-  lilact_default.error = marked;
-  return marked;
+  lilact_default.error = error2;
+  return error2;
 }
 var required_scripts = {};
 function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, {
   isInline = true,
   isModule = true
 } = {}) {
-  var _a;
+  var _a, _b;
   const module = {
-    mappings: [],
-    isInline,
-    isModule,
     path,
     code: String(jsx),
-    exports: {}
+    mappings: [],
+    exports: {},
+    isInline,
+    isModule
   };
   required_scripts[path] = module;
   let processed;
@@ -3671,34 +3673,34 @@ function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, {
       produceCJS: true,
       blocks_info: lilact_default.blocks_info
     });
-  } catch (error2) {
-    const parser = asError(error2);
-    (_a = parser.fileName) != null ? _a : parser.fileName = path;
-    parser.sourcePhase = "transpile";
-    module.error = parser;
-    lilact_default.error = parser;
-    throw parser;
+  } catch (value) {
+    const error2 = asError(value);
+    (_a = error2.fileName) != null ? _a : error2.fileName = path;
+    error2.sourcePhase = "transpile";
+    module.error = error2;
+    lilact_default.error = error2;
+    throw error2;
   }
-  processed += `
-//# sourceURL=eval:/${path}`;
   if (typeof lilact_default.scanBlockLabels === "function") {
     lilact_default.scanBlockLabels(processed, path);
   }
+  processed += `
+//# sourceURL=eval:/${path}`;
   try {
     globalThis.Lilact = lilact_default;
     globalThis.createComponent = lilact_default.createComponent;
     globalThis.Fragment = lilact_default.Fragment;
     const result = eval(processed);
     return isEmpty(module.exports) ? result : module.exports;
-  } catch (error2) {
-    const runtime = report(error2, path);
-    runtime.sourcePhase = "runtime";
-    module.error = runtime;
-    throw runtime;
+  } catch (value) {
+    const error2 = report(value, path);
+    (_b = error2.sourcePhase) != null ? _b : error2.sourcePhase = "runtime";
+    module.error = error2;
+    throw error2;
   }
 }
 function require2(path2) {
-  var _a, _b, _c, _d, _e, _f, _g;
+  var _a, _b, _c, _d, _e, _f;
   let options = {};
   if (arguments.length === 2 && arguments[1] && typeof arguments[1] === "object") {
     options = arguments[1];
@@ -3706,38 +3708,42 @@ function require2(path2) {
   if ((_a = lilact_default.importObjectPaths) == null ? void 0 : _a[path2]) {
     return lilact_default.importObjectPaths[path2];
   }
-  if (required_scripts[path2] && !options.forceUpdate) {
-    return required_scripts[path2].exports;
-  }
-  if (path2[0] === "#") {
-    const element = document.getElementById(path2.slice(1));
-    if (!element) {
-      const error2 = new Error(
-        `Required element not found (${path2})`
-      );
-      throw report(error2, path2);
-    }
-    return run(element.textContent || "", path2);
-  }
+  const loadAsync = Boolean(lilact_default[LAZY]) || Boolean(options.isLazy);
   if ((_b = options.requirer) == null ? void 0 : _b.path) {
     path2 = joinPaths(options.requirer.path, path2);
   }
-  const loadAsync = Boolean((_c = lilact_default) == null ? void 0 : _c[LAZY]) || Boolean(options.isLazy);
+  if (required_scripts[path2] && !options.forceUpdate && !loadAsync) {
+    return required_scripts[path2].exports;
+  }
+  if (path2.startsWith("#")) {
+    const element = document.getElementById(path2.slice(1));
+    if (!element) {
+      throw report(
+        new Error(`Required element not found (${path2})`),
+        path2
+      );
+    }
+    return run(element.textContent || "", path2);
+  }
   if (loadAsync) {
     lilact_default[LAZY] = false;
-    let request2 = (_e = (_d = lilact_default).resolver) == null ? void 0 : _e.call(_d, path2);
+    let request2 = (_d = (_c = lilact_default).resolver) == null ? void 0 : _d.call(_c, path2);
     if (request2 == null) {
-      request2 = fetch(path2).then((response) => {
-        if (!response.ok) {
-          throw report(
-            new Error(
-              `Unable to load ${path2}: HTTP ${response.status}`
-            ),
-            path2
-          );
-        }
-        return response.text();
-      });
+      if (required_scripts[path2] && !options.forceUpdate) {
+        request2 = Promise.resolve(required_scripts[path2].code);
+      } else {
+        request2 = fetch(path2).then((response) => {
+          if (!response.ok) {
+            throw report(
+              new Error(
+                `Unable to load ${path2}: HTTP ${response.status}`
+              ),
+              path2
+            );
+          }
+          return response.text();
+        });
+      }
     } else {
       request2 = Promise.resolve(request2);
     }
@@ -3753,13 +3759,13 @@ function require2(path2) {
     }).then(
       (result2) => {
         var _a2;
-        return path2.endsWith(".css") ? result2 : (_a2 = result2 == null ? void 0 : result2.default) != null ? _a2 : result2;
+        return (_a2 = result2 == null ? void 0 : result2.default) != null ? _a2 : result2;
       }
     ).catch((error2) => {
       throw report(error2, path2);
     });
   }
-  const resolved = (_g = (_f = lilact_default).resolver) == null ? void 0 : _g.call(_f, path2);
+  const resolved = (_f = (_e = lilact_default).resolver) == null ? void 0 : _f.call(_e, path2);
   if (resolved != null) {
     if (path2.endsWith(".css")) {
       injectGlobal(String(resolved));
@@ -3774,8 +3780,8 @@ function require2(path2) {
   try {
     request.open("GET", path2, false);
     request.send(null);
-  } catch (error2) {
-    throw report(error2, path2);
+  } catch (value) {
+    throw report(value, path2);
   }
   if (request.status >= 200 && request.status < 300) {
     if (path2.endsWith(".css")) {
@@ -3804,9 +3810,9 @@ function lazy(factory) {
   }
   if (lilact_default.isThenable(result2)) {
     result2.then(
-      (module2) => {
+      (value) => {
         status = "success";
-        result2 = module2;
+        result2 = value;
       },
       (error2) => {
         status = "error";
@@ -4510,11 +4516,11 @@ __export(errors_exports, {
   scanBlockLabels: () => scanBlockLabels,
   traceError: () => traceError
 });
-function finite(value) {
-  const number = Number(value);
-  return Number.isFinite(number) ? number : null;
+function number(value) {
+  const result2 = Number(value);
+  return Number.isFinite(result2) ? result2 : null;
 }
-function errorValue(value) {
+function asError2(value) {
   if (value instanceof Error) return value;
   if ((value == null ? void 0 : value.error) instanceof Error) return value.error;
   const error2 = new Error(
@@ -4529,10 +4535,10 @@ function errorValue(value) {
   }
   return error2;
 }
-function parserError(error2) {
+function isParserError(error2) {
   return (error2 == null ? void 0 : error2.name) === "JSXParserError";
 }
-function sourceFromStack(stack) {
+function stackLocation(stack) {
   if (typeof stack !== "string") return null;
   for (const line2 of stack.split(/\r?\n/)) {
     const match2 = line2.match(/(eval:\/.*):(\d+):(\d+)/);
@@ -4547,10 +4553,10 @@ function sourceFromStack(stack) {
 }
 function browserLocation(error2) {
   var _a, _b, _c, _d;
-  const line2 = finite(
+  const line2 = number(
     (_b = (_a = error2 == null ? void 0 : error2.lineNumber) != null ? _a : error2 == null ? void 0 : error2.lineno) != null ? _b : error2 == null ? void 0 : error2.line
   );
-  const column2 = finite(
+  const column2 = number(
     (_d = (_c = error2 == null ? void 0 : error2.columnNumber) != null ? _c : error2 == null ? void 0 : error2.colno) != null ? _d : error2 == null ? void 0 : error2.column
   );
   return {
@@ -4558,13 +4564,13 @@ function browserLocation(error2) {
     column: column2 == null ? null : Math.max(0, column2 - 1)
   };
 }
-function blockTrace(error2) {
+function traceBlock(error2) {
   const trace = error2 == null ? void 0 : error2.lilact_trace;
   return Array.isArray(trace) ? trace[0] : trace;
 }
 function blockInfo(error2) {
   var _a, _b;
-  const trace = blockTrace(error2);
+  const trace = traceBlock(error2);
   return trace == null ? null : (_b = (_a = lilact_default.blocks_info) == null ? void 0 : _a.labels) == null ? void 0 : _b[trace];
 }
 function mapLocation(mappings, line2, column2) {
@@ -4592,81 +4598,50 @@ function mapLocation(mappings, line2, column2) {
   const sourceLine = Number(selected[2]);
   const sourceColumn = Number(selected[3]);
   return {
-    line: sourceLine + line2 - generatedLine,
+    line: sourceLine + (line2 === generatedLine ? 0 : line2 - generatedLine),
     column: line2 === generatedLine ? Math.max(0, sourceColumn + column2 - generatedColumn) : sourceColumn
   };
 }
-function copyMetadata(source, target) {
-  if (!source || typeof source !== "object") return;
-  for (const key of [
-    "fileName",
-    "lineNumber",
-    "columnNumber",
-    "lineno",
-    "colno",
-    "line",
-    "column",
-    "componentStackLog",
-    "componentStack",
-    "lilact_trace",
-    "lilact_source"
-  ]) {
-    if (source[key] !== void 0 && target[key] === void 0) {
-      target[key] = source[key];
-    }
-  }
-}
-function blockLocation(error2, result2, fallbackPath) {
-  const block = blockInfo(error2);
-  if (!block) return;
-  if (block.path) result2.fileName = block.path;
-  else if (!result2.fileName) result2.fileName = fallbackPath;
-  if (Number.isFinite(block.line)) {
-    result2.lineNumber = block.line;
-  }
-  if (Number.isFinite(block.col)) {
-    result2.columnNumber = block.col;
-  }
-  if (block.desc) result2.label = block.desc;
-}
 function traceError(value, runPath) {
-  var _a, _b, _c, _d;
+  var _a, _b, _c, _d, _e, _f;
   if (value == null ? void 0 : value.isTraced) return value;
-  const original = errorValue(value);
-  const source = original.lilact_source;
-  const stack = parserError(original) ? null : sourceFromStack(original.stack);
-  const browser = parserError(original) ? {
-    line: finite(original.lineNumber),
-    column: finite(original.columnNumber)
-  } : browserLocation(original);
-  const sourcePath = (source == null ? void 0 : source.path) || (stack == null ? void 0 : stack.path);
-  const fileName = sourcePath || original.fileName || runPath || null;
-  let lineNumber = (_b = (_a = stack == null ? void 0 : stack.line) != null ? _a : browser.line) != null ? _b : null;
-  let columnNumber = (_d = (_c = stack == null ? void 0 : stack.column) != null ? _c : browser.column) != null ? _d : null;
+  const error2 = asError2(value);
+  const source = error2.lilact_source;
+  const stack = isParserError(error2) ? null : stackLocation(error2.stack);
+  const browser = isParserError(error2) ? {
+    line: number(error2.lineNumber),
+    column: number(error2.columnNumber)
+  } : browserLocation(error2);
+  const fileName = (source == null ? void 0 : source.path) || (stack == null ? void 0 : stack.path) || error2.fileName || runPath || null;
+  let line2 = (_b = (_a = stack == null ? void 0 : stack.line) != null ? _a : browser.line) != null ? _b : null;
+  let column2 = (_d = (_c = stack == null ? void 0 : stack.column) != null ? _c : browser.column) != null ? _d : null;
   const result2 = {
     fileName,
-    lineNumber,
-    columnNumber,
-    message: original.message == null ? String(original) : String(original.message),
-    name: original.name || "Error",
-    stack: original.stack || null,
+    lineNumber: line2,
+    columnNumber: column2,
+    message: error2.message == null ? String(error2) : String(error2.message),
+    name: error2.name || "Error",
+    stack: error2.stack || null,
     lilact_source: source || null,
-    _error: original,
+    _error: error2,
     isTraced: true
   };
-  copyMetadata(value, result2);
-  copyMetadata(original, result2);
-  if (sourcePath) result2.fileName = sourcePath;
-  if (!parserError(original) && result2.fileName) {
-    const module2 = required_scripts[result2.fileName];
-    if (module2 == null ? void 0 : module2.mappings) {
-      const mapped = mapLocation(module2.mappings, lineNumber, columnNumber);
-      result2.lineNumber = mapped.line;
-      result2.columnNumber = mapped.column;
-    }
+  const module2 = fileName && required_scripts[fileName];
+  if (module2) {
+    const mapped = mapLocation(
+      module2.mappings,
+      result2.lineNumber,
+      result2.columnNumber
+    );
+    result2.lineNumber = mapped.line;
+    result2.columnNumber = mapped.column;
   }
-  if (result2.lineNumber == null || result2.columnNumber == null || !result2.fileName) {
-    blockLocation(original, result2, (source == null ? void 0 : source.path) || runPath);
+  const block = blockInfo(error2);
+  if (block && (result2.lineNumber == null || result2.columnNumber == null || !result2.fileName)) {
+    result2.fileName || (result2.fileName = block.path || runPath || null);
+    (_e = result2.lineNumber) != null ? _e : result2.lineNumber = block.line;
+    (_f = result2.columnNumber) != null ? _f : result2.columnNumber = block.col;
+    result2.label = block.desc;
   }
   lilact_default.error = result2;
   return result2;
@@ -4686,13 +4661,15 @@ function sourceExcerpt(module2, line2) {
 }
 function globalErrorHandler(eventOrError) {
   var _a, _b;
-  const raw = (eventOrError == null ? void 0 : eventOrError.error) instanceof Error ? eventOrError.error : (eventOrError == null ? void 0 : eventOrError.reason) !== void 0 ? eventOrError.reason : eventOrError;
-  const traced = traceError(
-    raw,
+  const value = (eventOrError == null ? void 0 : eventOrError.error) instanceof Error ? eventOrError.error : (eventOrError == null ? void 0 : eventOrError.reason) !== void 0 ? eventOrError.reason : eventOrError;
+  const error2 = traceError(
+    value,
     (eventOrError == null ? void 0 : eventOrError.fileName) || null
   );
-  const module2 = required_scripts[traced.fileName];
-  const excerpt = sourceExcerpt(module2, traced.lineNumber);
+  const excerpt = sourceExcerpt(
+    required_scripts[error2.fileName],
+    error2.lineNumber
+  );
   const className = css(`
     background: linear-gradient(135deg, #fff2f2d4, #ffffffd4);
     backdrop-filter: blur(10px);
@@ -4716,14 +4693,14 @@ function globalErrorHandler(eventOrError) {
   `);
   const dialog = document.createElement("dialog");
   dialog.className = className;
-  const location = traced.fileName ? `At ${escapeHtml(traced.fileName)}` : "";
-  const line2 = Number.isFinite(traced.lineNumber) ? `: Line ${traced.lineNumber + 1}` : "";
-  const componentStack = ((_a = traced._error) == null ? void 0 : _a.componentStackLog) || ((_b = traced._error) == null ? void 0 : _b.componentStack) || "";
+  const location = error2.fileName ? `At ${escapeHtml(error2.fileName)}` : "";
+  const line2 = Number.isFinite(error2.lineNumber) ? `: Line ${error2.lineNumber + 1}` : "";
+  const componentStack = ((_a = error2._error) == null ? void 0 : _a.componentStackLog) || ((_b = error2._error) == null ? void 0 : _b.componentStack) || "";
   dialog.innerHTML = `
     <h3><red>Error!</red></h3>
     <b>${location}${line2}</b><br><br>
-    <b>${escapeHtml(traced.name)}</b>:
-    <span>${escapeHtml(traced.message)}</span>
+    <b>${escapeHtml(error2.name)}</b>:
+    <span>${escapeHtml(error2.message)}</span>
     <br><br>
 
     ${excerpt ? "<code><pre></pre><red><pre></pre></red><pre></pre></code>" : ""}
@@ -4747,7 +4724,7 @@ function globalErrorHandler(eventOrError) {
   } else {
     dialog.setAttribute("open", "");
   }
-  return traced;
+  return error2;
 }
 function scanBlockLabels(code2, path2) {
   for (const match2 of String(code2).matchAll(
@@ -5635,7 +5612,7 @@ function labeler(custom_words, x) {
     if (x.type === "comment") return "C";
     if (x.type === "regexp") return "R";
     if (x.type === "js") return "J";
-    if (x.type === "paranthesis") return "P";
+    if (x.type === "parenthesis") return "P";
     if (x.type === "string") return "S";
     if (x.type === "xml") return "X";
   }
@@ -5934,7 +5911,7 @@ function lookAhead(f, code2, index2, ...args) {
 function parseRegex(code, index, container) {
   let i = index;
   let dels = `;=,([{}!^~&|:?*%-+/<>${transpilerConfig.preprocessorDelimiter}`;
-  while (--i > 0) {
+  while (--i >= 0) {
     if (" 	\r".indexOf(code[i]) !== -1) continue;
     if (code[i] === "\n") {
       dels += ")]";
@@ -6356,10 +6333,10 @@ function parseXML(code2, index2, container2, look_behind = false) {
     }
   }
 }
-function parseParanthesis(code2, index2, container2) {
+function parseParenthesis(code2, index2, container2) {
   const b2 = {
     // block
-    type: "paranthesis",
+    type: "parenthesis",
     begin: index2,
     cbegin: ++index2,
     children: [],
@@ -6383,7 +6360,7 @@ function parseParanthesis(code2, index2, container2) {
         [index2] = lookAhead(parseJS, code2, index2, true, b2);
         break;
       case "(":
-        [index2] = lookAhead(parseParanthesis, code2, index2, b2);
+        [index2] = lookAhead(parseParenthesis, code2, index2, b2);
         break;
       case "}":
         raiseError(`Unmatched curly bracket`, b2.begin);
@@ -6405,7 +6382,7 @@ function parseParanthesis(code2, index2, container2) {
         break;
     }
   }
-  raiseError(`Unterminated paranthesis block`, b2.begin);
+  raiseError(`Unterminated parenthesis block`, b2.begin);
 }
 function parseJS(code2, index2 = 0, is_block = false, container2) {
   const b2 = {
@@ -6435,10 +6412,10 @@ function parseJS(code2, index2 = 0, is_block = false, container2) {
         break;
       }
       case "(":
-        [index2] = lookAhead(parseParanthesis, code2, index2, b2);
+        [index2] = lookAhead(parseParenthesis, code2, index2, b2);
         break;
       case ")":
-        raiseError(`Unmatched paranthesis`, b2.begin);
+        raiseError(`Unmatched parenthesis`, b2.begin);
         break;
       case "}":
         if (is_block) {
@@ -6490,7 +6467,7 @@ function labelFunctions(node3, eols, blocks_info2) {
   }
   let i2, nxt, prev2;
   for (let chi = 0; chi < node3.children.length; chi++) {
-    if (typeof node3.children[chi] === "object" && node3.children[chi].type === "paranthesis") {
+    if (typeof node3.children[chi] === "object" && node3.children[chi].type === "parenthesis") {
       [i2, prev2] = getNext(chi, -1);
       if (prev2 === null) continue;
       if (typeof prev2 !== "string" || ["switch", "catch", "try", "class"].find((x) => prev2.trim().endsWith(x)) !== void 0) continue;
@@ -6512,7 +6489,7 @@ function labelFunctions(node3, eols, blocks_info2) {
       }
     } else if (node3.children[chi] === "=>") {
       [i2, prev2] = getNext(chi, -1);
-      if (typeof prev2 === "object" && prev2.type === "paranthesis") {
+      if (typeof prev2 === "object" && prev2.type === "parenthesis") {
         const begin = getRowCol(eols, prev2.begin);
         [i2, nxt] = getNext(chi);
         if (typeof nxt === "object" && nxt.type === "js") {
@@ -6709,7 +6686,7 @@ function transpileJSX(jsx2, {
     if (node3.type === "regex") return jsx2.substring(node3.begin, node3.end);
     if (node3.type === "comment") return discardComments || is_attr ? "" : jsx2.substring(node3.begin, node3.end);
     if (node3.type === "directive") return node3.value;
-    if (node3.type === "paranthesis") {
+    if (node3.type === "parenthesis") {
       let out2 = "(";
       if (node3.out) {
         if (produceCJS) processImportExports(node3, jsx2);
@@ -6791,7 +6768,7 @@ function transpileJSX(jsx2, {
 
 // .tmp/src/lilact.jsx
 var Lilact2 = {
-  VERSION: "RC.3",
+  VERSION: "RC.4",
   // Configuration
   defaultTransitionTimeout: 300,
   defaultIsEqual: Object.is,
