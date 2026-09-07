@@ -2635,7 +2635,7 @@ var ComponentCore = class {
       }
     } else if (this.entity === "select") {
       if ((patch == null ? void 0 : patch.value) !== this.element.value) {
-        lilact_default.setTimeout(() => this.element.value = String(patch.value), 0);
+        lilact_default._setTimeout(() => this.element.value = String(patch.value), 0);
       }
     }
     for (let a in this.props) {
@@ -3027,10 +3027,10 @@ var Component = class {
   * @returns {void}
   */
   forceUpdate(callback) {
-    lilact_default.clearTimeout(lilact_default.update_timeout);
+    lilact_default._clearTimeout(lilact_default.update_timeout);
     lilact_default.update_set.add(this[CORE].container || this[CORE]);
     if (callback) lilact_default.update_cbs.add(callback.bind(this));
-    lilact_default.update_timeout = lilact_default.setTimeout(doUpdates, lilact_default.update_interval_margin);
+    lilact_default.update_timeout = lilact_default._setTimeout(doUpdates, lilact_default.update_interval_margin);
   }
   /**
   * Update component state.
@@ -3480,8 +3480,8 @@ async function useLayoutEffect(effect, deps = void 0) {
   lilact_default.layout_effects.add(async () => {
     hk.cleanup = await effect();
   });
-  lilact_default.clearTimeout(lilact_default.effect_timeout);
-  lilact_default.setTimeout(lilact_default.processEffects, 0);
+  lilact_default._clearTimeout(lilact_default.effect_timeout);
+  lilact_default._setTimeout(lilact_default.processEffects, 0);
 }
 async function useEffect(effect, deps = void 0) {
   if (deps !== void 0 && !Array.isArray(deps) && deps !== null && typeof deps !== "object") {
@@ -3499,8 +3499,8 @@ async function useEffect(effect, deps = void 0) {
   lilact_default.passive_effects.add(async () => {
     hk.cleanup = await effect();
   });
-  lilact_default.clearTimeout(lilact_default.effect_timeout);
-  lilact_default.setTimeout(lilact_default.processEffects, 0);
+  lilact_default._clearTimeout(lilact_default.effect_timeout);
+  lilact_default._setTimeout(lilact_default.processEffects, 0);
 }
 async function useInsertionEffect(effect, deps = void 0) {
   if (deps !== void 0 && !Array.isArray(deps) && deps !== null && typeof deps !== "object") {
@@ -3518,8 +3518,8 @@ async function useInsertionEffect(effect, deps = void 0) {
   lilact_default.insertion_effects.add(async () => {
     hk.cleanup = await effect();
   });
-  lilact_default.clearTimeout(lilact_default.effect_timeout);
-  lilact_default.setTimeout(lilact_default.processEffects, 0);
+  lilact_default._clearTimeout(lilact_default.effect_timeout);
+  lilact_default._setTimeout(lilact_default.processEffects, 0);
 }
 function useMemo(factory, deps = void 0) {
   if (deps !== void 0 && !Array.isArray(deps) && deps !== null && typeof deps !== "object") {
@@ -3953,167 +3953,6 @@ __export(transition_exports, {
   Transition: () => Transition,
   TransitionGroup: () => TransitionGroup
 });
-
-// .tmp/src/timers.jsx
-var timers_exports = {};
-__export(timers_exports, {
-  animationFramePromise: () => animationFramePromise,
-  clearInterval: () => clearInterval,
-  clearTimeout: () => clearTimeout2,
-  grabTimers: () => grabTimers,
-  pauseTimers: () => pauseTimers,
-  releaseTimers: () => releaseTimers,
-  resetTimers: () => resetTimers,
-  resumeTimers: () => resumeTimers,
-  setInterval: () => setInterval,
-  setTimeout: () => setTimeout2,
-  timeoutPromise: () => timeoutPromise
-});
-var timer_pause_time = void 0;
-var current_timer_idx = -1;
-var timer_list = [];
-var timer_timeout = -1;
-var all_timers = {};
-var _setTimeout = window.setTimeout;
-var _setInterval = window.setInterval;
-var _clearTimeout = window.clearTimeout;
-var _clearInterval = window.clearInterval;
-function get_bucket(target) {
-  let left = 0;
-  let right = timer_list.length - 1;
-  while (left <= right) {
-    const mid = Math.floor((left + right) / 2);
-    const mid_val = timer_list[mid][DUE];
-    if (mid_val === target) {
-      return [mid, timer_list[mid]];
-    } else if (mid_val < target) {
-      left = mid + 1;
-    } else {
-      right = mid - 1;
-    }
-  }
-  const bucket = [];
-  bucket[DUE] = target;
-  timer_list.splice(left, 0, bucket);
-  return [left, bucket];
-}
-function add_timer(t, is_repeat = false) {
-  const [i2, bucket] = get_bucket(t[DUE]);
-  if (!is_repeat) {
-    current_timer_idx++;
-    all_timers[current_timer_idx] = t;
-    t[IDX] = current_timer_idx;
-  }
-  bucket.push(t);
-  if (timer_list[0][0] === t) {
-    _clearTimeout(timer_timeout);
-    timer_timeout = _setTimeout(run_timer, t[INTERVAL]);
-  }
-  return current_timer_idx;
-}
-function run_timer() {
-  const now = Date.now();
-  let i2 = 0;
-  let buck = timer_list[i2];
-  while (buck && buck[DUE] - now <= 0) {
-    for (const t of buck) {
-      if (!t[CLEARED]) {
-        t[CALLBACK](...t[ARGS]);
-        if (t[REPEAT]) {
-          t[DUE] = Date.now() + t[INTERVAL];
-          add_timer(t, true);
-        } else {
-          delete all_timers[t[IDX]];
-        }
-      } else {
-        delete all_timers[t[IDX]];
-      }
-    }
-    i2++;
-    buck = timer_list[i2];
-  }
-  timer_list.splice(0, i2);
-  if (timer_list.length > 0) {
-    _clearTimeout(timer_timeout);
-    timer_timeout = _setTimeout(run_timer, timer_list[0][DUE] - now);
-  }
-}
-function resetTimers() {
-  _clearTimeout(timer_timeout);
-  timer_pause_time = void 0;
-  current_timer_idx = -1;
-  timer_list = [];
-  timer_timeout = -1;
-  all_timers = {};
-}
-function pauseTimers() {
-  _clearTimeout(timer_timeout);
-  timer_pause_time = Date.now();
-}
-function resumeTimers() {
-  if (!timer_pause_time) return;
-  if (timer_list.length > 0) {
-    const now = Date.now();
-    timer_pause_time -= now;
-    for (const t of timer_list) {
-      t[DUE] -= timer_pause_time;
-    }
-    timer_timeout = _setTimeout(run_timer, timer_list[0][DUE] - now);
-  }
-  timer_pause_time = void 0;
-}
-function setTimeout2(callback, delay, ...args) {
-  return add_timer({ [CALLBACK]: callback, [INTERVAL]: delay, [DUE]: Date.now() + delay, [REPEAT]: false, [ARGS]: args });
-}
-function setInterval(callback, interval, ...args) {
-  return add_timer({ [CALLBACK]: callback, [INTERVAL]: interval, [DUE]: Date.now() + interval, [REPEAT]: true, [ARGS]: args });
-}
-function clearTimeout2(id) {
-  if (all_timers[id]) all_timers[id][CLEARED] = true;
-}
-function clearInterval(id) {
-  if (all_timers[id]) all_timers[id][CLEARED] = true;
-}
-function grabTimers() {
-  globalThis.setTimeout = Lilact.setTimeout;
-  globalThis.setInterval = Lilact.setInterval;
-  globalThis.clearTimeout = Lilact.clearTimeout;
-  globalThis.clearInterval = Lilact.clearInterval;
-}
-function releaseTimers() {
-  globalThis.setTimeout = _setTimeout;
-  globalThis.setInterval = _setInterval;
-  globalThis.clearTimeout = _clearTimeout;
-  globalThis.clearInterval = _clearInterval;
-}
-function timeoutPromise(duration = 0, timerSource = Lilact) {
-  let id, resolve, reject;
-  const promise = new Promise((res, rej) => {
-    resolve = res;
-    reject = rej;
-    id = timerSource.setTimeout(() => {
-      resolve();
-    }, duration);
-  });
-  promise.proceed = () => {
-    timerSource.clearTimeout(id);
-    resolve();
-  };
-  promise.cancel = () => {
-    timerSource.clearTimeout(id);
-    reject();
-  };
-  return promise;
-}
-function animationFramePromise() {
-  return new Promise((resolve) => {
-    requestAnimationFrame(() => {
-      resolve();
-    });
-  });
-}
-
-// .tmp/src/transition.jsx
 var UNMOUNTED = "unmounted";
 var EXITED = "exited";
 var ENTERING = "entering";
@@ -4151,15 +3990,15 @@ function Transition({
     } else this[CORE].mount_state = EXITED;
   }
   useEffect(() => {
-    return () => clearTimeout2(this[CORE].timer);
+    return () => clearTimeout(this[CORE].timer);
   }, []);
   useEffect(() => {
     if (!this[CORE].is_appeared && appear && this[CORE].mount_state === ENTERING && inProp) {
       onEnter == null ? void 0 : onEnter();
       requestAnimationFrame(() => {
         onEntering == null ? void 0 : onEntering(!this[CORE].is_appeared);
-        clearTimeout2(this[CORE].timer);
-        this[CORE].timer = setTimeout2(() => {
+        clearTimeout(this[CORE].timer);
+        this[CORE].timer = setTimeout(() => {
           this[CORE].mount_state = ENTERED;
           this.forceUpdate();
           this[CORE].is_appeared = true;
@@ -4176,8 +4015,8 @@ function Transition({
       this[CORE].mount_state = ENTERING;
       this.forceUpdate(() => {
         onEntering == null ? void 0 : onEntering(!this[CORE].is_appeared);
-        clearTimeout2(this[CORE].timer);
-        this[CORE].timer = setTimeout2(() => {
+        clearTimeout(this[CORE].timer);
+        this[CORE].timer = setTimeout(() => {
           this[CORE].mount_state = ENTERED;
           this.forceUpdate();
           this[CORE].is_appeared = true;
@@ -4190,8 +4029,8 @@ function Transition({
       this[CORE].mount_state = EXITING;
       this.forceUpdate(() => {
         onExiting == null ? void 0 : onExiting();
-        clearTimeout2(this[CORE].timer);
-        this[CORE].timer = setTimeout2(() => {
+        clearTimeout(this[CORE].timer);
+        this[CORE].timer = setTimeout(() => {
           this[CORE].mount_state = EXITED;
           this.forceUpdate();
           onExited == null ? void 0 : onExited();
@@ -4605,6 +4444,167 @@ function combineReducers2(reducers) {
     }
     return hasChanged ? nextState : state;
   };
+}
+
+// .tmp/src/timers.jsx
+var timers_exports = {};
+__export(timers_exports, {
+  animationFramePromise: () => animationFramePromise,
+  clearInterval: () => clearInterval,
+  clearTimeout: () => clearTimeout2,
+  grabTimers: () => grabTimers,
+  pauseTimers: () => pauseTimers,
+  releaseTimers: () => releaseTimers,
+  resetTimers: () => resetTimers,
+  resumeTimers: () => resumeTimers,
+  setInterval: () => setInterval,
+  setTimeout: () => setTimeout2,
+  timeoutPromise: () => timeoutPromise
+});
+var timer_pause_time = void 0;
+var current_timer_idx = -1;
+var timer_list = [];
+var timer_timeout = -1;
+var all_timers = {};
+var _setTimeout = window.setTimeout;
+var _setInterval = window.setInterval;
+var _clearTimeout = window.clearTimeout;
+var _clearInterval = window.clearInterval;
+function get_bucket(target) {
+  let left = 0;
+  let right = timer_list.length - 1;
+  while (left <= right) {
+    const mid = Math.floor((left + right) / 2);
+    const mid_val = timer_list[mid][DUE];
+    if (mid_val === target) {
+      return [mid, timer_list[mid]];
+    } else if (mid_val < target) {
+      left = mid + 1;
+    } else {
+      right = mid - 1;
+    }
+  }
+  const bucket = [];
+  bucket[DUE] = target;
+  timer_list.splice(left, 0, bucket);
+  return [left, bucket];
+}
+function add_timer(t, is_repeat = false) {
+  const [i2, bucket] = get_bucket(t[DUE]);
+  if (!is_repeat) {
+    current_timer_idx++;
+    all_timers[current_timer_idx] = t;
+    t[IDX] = current_timer_idx;
+  }
+  bucket.push(t);
+  if (timer_list[0][0] === t) {
+    _clearTimeout(timer_timeout);
+    timer_timeout = _setTimeout(run_timer, t[INTERVAL]);
+  }
+  return current_timer_idx;
+}
+function run_timer() {
+  const now = Date.now();
+  let i2 = 0;
+  let buck = timer_list[i2];
+  while (buck && buck[DUE] - now <= 0) {
+    for (const t of buck) {
+      if (!t[CLEARED]) {
+        t[CALLBACK](...t[ARGS]);
+        if (t[REPEAT]) {
+          t[DUE] = Date.now() + t[INTERVAL];
+          add_timer(t, true);
+        } else {
+          delete all_timers[t[IDX]];
+        }
+      } else {
+        delete all_timers[t[IDX]];
+      }
+    }
+    i2++;
+    buck = timer_list[i2];
+  }
+  timer_list.splice(0, i2);
+  if (timer_list.length > 0) {
+    _clearTimeout(timer_timeout);
+    timer_timeout = _setTimeout(run_timer, timer_list[0][DUE] - now);
+  }
+}
+function resetTimers() {
+  _clearTimeout(timer_timeout);
+  timer_pause_time = void 0;
+  current_timer_idx = -1;
+  timer_list = [];
+  timer_timeout = -1;
+  all_timers = {};
+}
+function pauseTimers() {
+  _clearTimeout(timer_timeout);
+  timer_pause_time = Date.now();
+}
+function resumeTimers() {
+  if (!timer_pause_time) return;
+  if (timer_list.length > 0) {
+    const now = Date.now();
+    timer_pause_time -= now;
+    for (const t of timer_list) {
+      t[DUE] -= timer_pause_time;
+    }
+    timer_timeout = _setTimeout(run_timer, timer_list[0][DUE] - now);
+  }
+  timer_pause_time = void 0;
+}
+function setTimeout2(callback, delay, ...args) {
+  return add_timer({ [CALLBACK]: callback, [INTERVAL]: delay, [DUE]: Date.now() + delay, [REPEAT]: false, [ARGS]: args });
+}
+function setInterval(callback, interval, ...args) {
+  return add_timer({ [CALLBACK]: callback, [INTERVAL]: interval, [DUE]: Date.now() + interval, [REPEAT]: true, [ARGS]: args });
+}
+function clearTimeout2(id) {
+  if (all_timers[id]) all_timers[id][CLEARED] = true;
+  else _clearTimeout(id);
+}
+function clearInterval(id) {
+  if (all_timers[id]) all_timers[id][CLEARED] = true;
+  else _clearInterval(id);
+}
+function grabTimers() {
+  globalThis.setTimeout = Lilact.setTimeout;
+  globalThis.setInterval = Lilact.setInterval;
+  globalThis.clearTimeout = Lilact.clearTimeout;
+  globalThis.clearInterval = Lilact.clearInterval;
+}
+function releaseTimers() {
+  globalThis.setTimeout = _setTimeout;
+  globalThis.setInterval = _setInterval;
+  globalThis.clearTimeout = _clearTimeout;
+  globalThis.clearInterval = _clearInterval;
+}
+function timeoutPromise(duration = 0, timerSource = Lilact) {
+  let id, resolve, reject;
+  const promise = new Promise((res, rej) => {
+    resolve = res;
+    reject = rej;
+    id = timerSource.setTimeout(() => {
+      resolve();
+    }, duration);
+  });
+  promise.proceed = () => {
+    timerSource.clearTimeout(id);
+    resolve();
+  };
+  promise.cancel = () => {
+    timerSource.clearTimeout(id);
+    reject();
+  };
+  return promise;
+}
+function animationFramePromise() {
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => {
+      resolve();
+    });
+  });
 }
 
 // .tmp/src/errors.jsx
@@ -5115,11 +5115,11 @@ var Suspense = class extends Component {
   /** @ignore */
   _clearTimers() {
     if (this._delayTimer) {
-      clearTimeout2(this._delayTimer);
+      clearTimeout(this._delayTimer);
       this._delayTimer = null;
     }
     if (this._minShowTimer) {
-      clearTimeout2(this._minShowTimer);
+      clearTimeout(this._minShowTimer);
       this._minShowTimer = null;
     }
   }
@@ -5130,10 +5130,10 @@ var Suspense = class extends Component {
     if (this._pending.size === 1) {
       const delay = Math.max(0, this.props.minDelay);
       if (this._delayTimer) {
-        clearTimeout2(this._delayTimer);
+        clearTimeout(this._delayTimer);
         this._delayTimer = null;
       }
-      this._delayTimer = setTimeout2(() => {
+      this._delayTimer = setTimeout(() => {
         this._delayTimer = null;
         this._fallbackShownAt = Date.now();
         this.setState({ showingFallback: true });
@@ -5145,7 +5145,7 @@ var Suspense = class extends Component {
       }
       if (this._pending.size === 0) {
         if (this._delayTimer) {
-          clearTimeout2(this._delayTimer);
+          clearTimeout(this._delayTimer);
           this._delayTimer = null;
           this.setState({ showingFallback: false });
           return;
@@ -5156,10 +5156,10 @@ var Suspense = class extends Component {
           this.setState({ showingFallback: false });
         } else {
           if (this._minShowTimer) {
-            clearTimeout2(this._minShowTimer);
+            clearTimeout(this._minShowTimer);
             this._minShowTimer = null;
           }
-          this._minShowTimer = setTimeout2(() => {
+          this._minShowTimer = setTimeout(() => {
             this._minShowTimer = null;
             this.setState({ showingFallback: false });
           }, remaining);
@@ -5839,11 +5839,11 @@ function processImportExports(node3, jsx2) {
               node3.out[i2] = null;
             }
             let cjs = "";
-            for (const s2 of import_alls) {
+            for (const s2 of star_imports) {
               cjs += `const ${s2} = require(${src},{requirer:module});
 `;
             }
-            for (const s2 of star_imports) {
+            for (const s2 of import_alls) {
               cjs += `const ${s2} = require(${src},{requirer:module, checkExport: ['default']}).default;
 `;
             }
@@ -6891,7 +6891,11 @@ var Lilact2 = {
   // Dependencies
   PropTypes,
   redux: redux_exports,
-  emotion: emotion_css_esm_exports
+  emotion: emotion_css_esm_exports,
+  _setTimeout: window.setTimeout.bind(window),
+  _setInterval: window.setInterval.bind(window),
+  _clearTimeout: window.clearTimeout.bind(window),
+  _clearInterval: window.clearInterval.bind(window)
 };
 Lilact2.default = Lilact2;
 var lilact_default = Lilact2;
@@ -6905,6 +6909,7 @@ globalThis.createComponent = Lilact2.createComponent;
 globalThis.Fragment = Lilact2.Fragment;
 globalThis.require = Lilact2.require;
 document.addEventListener("DOMContentLoaded", () => {
+  Lilact2.grabTimers();
   Lilact2.runScripts().catch((error2) => {
     var _a;
     (_a = Lilact2.globalErrorHandler) == null ? void 0 : _a.call(Lilact2, error2);

@@ -423,7 +423,7 @@ if(DEBUG) {
 		}
 		else if(this.entity==="select") {
 			if(patch?.value!==this.element.value) {
-				Lilact.setTimeout(()=>this.element.value=String(patch.value), 0);
+				Lilact._setTimeout(()=>this.element.value=String(patch.value), 0);
 			}
 		}
 
@@ -1003,11 +1003,11 @@ export class Component
 	*/
 	forceUpdate(callback)
 	{
-		Lilact.clearTimeout(Lilact.update_timeout);
+		Lilact._clearTimeout(Lilact.update_timeout);
 
 		Lilact.update_set.add(this[CORE].container || this[CORE]);
 		if(callback) Lilact.update_cbs.add(callback.bind(this));
-		Lilact.update_timeout = Lilact.setTimeout( doUpdates,  Lilact.update_interval_margin );
+		Lilact.update_timeout = Lilact._setTimeout( doUpdates,  Lilact.update_interval_margin );
 	}
 
 	/**

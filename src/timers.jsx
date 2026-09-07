@@ -230,6 +230,7 @@ export function setInterval(callback, interval, ...args)
 export function clearTimeout(id)
 {
 	if(all_timers[id]) all_timers[id][CLEARED] = true;
+	else _clearTimeout(id);
 }
 
 /**
@@ -240,6 +241,7 @@ export function clearTimeout(id)
 export function clearInterval(id)
 {
 	if(all_timers[id]) all_timers[id][CLEARED] = true;
+	else _clearInterval(id);
 }
 
 /**

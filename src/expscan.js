@@ -240,10 +240,10 @@ export function processImportExports(node, jsx)
 					}
 
 					let cjs = '';
-					for(const s of import_alls) {
+					for(const s of star_imports) {
 						cjs+=`const ${s} = require(${src},{requirer:module});\n`;
 					}
-					for(const s of star_imports) {
+					for(const s of import_alls) {
 						cjs+=`const ${s} = require(${src},{requirer:module, checkExport: ['default']}).default;\n`;
 					}
 					if(Object.keys(imports).length) {

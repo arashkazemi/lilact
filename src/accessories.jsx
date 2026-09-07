@@ -32,7 +32,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, useImperativeHandle, useCallback } from "./hooks.jsx";
 import { Children, forwardRef, isThenable } from "./misc.jsx";
 
-import {setTimeout, clearTimeout} from "./timers.jsx"
+//import {setTimeout, clearTimeout} from "./timers.jsx"
 import {Component} from "./components.jsx"
 import {emotion} from "./lilact.jsx"
 const {css,cx} = emotion;

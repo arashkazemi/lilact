@@ -294,8 +294,8 @@ export async function useLayoutEffect(effect, deps=undefined)
 	hk.deps = deps;
 	Lilact.layout_effects.add( async ()=>{ hk.cleanup = await effect(); });
 	
-	Lilact.clearTimeout( Lilact.effect_timeout );
-	Lilact.setTimeout( Lilact.processEffects, 0 );
+	Lilact._clearTimeout( Lilact.effect_timeout );
+	Lilact._setTimeout( Lilact.processEffects, 0 );
 }
 
 /**
@@ -330,8 +330,8 @@ export async function useEffect(effect, deps=undefined)
 	hk.deps = deps;
 	Lilact.passive_effects.add( async ()=>{ hk.cleanup = await effect(); });
 
-	Lilact.clearTimeout( Lilact.effect_timeout );
-	Lilact.setTimeout( Lilact.processEffects, 0 );
+	Lilact._clearTimeout( Lilact.effect_timeout );
+	Lilact._setTimeout( Lilact.processEffects, 0 );
 }
 
 
@@ -367,8 +367,8 @@ export async function useInsertionEffect(effect, deps=undefined)
 	hk.deps = deps;
 	Lilact.insertion_effects.add( async ()=>{ hk.cleanup = await effect(); });
 
-	Lilact.clearTimeout( Lilact.effect_timeout );
-	Lilact.setTimeout( Lilact.processEffects, 0 );
+	Lilact._clearTimeout( Lilact.effect_timeout );
+	Lilact._setTimeout( Lilact.processEffects, 0 );
 }
 
 
