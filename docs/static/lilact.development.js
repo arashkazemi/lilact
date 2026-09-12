@@ -2619,7 +2619,7 @@ var ComponentCore = class {
     }
   }
   updateElementProps(patch, force = false) {
-    var _a, _b, _c, _d, _e, _f, _g;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m;
     if (this.entity === "input") {
       if (!(patch == null ? void 0 : patch.type)) patch.type = "text";
       if (patch.type !== this.element.type) {
@@ -2634,8 +2634,15 @@ var ComponentCore = class {
         this.element.value = String(patch.value).slice(0, patch == null ? void 0 : patch.maxLength);
       }
     } else if (this.entity === "select") {
-      if ((patch == null ? void 0 : patch.value) !== this.element.value) {
-        lilact_default._setTimeout(() => this.element.value = String(patch.value), 0);
+      const s = String(patch.value);
+      if (s !== this.element.value) {
+        this.element.value = s;
+      }
+    } else if (this.entity === "option") {
+      if (((_d = (_c = (_b = (_a = this.container) == null ? void 0 : _a.props) == null ? void 0 : _b.value) == null ? void 0 : _c.constructor) == null ? void 0 : _d.name) === "Array") {
+        patch.selected = this.container.props.value.indexOf(patch.value) !== -1;
+      } else if (typeof ((_f = (_e = this.container) == null ? void 0 : _e.props) == null ? void 0 : _f.value) === "string") {
+        patch.selected = this.container.props.value === patch.value;
       }
     }
     for (let a in this.props) {
@@ -2653,19 +2660,19 @@ var ComponentCore = class {
       if (special_attributes.has(al)) continue;
       if (patch === this.props || !lilact_default.defaultIsEqual(patch[a], this.props[a]) || force) {
         if (events_set.has(al)) {
-          (_a = this.event_detachers) != null ? _a : this.event_detachers = {};
-          (_c = (_b = this.event_detachers)[al]) == null ? void 0 : _c.call(_b);
+          (_g = this.event_detachers) != null ? _g : this.event_detachers = {};
+          (_i = (_h = this.event_detachers)[al]) == null ? void 0 : _i.call(_h);
           this.event_detachers[al] = lilact_default.addWrappedEventListener(this.element, al.substring(2), patch[a]);
         } else if (capture_events_set.hasOwnProperty(al)) {
           const alc = capture_events_set[al];
-          (_d = this.event_detachers) != null ? _d : this.event_detachers = {};
-          (_f = (_e = this.event_detachers)[al]) == null ? void 0 : _f.call(_e);
+          (_j = this.event_detachers) != null ? _j : this.event_detachers = {};
+          (_l = (_k = this.event_detachers)[al]) == null ? void 0 : _l.call(_k);
           this.event_detachers[al] = lilact_default.addWrappedEventListener(this.element, alc.substring(2), patch[a], { capture: true });
         } else if (a === "style") {
           if (typeof patch.style === "string") {
             this.element.style = patch.style;
           } else {
-            if ((_g = this.props) == null ? void 0 : _g.style) {
+            if ((_m = this.props) == null ? void 0 : _m.style) {
               if (typeof this.props.style === "string") {
                 this.element.style = "";
               } else {
@@ -2686,16 +2693,16 @@ var ComponentCore = class {
             Object.assign(this.element.style, patch.style);
           }
         } else if (boolean_html_attributes_set.has(a)) {
-          this.element[a] = toBool(patch[a]);
-          if (!this.element[a]) this.element.removeAttribute(a);
+          const v = toBool(patch[a]);
+          if (v !== this.element[a]) {
+            this.element[a] = v;
+          }
         } else if (a === "autoFocus") {
           this.element["autofocus"] = toBool(patch[a]);
         } else if (a === "htmlFor") {
           this.element.setAttribute("for", patch[a]);
-        } else {
-          if (al !== "value" || ["input", "textarea", "select"].indexOf(this.entity) === -1) {
-            this.element.setAttribute(al, patch[a]);
-          }
+        } else if (al !== "value" || ["input", "textarea", "select"].indexOf(this.entity) === -1) {
+          this.element.setAttribute(al, patch[a]);
         }
       }
     }
@@ -2703,8 +2710,6 @@ var ComponentCore = class {
       this.element.onsubmit = patch.action;
     } else {
       this.element.onsubmit = void 0;
-    }
-    if (true) {
     }
     this.updateElementClass(patch);
   }
@@ -3319,6 +3324,7 @@ var boolean_html_attributes_set = /* @__PURE__ */ new Set([
   "required",
   "checked",
   "multiple",
+  "selected",
   "hidden",
   "open",
   "loop",
@@ -3832,7 +3838,7 @@ function require2(path2) {
     isInline: false,
     isModule: true
   });
-  if (module2.loaded && !options.forceUpdate && !loadAsync) {
+  if (module2.loaded && !options.forceUpdate) {
     return module2.exports;
   }
   if (path2.startsWith("#")) {

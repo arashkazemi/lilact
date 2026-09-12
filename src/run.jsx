@@ -341,7 +341,7 @@ export function require(path) {
 	* A completed module can be returned synchronously unless the caller
 	* explicitly requests lazy loading.
 	*/
-	if (module.loaded && !options.forceUpdate && !loadAsync) {
+	if (module.loaded && !options.forceUpdate) {
 		return module.exports;
 	}
 

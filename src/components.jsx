@@ -283,11 +283,9 @@ if(DEBUG) {
 				}
 			}
 
-
 			if( this?.portal ) {
 				this.element = this.portal;
 			}
-
 
 			if(this.outlet?.constructor?.name!=='Array') {
 				this.outlet = [this.outlet];
@@ -422,8 +420,18 @@ if(DEBUG) {
 			}
 		}
 		else if(this.entity==="select") {
-			if(patch?.value!==this.element.value) {
-				Lilact._setTimeout(()=>this.element.value=String(patch.value), 0);
+			const s = String(patch.value);
+
+			if(s!==this.element.value) {
+				this.element.value=s;
+			}
+		}
+		else if(this.entity==="option") {
+			if(this.container?.props?.value?.constructor?.name==='Array') {
+				patch.selected = this.container.props.value.indexOf(patch.value)!==-1;
+			}
+			else if(typeof(this.container?.props?.value)==='string') {
+				patch.selected = this.container.props.value===patch.value;
 			}
 		}
 
@@ -489,8 +497,11 @@ if(DEBUG) {
 					}
 				}
 				else if(boolean_html_attributes_set.has(a)) { // not lower cased(al), as it is set as a js property
-					this.element[a] = toBool(patch[a]);
-					if(!this.element[a]) this.element.removeAttribute(a);
+					const v = toBool(patch[a]);
+					
+					if(v!==this.element[a]) {
+						this.element[a] = v;
+					}
 				}
 				else if(a==='autoFocus') { // not lower cased(al), as it is set as a js property
 					this.element['autofocus'] = toBool(patch[a]);
@@ -498,10 +509,8 @@ if(DEBUG) {
 				else if(a==='htmlFor') { // not lower cased(al), as it is set as a js property
 					this.element.setAttribute('for', patch[a]);
 				}
-				else {
-					if(al!=='value' || ['input', 'textarea', 'select'].indexOf(this.entity)===-1) {
-						this.element.setAttribute(al, patch[a]);
-					}
+				else if(al!=='value' || ['input', 'textarea', 'select'].indexOf(this.entity)===-1) {
+					this.element.setAttribute(al, patch[a]);
 				}
 			}
 		}
@@ -513,10 +522,6 @@ if(DEBUG) {
 		else {
 			this.element.onsubmit = undefined;
 		}
-
-if(DEBUG) {
-		//this.element.setAttribute('key', this.props.key);
-}		
 
 		this.updateElementClass(patch);
 	}
@@ -1411,7 +1416,7 @@ export const length_css_attributes_set = new Set([
 
 /** @ignore */
 export const boolean_html_attributes_set = new 
-	Set(["disabled", "readOnly", "required", "checked", "multiple",
+	Set(["disabled", "readOnly", "required", "checked", "multiple", "selected",
 			 "hidden","open","loop","muted","controls","playsInline","allowFullScreen"]);
 
 
