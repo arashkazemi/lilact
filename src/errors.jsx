@@ -203,15 +203,20 @@ export function traceError(value, runPath) {
 		runPath ||
 		null;
 
+	const sameSource =
+		!source?.path ||
+		!stack?.path ||
+		source.path === stack.path;
+
 	let line =
-		stack?.line ??
-		browser.line ??
-		null;
+		sameSource
+		? stack?.line ?? browser.line ?? null
+		: browser.line ?? null;
 
 	let column =
-		stack?.column ??
-		browser.column ??
-		null;
+		sameSource
+		? stack?.column ?? browser.column ?? null
+		: browser.column ?? null;
 
 	const result = {
 		fileName,

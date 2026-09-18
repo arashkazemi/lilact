@@ -3731,6 +3731,7 @@ function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, {
   } catch (value) {
     const error2 = asError(value);
     error2.fileName ?? (error2.fileName = path);
+    error2.lilact_source ?? (error2.lilact_source = { path });
     error2.sourcePhase = "transpile";
     module.error = error2;
     lilact_default.error = error2;
@@ -3742,6 +3743,7 @@ function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, {
   processed += `
 //# sourceURL=eval:/${path}`;
   try {
+    new Function(processed);
     globalThis.Lilact = lilact_default;
     globalThis.createComponent = lilact_default.createComponent;
     globalThis.Fragment = lilact_default.Fragment;
@@ -4756,8 +4758,9 @@ function traceError(value, runPath) {
     column: number(error2.columnNumber)
   } : browserLocation(error2);
   const fileName = source?.path || stack?.path || error2.fileName || runPath || null;
-  let line2 = stack?.line ?? browser.line ?? null;
-  let column2 = stack?.column ?? browser.column ?? null;
+  const sameSource = !source?.path || !stack?.path || source.path === stack.path;
+  let line2 = sameSource ? stack?.line ?? browser.line ?? null : browser.line ?? null;
+  let column2 = sameSource ? stack?.column ?? browser.column ?? null : browser.column ?? null;
   const result2 = {
     fileName,
     lineNumber: line2,

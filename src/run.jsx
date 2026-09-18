@@ -186,15 +186,14 @@ export function run(
 			produceCJS: true,
 			blocks_info: Lilact.blocks_info,
 		});
-	} catch (value) {
+	} 
+	catch (value) {
 		const error = asError(value);
-
 		error.fileName ??= path;
+		error.lilact_source ??= {path};
 		error.sourcePhase = "transpile";
-
 		module.error = error;
 		Lilact.error = error;
-
 		throw error;
 	}
 
@@ -209,27 +208,21 @@ export function run(
 	processed += `\n//# sourceURL=eval:/${path}`;
 
 	try {
+		new Function(processed);
+
 		globalThis.Lilact = Lilact;
 		globalThis.createComponent = Lilact.createComponent;
 		globalThis.Fragment = Lilact.Fragment;
 
 		const result = eval(processed);
-
 		module.loaded = true;
 
-		return isEmpty(module.exports)
-			? result
-			: module.exports;
-	} catch (value) {
-		/*
-		* This catch executes in the module whose eval failed, including
-		* generated-JavaScript syntax errors. Therefore path is authoritative.
-		*/
+		return isEmpty(module.exports) ? result : module.exports;
+	} 
+	catch (value) {
 		const error = report(value, path);
-
 		error.sourcePhase ??= "runtime";
 		module.error = error;
-
 		throw error;
 	}
 }

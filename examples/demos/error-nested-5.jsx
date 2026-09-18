@@ -1,8 +1,7 @@
 import { Suspense, Spinner, lazy } from "lilact";
-import Demo from"./error-callback.jsx"
+import Demo from "./error-callback.jsx"
 
-
-function NestedError({file}) 
+function dsfs NestedError({file}) 
 {
 	return 	<center>
 		      		<Demo/>
