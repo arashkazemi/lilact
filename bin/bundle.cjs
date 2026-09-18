@@ -158,9 +158,9 @@ async function run() {
   		splitting: split,
 
   		sourcemap: true,
-		target: ["es2018"],
+		target: ["es2020"],
 
-		minify: minify,
+		minify,
 		define,
 
 		absWorkingDir: userProjectRoot,

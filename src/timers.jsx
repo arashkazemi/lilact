@@ -27,283 +27,454 @@
 	THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
-
-import  { IDX, DUE, REPEAT, CLEARED, INTERVAL, CALLBACK, ARGS } from "./symbols.jsx"
+import {
+    IDX,
+    DUE,
+    REPEAT,
+    CLEARED,
+    INTERVAL,
+    CALLBACK,
+    ARGS
+} from "./symbols.jsx";
 
 /**
  * Timer helpers for a promise-friendly timer framework.
  *
- * These functions keep the same call signatures as the standard JavaScript timer APIs where applicable 
- * (`setTimeout`/`setInterval`/`clearTimeout`/`clearInterval`), 
- * but add extra capabilities for promise-friendly control and lifecycle management. 
- * 
- * This module can “grab” timers and later pause/resume/reset/release them, plus provide promise wrappers 
- * like `timeoutPromise` and `animationFramePromise`.
+ * These functions preserve the usual call signatures of the native
+ * `setTimeout`, `setInterval`, `clearTimeout`, and `clearInterval` APIs
+ * while adding timer tracking and lifecycle management.
  *
- * - `setTimeout` / `setInterval`: schedule callbacks (same interface as the built-ins).
- * - `clearTimeout` / `clearInterval`: cancel scheduled timers (same interface as the built-ins).
- * - `grabTimers` / `pauseTimers` / `resumeTimers` / `resetTimers` / `releaseTimers`: manage tracked timers.
- * - `timeoutPromise` / `animationFramePromise`: promise-based convenience wrappers.
+ * Managed timers can be paused, resumed, reset, or released. Promise-based
+ * helpers are also provided through `timeoutPromise` and
+ * `animationFramePromise`.
+ *
+ * The `Lilact._setTimeout`, `Lilact._setInterval`, `Lilact._clearTimeout`,
+ * and `Lilact._clearInterval` properties must reference the original native
+ * timer functions.
  */
 
-
-let timer_pause_time = undefined;
-let current_timer_idx = -1;
+let timer_pause_time;
+let current_timer_idx = 0;
 let timer_list = [];
-let timer_timeout = -1;
-let all_timers = {};
-
-
-// original functions
-const _setTimeout = window.setTimeout,
-_setInterval = window.setInterval,
-_clearTimeout = window.clearTimeout,
-_clearInterval = window.clearInterval;
-
-
-function get_bucket(target) 
-{
-	let left = 0;
-	let right = timer_list.length - 1;
-
-	while (left <= right) {
-		const mid = Math.floor((left + right) / 2);
-		const mid_val = timer_list[mid][DUE];
-
-		if (mid_val === target) {
-			return [mid, timer_list[mid]];
-		} 
-		else if (mid_val < target) {
-			left = mid + 1;
-		} 
-		else {
-			right = mid - 1;
-		}
-	}
-
-	const bucket = [];
-	bucket[DUE] = target;
-
-	timer_list.splice(left, 0, bucket); 
-	return [left, bucket];
-}
-
-function add_timer(t, is_repeat=false)
-{
-	const [i,bucket] = get_bucket(t[DUE]);
-
-	if(!is_repeat) {
-		current_timer_idx++;
-		all_timers[current_timer_idx]=t;
-		t[IDX] = current_timer_idx;
-	}
-
-	bucket.push(t);
-
-	if(timer_list[0][0]===t) {
-		_clearTimeout( timer_timeout );
-		timer_timeout = _setTimeout( run_timer, t[INTERVAL] );
-	}
-
-	return current_timer_idx;
-}
-
-function run_timer()
-{
-	const now = Date.now();
-
-	let i = 0;
-	let buck = timer_list[i];
-
-	while( buck && buck[DUE]-now <= 0 ) {
-		for(const t of buck) {
-
-			if(!t[CLEARED]) {
-				t[CALLBACK](...t[ARGS]);			
-				if(t[REPEAT]) {
-					t[DUE] = Date.now()+t[INTERVAL];
-					add_timer(t, true);
-				}
-				else {
-					delete all_timers[t[IDX]];
-				}
-			}
-			else {
-				delete all_timers[t[IDX]];
-			}
-		}
-		i++;
-		buck = timer_list[i];
-	}
-
-	timer_list.splice(0,i);
-
-	if(timer_list.length>0) {
-		_clearTimeout( timer_timeout );
-		timer_timeout = _setTimeout( run_timer, timer_list[0][DUE] - now);
-	}
-
-}
-
-//---
+let timer_timeout = 0;
+let all_timers = new Map();
 
 /**
- * Resets managed timers back to their initial scheduled state.
+ * Returns the timer bucket whose due time matches `target`, or creates a new
+ * bucket in sorted order.
+ *
+ * Each bucket is an array containing timers and has its due time stored under
+ * the `DUE` symbol.
+ *
+ * @param {number} target - Due time as a Unix timestamp in milliseconds.
+ * @returns {[number, Array]} The bucket index and bucket.
+ * @private
+ */
+function get_bucket(target) {
+    let left = 0;
+    let right = timer_list.length - 1;
+
+    while (left <= right) {
+        const mid = Math.floor((left + right) / 2);
+        const mid_value = timer_list[mid][DUE];
+
+        if (mid_value === target) {
+            return [mid, timer_list[mid]];
+        }
+
+        if (mid_value < target) {
+            left = mid + 1;
+        } else {
+            right = mid - 1;
+        }
+    }
+
+    const bucket = [];
+    bucket[DUE] = target;
+
+    timer_list.splice(left, 0, bucket);
+
+    return [left, bucket];
+}
+
+function schedule_next_timer() {
+    if (
+        timer_pause_time !== undefined ||
+        timer_list.length === 0
+    ) {
+        return;
+    }
+
+    Lilact._clearTimeout(timer_timeout);
+
+    const delay = Math.max(
+        0,
+        timer_list[0][DUE] - Date.now()
+    );
+
+    timer_timeout = Lilact._setTimeout(run_timer, delay);
+}
+
+function add_timer(timer, is_repeat = false) {
+    const [bucket_index, bucket] = get_bucket(timer[DUE]);
+
+    if (!is_repeat) {
+        current_timer_idx += 1;
+
+        timer[IDX] = current_timer_idx;
+        all_timers.set(timer[IDX], timer);
+    }
+
+    bucket.push(timer);
+
+    /*
+     * If this timer became the earliest timer, update the dispatcher.
+     * Do not schedule anything while paused.
+     */
+    if (
+        bucket_index === 0 &&
+        timer_pause_time === undefined
+    ) {
+        schedule_next_timer();
+    }
+
+    return timer[IDX];
+}
+
+function run_timer() {
+    /*
+     * The native dispatcher has already fired. Its handle is no longer
+     * pending.
+     */
+    timer_timeout = -1;
+
+    const now = Date.now();
+    const due_buckets = [];
+
+    /*
+     * Detach all due buckets before executing any callback.
+
+     * This preserves the bucket design: all timers due at this point are
+     * processed during this dispatcher turn, but callbacks can no longer
+     * mutate the buckets currently being iterated.
+     */
+    while (
+        timer_list.length > 0 &&
+        timer_list[0][DUE] - now <= 0
+    ) {
+        due_buckets.push(timer_list.shift());
+    }
+
+    const due_timers = [];
+
+    for (const bucket of due_buckets) {
+        for (const timer of bucket) {
+            due_timers.push(timer);
+        }
+    }
+
+    let first_error;
+
+    for (const timer of due_timers) {
+        if (
+            timer[CLEARED] ||
+            all_timers.get(timer[IDX]) !== timer
+        ) {
+            all_timers.delete(timer[IDX]);
+            continue;
+        }
+
+        try {
+            timer[CALLBACK](...timer[ARGS]);
+        } catch (error) {
+            /*
+             * One callback should not prevent the other callbacks from being
+             * processed or prevent the dispatcher from being rescheduled.
+             */
+            first_error ??= error;
+        }
+
+        /*
+         * The callback may have called clearTimeout() or clearInterval().
+         * Check again after invoking it.
+         */
+        if (timer[CLEARED]) {
+            all_timers.delete(timer[IDX]);
+            continue;
+        }
+
+        /*
+         * resetTimers() may have removed this timer from all_timers.
+         * Do not resurrect it.
+         */
+        if (all_timers.get(timer[IDX]) !== timer) {
+            continue;
+        }
+
+        if (timer[REPEAT]) {
+            timer[DUE] = Date.now() + timer[INTERVAL];
+            add_timer(timer, true);
+        } else {
+            all_timers.delete(timer[IDX]);
+        }
+    }
+
+    /*
+     * Use a fresh timestamp because callbacks may have taken time to run.
+     */
+    schedule_next_timer();
+
+    /*
+     * Report callback errors asynchronously, after timer bookkeeping has
+     * completed.
+     */
+    if (first_error !== undefined) {
+        Lilact._setTimeout(() => {
+            throw first_error;
+        }, 0);
+    }
+}
+
+
+/**
+ * Resets all managed timers and removes them from the framework.
+ *
+ * Existing native timers are canceled, all managed timer registrations are
+ * discarded, and the next managed timer ID starts at zero.
+ *
  * @returns {void}
  */
-export function  resetTimers()
-{
-	_clearTimeout(timer_timeout);
-	timer_pause_time = undefined;
-	current_timer_idx = -1;
-	timer_list = [];
-	timer_timeout = -1;
-	all_timers = {};
+export function resetTimers() {
+    Lilact._clearTimeout(timer_timeout);
+
+    for (const timer of all_timers.values()) {
+        timer[CLEARED] = true;
+    }
+
+    timer_pause_time = undefined;
+    current_timer_idx = -1;
+    timer_list = [];
+    timer_timeout = -1;
+    all_timers = new Map();
 }
 
+
 /**
- * Pauses all grabbed timers.
+ * Pauses all currently managed timers.
+ *
+ * Timers created while the framework is paused are also held until
+ * `resumeTimers()` is called.
+ *
+ * Calling this function more than once while already paused has no effect.
+ *
  * @returns {void}
  */
-export function  pauseTimers()
-{
-	_clearTimeout( timer_timeout );
-	timer_pause_time = Date.now();
+export function pauseTimers() {
+    if (timer_pause_time !== undefined) {
+        return;
+    }
+
+    Lilact._clearTimeout(timer_timeout);
+    timer_timeout = -1;
+    timer_pause_time = Date.now();
 }
 
 /**
- * Resumes paused timers.
+ * Resumes managed timers that were paused with `pauseTimers()`.
+ *
+ * Each pending timer is shifted forward by the amount of time spent paused,
+ * preserving the remaining delay it had when the pause began.
+ *
  * @returns {void}
  */
-export function resumeTimers()
-{
-	if(!timer_pause_time) return;
+export function resumeTimers() {
+    if (timer_pause_time === undefined) {
+        return;
+    }
 
-	if(timer_list.length>0) {
-		const now = Date.now();
+    const elapsed = Date.now() - timer_pause_time;
 
-		timer_pause_time -= now;
+    for (const bucket of timer_list) {
+        bucket[DUE] += elapsed;
+    }
 
-		for( const t of timer_list ) {
-			t[DUE] -= timer_pause_time;
-		}
+    timer_pause_time = undefined;
 
-		timer_timeout = _setTimeout( run_timer, timer_list[0][DUE] - now);
-	}
-
-	timer_pause_time = undefined;
+    schedule_next_timer();
 }
 
 
 /**
- * Creates a timeout timer (same interface as JS `setTimeout`).
- * @param {Function} callback - Function to run after the delay.
- * @param {number} delay - Delay in milliseconds.
- * @param {...any} [args] - Optional arguments passed to `callback`.
- * @returns {any} Timeout id.
+ * Creates a managed timeout timer.
+ *
+ * The signature matches the native `setTimeout` API. Additional arguments are
+ * passed to the callback when it executes.
+ *
+ * @param {Function} callback - Function to execute after the delay.
+ * @param {number} [delay=0] - Delay in milliseconds.
+ * @param {...any} args - Arguments passed to `callback`.
+ * @returns {number} Managed timeout ID.
  */
+export function setTimeout(callback, delay = 0, ...args) {
+    const milliseconds = Math.max(0, Number(delay) || 0);
 
-
-export function setTimeout(callback, delay, ...args)
-{
-	return add_timer( { [CALLBACK]: callback, [INTERVAL]: delay, [DUE]: Date.now()+delay, [REPEAT]: false, [ARGS]: args } );
+    return add_timer({
+        [CALLBACK]: callback,
+        [INTERVAL]: milliseconds,
+        [DUE]: Date.now() + milliseconds,
+        [REPEAT]: false,
+        [CLEARED]: false,
+        [ARGS]: args
+    });
 }
 
 /**
- * Creates an interval timer (same interface as JS `setInterval`).
- * @param {Function} callback - Function to run repeatedly.
- * @param {number} interval - Delay in milliseconds between executions.
- * @param {...any} [args] - Optional arguments passed to `callback`.
- * @returns {any} Interval id.
+ * Creates a managed interval timer.
+ *
+ * The signature matches the native `setInterval` API. Additional arguments are
+ * passed to the callback on every execution.
+ *
+ * @param {Function} callback - Function to execute repeatedly.
+ * @param {number} [interval=0] - Interval in milliseconds.
+ * @param {...any} args - Arguments passed to `callback`.
+ * @returns {number} Managed interval ID.
  */
+export function setInterval(callback, interval = 0, ...args) {
+    const milliseconds = Math.max(0, Number(interval) || 0);
 
-export function setInterval(callback, interval, ...args)
-{
-	return add_timer( { [CALLBACK]: callback, [INTERVAL]: interval, [DUE]: Date.now()+interval, [REPEAT]: true, [ARGS]: args } );
+    return add_timer({
+        [CALLBACK]: callback,
+        [INTERVAL]: milliseconds,
+        [DUE]: Date.now() + milliseconds,
+        [REPEAT]: true,
+        [CLEARED]: false,
+        [ARGS]: args
+    });
 }
 
 /**
- * Clears a timeout created via this framework’s `setTimeout`.
- * @param {any} id - Timeout id returned by `setTimeout`.
+ * Clears a managed timeout.
+ *
+ * If `id` does not belong to a managed timer, it is passed to the original
+ * native `clearTimeout` function.
+ *
+ * @param {number} id - Timeout ID returned by `setTimeout`.
  * @returns {void}
  */
-export function clearTimeout(id)
-{
-	if(all_timers[id]) all_timers[id][CLEARED] = true;
-	else _clearTimeout(id);
+export function clearTimeout(id) {
+    const timer = all_timers.get(id);
+
+    if (timer !== undefined) {
+        timer[CLEARED] = true;
+    } else {
+        Lilact._clearTimeout(id);
+    }
 }
 
+
 /**
- * Clears an interval created via this framework’s `setInterval`.
- * @param {any} id - Interval id returned by `setInterval`.
+ * Clears a managed interval.
+ *
+ * If `id` does not belong to a managed timer, it is passed to the original
+ * native `clearInterval` function.
+ *
+ * @param {number} id - Interval ID returned by `setInterval`.
  * @returns {void}
  */
-export function clearInterval(id)
-{
-	if(all_timers[id]) all_timers[id][CLEARED] = true;
-	else _clearInterval(id);
+export function clearInterval(id) {
+    const timer = all_timers.get(id);
+
+    if (timer !== undefined) {
+        timer[CLEARED] = true;
+    } else {
+        Lilact._clearInterval(id);
+    }
 }
 
+
 /**
- * Captures/associates all timers with the framework so they can be managed. Calling this will
- * shadow the global setTimeout and setInterval functions and channel them through Lilact.
+ * Captures global timer functions through this framework.
+ *
+ * After calling this function, global calls to `setTimeout`, `setInterval`,
+ * `clearTimeout`, and `clearInterval` use the managed implementations.
+ *
  * @returns {void}
  */
-export function grabTimers()
-{
-	globalThis.setTimeout = Lilact.setTimeout;
-	globalThis.setInterval = Lilact.setInterval;
-	globalThis.clearTimeout = Lilact.clearTimeout;
-	globalThis.clearInterval = Lilact.clearInterval;
+export function grabTimers() {
+    globalThis.setTimeout = Lilact.setTimeout;
+    globalThis.setInterval = Lilact.setInterval;
+    globalThis.clearTimeout = Lilact.clearTimeout;
+    globalThis.clearInterval = Lilact.clearInterval;
 }
 
 /**
- * Releases timers from framework control.
+ * Releases global timer functions from this framework.
+ *
+ * After calling this function, global timer calls use the original native
+ * timer implementations.
+ *
  * @returns {void}
  */
-export function releaseTimers()
-{
-	globalThis.setTimeout = _setTimeout;
-	globalThis.setInterval = _setInterval;
-	globalThis.clearTimeout = _clearTimeout;
-	globalThis.clearInterval = _clearInterval;
+export function releaseTimers() {
+    globalThis.setTimeout = Lilact._setTimeout;
+    globalThis.setInterval = Lilact._setInterval;
+    globalThis.clearTimeout = Lilact._clearTimeout;
+    globalThis.clearInterval = Lilact._clearInterval;
 }
 
 /**
- * Returns a Promise that resolves after a timeout (framework-managed) using the same delay semantics as `setTimeout`.
- * @param {number} duration - Delay in milliseconds.
- * @returns {Promise} Promise that resolves after the delay.
+ * Creates a Promise that resolves after a managed timeout.
+ *
+ * The returned Promise has two additional methods:
+ *
+ * - `proceed()` clears the timer and resolves the Promise.
+ * - `cancel()` clears the timer and rejects the Promise.
+ *
+ * @param {number} [duration=0] - Delay in milliseconds.
+ * @param {Object} [timerSource=Lilact] - Object providing timer functions.
+ * @returns {Promise} Promise that resolves after the timeout.
  */
-export function timeoutPromise(duration=0, timerSource=Lilact) 
-{	
-	let id, resolve, reject;
+export function timeoutPromise(duration = 0, timerSource = Lilact) {
+    let id;
+    let resolve_promise;
+    let reject_promise;
 
-	const promise = new Promise((res, rej) => {
-		resolve = res;
-		reject = rej;
-		id = timerSource.setTimeout(() => {
-			resolve();
-		}, duration);
-	});
+    const promise = new Promise((resolve, reject) => {
+        resolve_promise = resolve;
+        reject_promise = reject;
 
-	// note: proceed interrupts the timer, and continues the flow if used with await.
-	promise.proceed = () => {
-		timerSource.clearTimeout(id);
-		resolve();
-	};
+        id = timerSource.setTimeout(() => {
+            resolve();
+        }, duration);
+    });
 
-	// note: cancel rejects so it throws exception when using with await, this allows handling it differently.
-	promise.cancel = () => {
-		timerSource.clearTimeout(id);
-		reject();
-	};
+    /**
+     * Clears the timer and resolves the Promise immediately.
+     *
+     * @returns {void}
+     */
+    promise.proceed = () => {
+        timerSource.clearTimeout(id);
+        resolve_promise();
+    };
 
-	return promise;
+    /**
+     * Clears the timer and rejects the Promise immediately.
+     *
+     * @returns {void}
+     */
+    promise.cancel = () => {
+        timerSource.clearTimeout(id);
+        reject_promise();
+    };
+
+    return promise;
 }
 
 /**
- * Schedules a callback on the next animation frame and returns a Promise that resolves on that frame.
- * @returns {Promise} Promise that resolves when the animation frame runs.
+ * Creates a Promise that resolves on the next animation frame.
+ *
+ * @returns {Promise} Promise resolved when the next animation frame runs.
  */
 export function animationFramePromise() {
     return new Promise((resolve) => {
@@ -311,5 +482,4 @@ export function animationFramePromise() {
             resolve();
         });
     });
-}	
-
+}

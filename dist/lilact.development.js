@@ -1561,13 +1561,13 @@ function insertWithoutScoping(cache2, serialized) {
     return cache2.insert("", serialized, cache2.sheet, true);
   }
 }
-function merge(registered, css3, className) {
+function merge(registered, css2, className) {
   var registeredStyles = [];
   var rawClassName = getRegisteredStyles(registered, registeredStyles, className);
   if (registeredStyles.length < 2) {
     return className;
   }
-  return rawClassName + css3(registeredStyles);
+  return rawClassName + css2(registeredStyles);
 }
 var createEmotion = function createEmotion2(options) {
   var cache2 = createCache(options);
@@ -1575,7 +1575,7 @@ var createEmotion = function createEmotion2(options) {
     this.isSpeedy = value;
   };
   cache2.compat = true;
-  var css3 = function css4() {
+  var css2 = function css3() {
     for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
       args[_key] = arguments[_key];
     }
@@ -1602,15 +1602,15 @@ var createEmotion = function createEmotion2(options) {
     var serialized = serializeStyles(args, cache2.registered);
     insertWithoutScoping(cache2, serialized);
   };
-  var cx3 = function cx4() {
+  var cx2 = function cx3() {
     for (var _len4 = arguments.length, args = new Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
       args[_key4] = arguments[_key4];
     }
-    return merge(cache2.registered, css3, classnames(args));
+    return merge(cache2.registered, css2, classnames(args));
   };
   return {
-    css: css3,
-    cx: cx3,
+    css: css2,
+    cx: cx2,
     injectGlobal: injectGlobal2,
     keyframes: keyframes2,
     hydrate: function hydrate2(ids) {
@@ -1626,7 +1626,7 @@ var createEmotion = function createEmotion2(options) {
     sheet: cache2.sheet,
     cache: cache2,
     getRegisteredStyles: getRegisteredStyles.bind(null, cache2.registered),
-    merge: merge.bind(null, cache2.registered, css3)
+    merge: merge.bind(null, cache2.registered, css2)
   };
 };
 var classnames = function classnames2(args) {
@@ -1766,8 +1766,7 @@ var isValidComponent = (value) => {
 };
 var isValidElement = isValidComponent;
 var findDOMNode = (component) => {
-  var _a, _b;
-  if (!((_b = (_a = component[CORE]) == null ? void 0 : _a.element) == null ? void 0 : _b.parentNode)) throw new Error("findDOMNode only works on mounted components.");
+  if (!component[CORE]?.element?.parentNode) throw new Error("findDOMNode only works on mounted components.");
   return component[CORE].element;
 };
 function Fragment2({ children }) {
@@ -2375,7 +2374,7 @@ var ComponentCache = class {
     this.owner = owner;
   }
   pick(key, construct_func) {
-    var _a, _b;
+    var _a;
     let comp;
     let buck = this.current_map.get(key);
     if (buck && buck.length > buck[IDX]) {
@@ -2399,7 +2398,7 @@ var ComponentCache = class {
         this.new_map.set(key, buck);
         buck[IDX] = 0;
       }
-      if (comp[CORE]) (_b = (_a = comp[CORE]).parent) != null ? _b : _a.parent = this.owner;
+      if (comp[CORE]) (_a = comp[CORE]).parent ?? (_a.parent = this.owner);
     }
     return comp;
   }
@@ -2453,18 +2452,17 @@ var ComponentCore = class {
   */
   // TODO: should componentDidUpdate be called after arranging/appending the outlet or before?
   apply(next_props = this.props, next_state = this.next_state || this.state) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
     let do_rerender = true;
-    if (this.outlet && (this == null ? void 0 : this[MEMOIZED])) {
-      if (shallowEqual(this.props, next_props, "children") && shallowEqual((_a = this.props) == null ? void 0 : _a.children, next_props == null ? void 0 : next_props.children)) {
+    if (this.outlet && this?.[MEMOIZED]) {
+      if (shallowEqual(this.props, next_props, "children") && shallowEqual(this.props?.children, next_props?.children)) {
         do_rerender = false;
       }
     }
     if (do_rerender) {
       if (true) {
-        if ((_b = this.entity) == null ? void 0 : _b.propTypes) {
+        if (this.entity?.propTypes) {
           PropTypes.checkPropTypes(this.entity.propTypes, this.props, "prop", this.entity.name);
-        } else if ((_c = this.component) == null ? void 0 : _c.propTypes) {
+        } else if (this.component?.propTypes) {
           PropTypes.checkPropTypes(this.component.propTypes, this.props, "prop", this.component.name);
         }
       }
@@ -2472,8 +2470,8 @@ var ComponentCore = class {
       if (this.component.constructor.defaultProps) {
         next_props = { ...this.component.constructor.defaultProps, ...next_props };
       }
-      if (((_e = (_d = this == null ? void 0 : this.parent) == null ? void 0 : _d.component) == null ? void 0 : _e.context) || ((_g = (_f = this == null ? void 0 : this.parent) == null ? void 0 : _f.component) == null ? void 0 : _g.getChildContext)) {
-        this.context = { ...this.parent.component.context, ...(_i = (_h = this.parent.component).getChildContext) == null ? void 0 : _i.call(_h) };
+      if (this?.parent?.component?.context || this?.parent?.component?.getChildContext) {
+        this.context = { ...this.parent.component.context, ...this.parent.component.getChildContext?.() };
         if (this.component.constructor.contextTypes) {
           PropTypes.checkPropTypes(this.component.constructor.contextTypes, this.context, "context", this.entity.name);
         }
@@ -2487,8 +2485,8 @@ var ComponentCore = class {
           } else {
             this.element = document.createElement(this.entity);
           }
-          if (next_props == null ? void 0 : next_props.defaultValue) this.element.value = String(next_props.defaultValue).slice(0, next_props == null ? void 0 : next_props.maxLength);
-          if (next_props == null ? void 0 : next_props.defaultChecked) this.element.checked = next_props.defaultChecked;
+          if (next_props?.defaultValue) this.element.value = String(next_props.defaultValue).slice(0, next_props?.maxLength);
+          if (next_props?.defaultChecked) this.element.checked = next_props.defaultChecked;
         }
         this.element[COMPONENT] = this.component;
       }
@@ -2531,10 +2529,10 @@ var ComponentCore = class {
           renderErrorHandler(this, e);
         }
       }
-      if (this == null ? void 0 : this.portal) {
+      if (this?.portal) {
         this.element = this.portal;
       }
-      if (((_k = (_j = this.outlet) == null ? void 0 : _j.constructor) == null ? void 0 : _k.name) !== "Array") {
+      if (this.outlet?.constructor?.name !== "Array") {
         this.outlet = [this.outlet];
       }
       this.outlet = [...this.outlet];
@@ -2576,10 +2574,9 @@ var ComponentCore = class {
     }
   }
   async cleanup() {
-    var _a, _b, _c;
     try {
       const promises = [];
-      if ((_a = this.props) == null ? void 0 : _a.ref) {
+      if (this.props?.ref) {
         if (typeof this.props.ref === "function") {
           this.props.ref(null);
         } else {
@@ -2589,7 +2586,7 @@ var ComponentCore = class {
       if (this.component.componentWillUnmount) {
         this.component.componentWillUnmount();
       }
-      if (((_b = this == null ? void 0 : this.element) == null ? void 0 : _b.parentElement) && !this.portal) {
+      if (this?.element?.parentElement && !this.portal) {
         this.element.parentElement.removeChild(this.element);
       }
       if (this.outlet !== void 0) {
@@ -2599,7 +2596,7 @@ var ComponentCore = class {
           }
         }
       }
-      if (((_c = this.props) == null ? void 0 : _c.children) !== void 0) {
+      if (this.props?.children !== void 0) {
         for (let c of this.props.children) {
           if (c.cleanup) {
             promises.push(c.cleanup());
@@ -2619,29 +2616,29 @@ var ComponentCore = class {
     }
   }
   updateElementProps(patch, force = false) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m;
     if (this.entity === "input") {
-      if (!(patch == null ? void 0 : patch.type)) patch.type = "text";
+      if (!patch?.type) patch.type = "text";
       if (patch.type !== this.element.type) {
         this.element.type = patch.type;
       }
-      if ((patch == null ? void 0 : patch.value) !== void 0 && (patch == null ? void 0 : patch.value) !== this.element.value) {
+      if (patch?.value !== void 0 && patch?.value !== this.element.value) {
         if (patch.value === void 0) patch.value = "";
-        this.element.value = String(patch.value).slice(0, patch == null ? void 0 : patch.maxLength);
+        this.element.value = String(patch.value).slice(0, patch?.maxLength);
       }
     } else if (this.entity === "textarea") {
-      if ((patch == null ? void 0 : patch.value) !== this.element.value) {
-        this.element.value = String(patch.value).slice(0, patch == null ? void 0 : patch.maxLength);
+      if (patch?.value !== this.element.value) {
+        this.element.value = String(patch.value).slice(0, patch?.maxLength);
       }
     } else if (this.entity === "select") {
-      const s = String(patch.value);
-      if (s !== this.element.value) {
-        this.element.value = s;
+      if (typeof patch.value === "string") {
+        if (patch.value !== this.element.value) {
+          this.element.value = patch.value;
+        }
       }
     } else if (this.entity === "option") {
-      if (((_d = (_c = (_b = (_a = this.container) == null ? void 0 : _a.props) == null ? void 0 : _b.value) == null ? void 0 : _c.constructor) == null ? void 0 : _d.name) === "Array") {
+      if (this.container?.props?.value?.constructor?.name === "Array") {
         patch.selected = this.container.props.value.indexOf(patch.value) !== -1;
-      } else if (typeof ((_f = (_e = this.container) == null ? void 0 : _e.props) == null ? void 0 : _f.value) === "string") {
+      } else if (typeof this.container?.props?.value === "string") {
         patch.selected = this.container.props.value === patch.value;
       }
     }
@@ -2660,19 +2657,19 @@ var ComponentCore = class {
       if (special_attributes.has(al)) continue;
       if (patch === this.props || !lilact_default.defaultIsEqual(patch[a], this.props[a]) || force) {
         if (events_set.has(al)) {
-          (_g = this.event_detachers) != null ? _g : this.event_detachers = {};
-          (_i = (_h = this.event_detachers)[al]) == null ? void 0 : _i.call(_h);
+          this.event_detachers ?? (this.event_detachers = {});
+          this.event_detachers[al]?.();
           this.event_detachers[al] = lilact_default.addWrappedEventListener(this.element, al.substring(2), patch[a]);
         } else if (capture_events_set.hasOwnProperty(al)) {
           const alc = capture_events_set[al];
-          (_j = this.event_detachers) != null ? _j : this.event_detachers = {};
-          (_l = (_k = this.event_detachers)[al]) == null ? void 0 : _l.call(_k);
+          this.event_detachers ?? (this.event_detachers = {});
+          this.event_detachers[al]?.();
           this.event_detachers[al] = lilact_default.addWrappedEventListener(this.element, alc.substring(2), patch[a], { capture: true });
         } else if (a === "style") {
           if (typeof patch.style === "string") {
             this.element.style = patch.style;
           } else {
-            if ((_m = this.props) == null ? void 0 : _m.style) {
+            if (this.props?.style) {
               if (typeof this.props.style === "string") {
                 this.element.style = "";
               } else {
@@ -2706,7 +2703,7 @@ var ComponentCore = class {
         }
       }
     }
-    if (patch == null ? void 0 : patch.action) {
+    if (patch?.action) {
       this.element.onsubmit = patch.action;
     } else {
       this.element.onsubmit = void 0;
@@ -2714,11 +2711,10 @@ var ComponentCore = class {
     this.updateElementClass(patch);
   }
   updateElementClass(patch = this.props) {
-    var _a, _b;
-    let cn = patch == null ? void 0 : patch.className;
-    cn != null ? cn : cn = (patch == null ? void 0 : patch.class) ? patch.class : "";
-    if ((_a = this == null ? void 0 : this.parent) == null ? void 0 : _a[CHILD_CLASS_ADDENDUM]) {
-      cn += " " + ((_b = this == null ? void 0 : this.parent) == null ? void 0 : _b[CHILD_CLASS_ADDENDUM]);
+    let cn = patch?.className;
+    cn ?? (cn = patch?.class ? patch.class : "");
+    if (this?.parent?.[CHILD_CLASS_ADDENDUM]) {
+      cn += " " + this?.parent?.[CHILD_CLASS_ADDENDUM];
     }
     if (cn.length > 0) {
       cn = cn.split(/\s+/g);
@@ -2743,15 +2739,14 @@ var ComponentCore = class {
     }
   }
   appendElement(core) {
-    var _a;
     if (core.portal) return;
     this.scanZombies(core.container, core.element);
-    if ((core == null ? void 0 : core.element.parentNode) === null) {
+    if (core?.element.parentNode === null) {
       core.container.element.insertBefore(
         core.element,
         core.container.element.childNodes[core.container.insert_index] || null
       );
-      if ((_a = core == null ? void 0 : core.component) == null ? void 0 : _a.componentDidMount) {
+      if (core?.component?.componentDidMount) {
         core.component.componentDidMount();
       }
     } else {
@@ -2765,7 +2760,6 @@ var ComponentCore = class {
     core.container.insert_index++;
   }
   arrangeOutlet() {
-    var _a;
     this.insert_index = 0;
     for (const core of this.outlet) {
       if (core) {
@@ -2774,9 +2768,9 @@ var ComponentCore = class {
           core.container.appendElement(core);
         } else {
           if (core.arrangeOutlet) core.arrangeOutlet();
-          if (!(core == null ? void 0 : core.mounted)) {
+          if (!core?.mounted) {
             core.mounted = true;
-            if ((_a = core == null ? void 0 : core.component) == null ? void 0 : _a.componentDidMount) {
+            if (core?.component?.componentDidMount) {
               core.component.componentDidMount();
             }
           }
@@ -2790,21 +2784,20 @@ var ComponentCore = class {
   }
 };
 var renderErrorHandler = (c, e) => {
-  var _a, _b, _c, _d;
   const stack = [c];
-  while (c && !((_a = c.component) == null ? void 0 : _a.componentDidCatch)) {
+  while (c && !c.component?.componentDidCatch) {
     c = c.parent;
     if (c) stack.push(c);
   }
-  if ((_b = c == null ? void 0 : c.component) == null ? void 0 : _b.componentDidCatch) {
-    if ((_c = c.entity) == null ? void 0 : _c.getDerivedStateFromError) {
+  if (c?.component?.componentDidCatch) {
+    if (c.entity?.getDerivedStateFromError) {
       c.component.setState(c.entity.getDerivedStateFromError.call(c, e));
     }
   }
   let stack_log = Array.prototype.map.call(stack, (x) => `in  ${typeof x.component.displayName === "function" ? x.component.displayName() : x.component.displayName}`).join("\n");
   e.componentStack = stack;
   e.componentStackLog = stack_log;
-  if ((_d = c == null ? void 0 : c.component) == null ? void 0 : _d.componentDidCatch) {
+  if (c?.component?.componentDidCatch) {
     c.component.componentDidCatch(e, { componentStack: stack, componentStackLog: stack_log });
   } else throw e;
 };
@@ -2826,7 +2819,7 @@ function constructFunc(core, parent) {
       comp = new HTMLComponent(entity, core.props);
     } else {
       if (isClass(entity)) {
-        if (entity == null ? void 0 : entity.defaultProps) {
+        if (entity?.defaultProps) {
           core.props = { ...entity.defaultProps, ...core.props };
         }
         comp = new entity(core.props);
@@ -2849,7 +2842,7 @@ function constructFunc(core, parent) {
           }
         }
       } else if (typeof entity === "function") {
-        if (entity == null ? void 0 : entity.defaultProps) {
+        if (entity?.defaultProps) {
           core.props = { ...entity.defaultProps, ...core.props };
         }
         comp = new Component(core.props);
@@ -2870,16 +2863,15 @@ function constructFunc(core, parent) {
   return comp;
 }
 function prepareCore(parent, core) {
-  var _a, _b, _c;
   try {
-    (_a = parent.cache) != null ? _a : parent.cache = new ComponentCache(parent);
+    parent.cache ?? (parent.cache = new ComponentCache(parent));
     core = parent.cache.pick(
-      core[TEXT2] === void 0 ? (_b = core == null ? void 0 : core.props) == null ? void 0 : _b.key : ":text:",
+      core[TEXT2] === void 0 ? core?.props?.key : ":text:",
       () => core[TEXT2] !== void 0 || core instanceof ComponentCore ? core : constructFunc(core, parent)[CORE]
     );
     return core;
   } catch (e) {
-    if ((_c = core == null ? void 0 : core.component) == null ? void 0 : _c.componentDidCatch) {
+    if (core?.component?.componentDidCatch) {
       core.component.componentDidCatch(e);
     } else throw e;
   }
@@ -2921,7 +2913,7 @@ var generateComponentKey = (entity, props) => {
   } else {
     if (typeof entity === "string") {
       key = ":t:" + entity;
-    } else if (entity == null ? void 0 : entity.name) {
+    } else if (entity?.name) {
       key = entity.name;
     } else {
       key = "::";
@@ -3012,7 +3004,7 @@ var Component = class {
   */
   displayName() {
     const entity = this[CORE].entity;
-    if (entity == null ? void 0 : entity.displayName) {
+    if (entity?.displayName) {
       return typeof entity.displayName === "function" ? entity.displayName() : entity.displayName;
     }
     if (typeof entity === "string") {
@@ -3150,7 +3142,7 @@ function createPortal(children, element) {
 }
 function cloneComponent(component, propsPatch, ...children) {
   const cc = { entity: component.entity, props: { ...component.props, ...propsPatch }, [CORE]: null };
-  if (children == null ? void 0 : children.length) {
+  if (children?.length) {
     cc.props.children = children;
   }
   return cc;
@@ -3383,11 +3375,11 @@ function useCallback(callback, deps = void 0) {
   }
   const hk = useHook();
   if (!isEmpty(hk)) {
-    if (deps !== void 0 && (hk == null ? void 0 : hk.deps) !== void 0 && shallowEqual(deps, hk.deps)) {
+    if (deps !== void 0 && hk?.deps !== void 0 && shallowEqual(deps, hk.deps)) {
       return hk.callback;
     }
   }
-  if (hk == null ? void 0 : hk.cleanup) {
+  if (hk?.cleanup) {
     hk.cleanup();
   }
   hk.deps = deps;
@@ -3404,12 +3396,11 @@ function createContext(defaultValue) {
   };
 }
 function useContext(context2) {
-  var _a, _b, _c;
-  let core = (_a = lilact_default.current_component[0]) == null ? void 0 : _a.parent;
+  let core = lilact_default.current_component[0]?.parent;
   while (core && core.entity !== context2.Provider) {
     core = core.parent;
   }
-  return core ? (_c = (_b = core.props) == null ? void 0 : _b.value) != null ? _c : context2.default : context2.default;
+  return core ? core.props?.value ?? context2.default : context2.default;
 }
 function useId(prefix2 = "N") {
   const hk = useHook();
@@ -3476,9 +3467,9 @@ async function useLayoutEffect(effect, deps = void 0) {
   }
   const hk = useHook();
   if (!isEmpty(hk)) {
-    if (deps !== void 0 && (hk == null ? void 0 : hk.deps) !== void 0 && shallowEqual(deps, hk.deps)) return;
+    if (deps !== void 0 && hk?.deps !== void 0 && shallowEqual(deps, hk.deps)) return;
   }
-  if (hk == null ? void 0 : hk.cleanup) {
+  if (hk?.cleanup) {
     await hk.cleanup();
     hk.cleanup = void 0;
   }
@@ -3495,9 +3486,9 @@ async function useEffect(effect, deps = void 0) {
   }
   const hk = useHook();
   if (!isEmpty(hk)) {
-    if (deps !== void 0 && (hk == null ? void 0 : hk.deps) !== void 0 && shallowEqual(deps, hk.deps)) return;
+    if (deps !== void 0 && hk?.deps !== void 0 && shallowEqual(deps, hk.deps)) return;
   }
-  if (hk == null ? void 0 : hk.cleanup) {
+  if (hk?.cleanup) {
     await hk.cleanup();
     hk.cleanup = void 0;
   }
@@ -3514,9 +3505,9 @@ async function useInsertionEffect(effect, deps = void 0) {
   }
   const hk = useHook();
   if (!isEmpty(hk)) {
-    if (deps !== void 0 && (hk == null ? void 0 : hk.deps) !== void 0 && shallowEqual(deps, hk.deps)) return;
+    if (deps !== void 0 && hk?.deps !== void 0 && shallowEqual(deps, hk.deps)) return;
   }
-  if (hk == null ? void 0 : hk.cleanup) {
+  if (hk?.cleanup) {
     await hk.cleanup();
     hk.cleanup = void 0;
   }
@@ -3533,7 +3524,7 @@ function useMemo(factory, deps = void 0) {
   }
   const hk = useHook();
   if (!isEmpty(hk)) {
-    if (deps !== void 0 && (hk == null ? void 0 : hk.deps) !== void 0 && shallowEqual(deps, hk.deps)) {
+    if (deps !== void 0 && hk?.deps !== void 0 && shallowEqual(deps, hk.deps)) {
       return hk.value;
     }
   }
@@ -3606,9 +3597,9 @@ function useDeferredValue(value, initialValue) {
   return deferred;
 }
 function useImperativeHandle(ref, factory, deps = void 0) {
-  if (deps !== void 0 && (ref == null ? void 0 : ref.deps) !== void 0 && shallowEqual(deps, ref.deps)) return;
+  if (deps !== void 0 && ref?.deps !== void 0 && shallowEqual(deps, ref.deps)) return;
   ref.deps = deps;
-  if (typeof (ref == null ? void 0 : ref.current) !== "object") {
+  if (typeof ref?.current !== "object") {
     ref.current = {};
   }
   Object.assign(ref.current, factory());
@@ -3649,9 +3640,9 @@ function joinPaths(basePath, relativePath) {
 }
 function asError(value, fallback = "Unknown error") {
   if (value instanceof Error) return value;
-  if ((value == null ? void 0 : value.error) instanceof Error) return value.error;
+  if (value?.error instanceof Error) return value.error;
   const error2 = new Error(
-    (value == null ? void 0 : value.message) == null ? fallback : String(value.message)
+    value?.message == null ? fallback : String(value.message)
   );
   if (value && typeof value === "object") {
     if (value.name) error2.name = value.name;
@@ -3709,7 +3700,6 @@ function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, {
   isInline = true,
   isModule = true
 } = {}) {
-  var _a, _b;
   let module = required_scripts[path];
   if (!module) {
     module = createModule(path, {
@@ -3740,7 +3730,7 @@ function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, {
     });
   } catch (value) {
     const error2 = asError(value);
-    (_a = error2.fileName) != null ? _a : error2.fileName = path;
+    error2.fileName ?? (error2.fileName = path);
     error2.sourcePhase = "transpile";
     module.error = error2;
     lilact_default.error = error2;
@@ -3760,7 +3750,7 @@ function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, {
     return isEmpty(module.exports) ? result : module.exports;
   } catch (value) {
     const error2 = report(value, path);
-    (_b = error2.sourcePhase) != null ? _b : error2.sourcePhase = "runtime";
+    error2.sourcePhase ?? (error2.sourcePhase = "runtime");
     module.error = error2;
     throw error2;
   }
@@ -3769,10 +3759,9 @@ function getOrCreateModule(path2, options = {}) {
   return required_scripts[path2] || createModule(path2, options);
 }
 function loadAsyncResource(path2, module2) {
-  var _a, _b;
   let source;
   try {
-    const resolved = (_b = (_a = lilact_default).resolver) == null ? void 0 : _b.call(_a, path2);
+    const resolved = lilact_default.resolver?.(path2);
     if (resolved == null) {
       if (module2.code && !module2.loaded) {
         source = Promise.resolve(module2.code);
@@ -3807,10 +3796,7 @@ function loadAsyncResource(path2, module2) {
       isInline: false,
       isModule: true
     });
-  }).then((result2) => {
-    var _a2;
-    return (_a2 = result2 == null ? void 0 : result2.default) != null ? _a2 : result2;
-  }).catch((error2) => {
+  }).then((result2) => result2?.default ?? result2).catch((error2) => {
     module2.error = report(error2, path2);
     throw module2.error;
   }).finally(() => {
@@ -3822,15 +3808,14 @@ function loadAsyncResource(path2, module2) {
   return request;
 }
 function require2(path2) {
-  var _a, _b, _c, _d;
   let options = {};
   if (arguments.length === 2 && arguments[1] && typeof arguments[1] === "object") {
     options = arguments[1];
   }
-  if ((_a = lilact_default.importObjectPaths) == null ? void 0 : _a[path2]) {
+  if (lilact_default.importObjectPaths?.[path2]) {
     return lilact_default.importObjectPaths[path2];
   }
-  if ((_b = options.requirer) == null ? void 0 : _b.path) {
+  if (options.requirer?.path) {
     path2 = joinPaths(options.requirer.path, path2);
   }
   const loadAsync = Boolean(lilact_default[LAZY]) || Boolean(options.isLazy);
@@ -3858,7 +3843,7 @@ function require2(path2) {
     }
     return loadAsyncResource(path2, module2);
   }
-  const resolved = (_d = (_c = lilact_default).resolver) == null ? void 0 : _d.call(_c, path2);
+  const resolved = lilact_default.resolver?.(path2);
   if (resolved != null) {
     if (path2.endsWith(".css")) {
       injectGlobal(String(resolved));
@@ -3982,10 +3967,10 @@ function Transition({
   // but the user should use CSSTransition itself.
   _classNames: classNames
 }) {
-  var _a, _b, _c, _d, _e, _f;
-  (_b = (_a = this[CORE]).is_mounted) != null ? _b : _a.is_mounted = !mountOnEnter || inProp || appear;
-  (_d = (_c = this[CORE]).is_appeared) != null ? _d : _c.is_appeared = inProp;
-  (_f = (_e = this[CORE]).timer) != null ? _f : _e.timer = null;
+  var _a, _b, _c;
+  (_a = this[CORE]).is_mounted ?? (_a.is_mounted = !mountOnEnter || inProp || appear);
+  (_b = this[CORE]).is_appeared ?? (_b.is_appeared = inProp);
+  (_c = this[CORE]).timer ?? (_c.timer = null);
   this[CORE].childFunctionHandler = (func) => {
     return func(this[CORE].mount_state);
   };
@@ -4000,15 +3985,15 @@ function Transition({
   }, []);
   useEffect(() => {
     if (!this[CORE].is_appeared && appear && this[CORE].mount_state === ENTERING && inProp) {
-      onEnter == null ? void 0 : onEnter();
+      onEnter?.();
       requestAnimationFrame(() => {
-        onEntering == null ? void 0 : onEntering(!this[CORE].is_appeared);
+        onEntering?.(!this[CORE].is_appeared);
         clearTimeout(this[CORE].timer);
         this[CORE].timer = setTimeout(() => {
           this[CORE].mount_state = ENTERED;
           this.forceUpdate();
           this[CORE].is_appeared = true;
-          onEntered == null ? void 0 : onEntered(!this[CORE].is_appeared);
+          onEntered?.(!this[CORE].is_appeared);
         }, timeout);
       });
     }
@@ -4017,29 +4002,29 @@ function Transition({
     if (inProp) {
       this[CORE].is_mounted = true;
       if (this[CORE].mount_state === ENTERING || this[CORE].mount_state === ENTERED) return;
-      onEnter == null ? void 0 : onEnter(!this[CORE].is_appeared);
+      onEnter?.(!this[CORE].is_appeared);
       this[CORE].mount_state = ENTERING;
       this.forceUpdate(() => {
-        onEntering == null ? void 0 : onEntering(!this[CORE].is_appeared);
+        onEntering?.(!this[CORE].is_appeared);
         clearTimeout(this[CORE].timer);
         this[CORE].timer = setTimeout(() => {
           this[CORE].mount_state = ENTERED;
           this.forceUpdate();
           this[CORE].is_appeared = true;
-          onEntered == null ? void 0 : onEntered();
+          onEntered?.();
         }, timeout);
       });
     } else {
       if (this[CORE].mount_state === UNMOUNTED || this[CORE].mount_state === EXITING || this[CORE].mount_state === EXITED) return;
-      onExit == null ? void 0 : onExit();
+      onExit?.();
       this[CORE].mount_state = EXITING;
       this.forceUpdate(() => {
-        onExiting == null ? void 0 : onExiting();
+        onExiting?.();
         clearTimeout(this[CORE].timer);
         this[CORE].timer = setTimeout(() => {
           this[CORE].mount_state = EXITED;
           this.forceUpdate();
-          onExited == null ? void 0 : onExited();
+          onExited?.();
           if (unmountOnExit) {
             this[CORE].is_mounted = false;
             this[CORE].mount_state = UNMOUNTED;
@@ -4161,8 +4146,7 @@ function SwitchTransition({
     }
   };
   return createComponent("div", { "style": { position: "relative" } }, childArray.map((child, index2) => {
-    var _a;
-    const key = ((_a = child == null ? void 0 : child.props) == null ? void 0 : _a.key) || index2;
+    const key = child?.props?.key || index2;
     const isIncoming = key === activeKey;
     const isOutgoing = key === exitingKey;
     const inProp = isIncoming ? enterAllowed : isOutgoing ? !exitStarted : false;
@@ -4206,7 +4190,6 @@ var _pool = [];
 var MAX_POOL_SIZE = 10;
 var POINTER_TYPES = ["mouse", "pen", "touch"];
 function createSyntheticEvent(nativeEvent, currentTarget) {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v;
   const e = _pool.length ? _pool.pop() : {};
   e.nativeEvent = nativeEvent;
   e.type = nativeEvent.type;
@@ -4239,25 +4222,25 @@ function createSyntheticEvent(nativeEvent, currentTarget) {
   };
   e.key = nativeEvent.key || null;
   e.code = nativeEvent.code || null;
-  e.which = (_b = (_a = nativeEvent.which) != null ? _a : nativeEvent.keyCode) != null ? _b : null;
-  e.button = (_c = nativeEvent.button) != null ? _c : null;
-  e.buttons = (_d = nativeEvent.buttons) != null ? _d : null;
-  e.pointerId = (_e = nativeEvent.pointerId) != null ? _e : null;
-  e.pointerType = (_f = nativeEvent.pointerType) != null ? _f : null;
-  e.isPrimary = (_g = nativeEvent.isPrimary) != null ? _g : null;
-  e.clientX = (_h = nativeEvent.clientX) != null ? _h : 0;
-  e.clientY = (_i = nativeEvent.clientY) != null ? _i : 0;
-  e.screenX = (_j = nativeEvent.screenX) != null ? _j : 0;
-  e.screenY = (_k = nativeEvent.screenY) != null ? _k : 0;
-  e.pageX = (_l = nativeEvent.pageX) != null ? _l : null;
-  e.pageY = (_m = nativeEvent.pageY) != null ? _m : null;
-  e.movementX = (_n = nativeEvent.movementX) != null ? _n : 0;
-  e.movementY = (_o = nativeEvent.movementY) != null ? _o : 0;
-  e.pressure = (_p = nativeEvent.pressure) != null ? _p : null;
-  e.tiltX = (_q = nativeEvent.tiltX) != null ? _q : null;
-  e.tiltY = (_r = nativeEvent.tiltY) != null ? _r : null;
-  e.width = (_s = nativeEvent.width) != null ? _s : null;
-  e.height = (_t = nativeEvent.height) != null ? _t : null;
+  e.which = nativeEvent.which ?? nativeEvent.keyCode ?? null;
+  e.button = nativeEvent.button ?? null;
+  e.buttons = nativeEvent.buttons ?? null;
+  e.pointerId = nativeEvent.pointerId ?? null;
+  e.pointerType = nativeEvent.pointerType ?? null;
+  e.isPrimary = nativeEvent.isPrimary ?? null;
+  e.clientX = nativeEvent.clientX ?? 0;
+  e.clientY = nativeEvent.clientY ?? 0;
+  e.screenX = nativeEvent.screenX ?? 0;
+  e.screenY = nativeEvent.screenY ?? 0;
+  e.pageX = nativeEvent.pageX ?? null;
+  e.pageY = nativeEvent.pageY ?? null;
+  e.movementX = nativeEvent.movementX ?? 0;
+  e.movementY = nativeEvent.movementY ?? 0;
+  e.pressure = nativeEvent.pressure ?? null;
+  e.tiltX = nativeEvent.tiltX ?? null;
+  e.tiltY = nativeEvent.tiltY ?? null;
+  e.width = nativeEvent.width ?? null;
+  e.height = nativeEvent.height ?? null;
   e.pointerEventsSupported = POINTER_TYPES.includes(e.pointerType);
   try {
     const tgt = e.target;
@@ -4275,8 +4258,8 @@ function createSyntheticEvent(nativeEvent, currentTarget) {
   e.targetTouches = nativeEvent.targetTouches || null;
   e.changedTouches = nativeEvent.changedTouches || null;
   e.path = typeof nativeEvent.composedPath === "function" ? nativeEvent.composedPath() : [e.target];
-  e.repeat = (_u = nativeEvent.repeat) != null ? _u : false;
-  e.location = (_v = nativeEvent.location) != null ? _v : 0;
+  e.repeat = nativeEvent.repeat ?? false;
+  e.location = nativeEvent.location ?? 0;
   return e;
 }
 function releaseSyntheticEvent(e) {
@@ -4369,7 +4352,7 @@ __export(redux_exports2, {
 });
 var ReduxContext;
 function Provider({ store, children }) {
-  ReduxContext != null ? ReduxContext : ReduxContext = createContext(null);
+  ReduxContext ?? (ReduxContext = createContext(null));
   return createComponent(ReduxContext.Provider, { "value": store }, children);
 }
 function useStore() {
@@ -4467,24 +4450,21 @@ __export(timers_exports, {
   setTimeout: () => setTimeout2,
   timeoutPromise: () => timeoutPromise
 });
-var timer_pause_time = void 0;
-var current_timer_idx = -1;
+var timer_pause_time;
+var current_timer_idx = 0;
 var timer_list = [];
-var timer_timeout = -1;
-var all_timers = {};
-var _setTimeout = window.setTimeout;
-var _setInterval = window.setInterval;
-var _clearTimeout = window.clearTimeout;
-var _clearInterval = window.clearInterval;
+var timer_timeout = 0;
+var all_timers = /* @__PURE__ */ new Map();
 function get_bucket(target) {
   let left = 0;
   let right = timer_list.length - 1;
   while (left <= right) {
     const mid = Math.floor((left + right) / 2);
-    const mid_val = timer_list[mid][DUE];
-    if (mid_val === target) {
+    const mid_value = timer_list[mid][DUE];
+    if (mid_value === target) {
       return [mid, timer_list[mid]];
-    } else if (mid_val < target) {
+    }
+    if (mid_value < target) {
       left = mid + 1;
     } else {
       right = mid - 1;
@@ -4495,84 +4475,142 @@ function get_bucket(target) {
   timer_list.splice(left, 0, bucket);
   return [left, bucket];
 }
-function add_timer(t, is_repeat = false) {
-  const [i2, bucket] = get_bucket(t[DUE]);
+function schedule_next_timer() {
+  if (timer_pause_time !== void 0 || timer_list.length === 0) {
+    return;
+  }
+  Lilact._clearTimeout(timer_timeout);
+  const delay = Math.max(
+    0,
+    timer_list[0][DUE] - Date.now()
+  );
+  timer_timeout = Lilact._setTimeout(run_timer, delay);
+}
+function add_timer(timer, is_repeat = false) {
+  const [bucket_index, bucket] = get_bucket(timer[DUE]);
   if (!is_repeat) {
-    current_timer_idx++;
-    all_timers[current_timer_idx] = t;
-    t[IDX] = current_timer_idx;
+    current_timer_idx += 1;
+    timer[IDX] = current_timer_idx;
+    all_timers.set(timer[IDX], timer);
   }
-  bucket.push(t);
-  if (timer_list[0][0] === t) {
-    _clearTimeout(timer_timeout);
-    timer_timeout = _setTimeout(run_timer, t[INTERVAL]);
+  bucket.push(timer);
+  if (bucket_index === 0 && timer_pause_time === void 0) {
+    schedule_next_timer();
   }
-  return current_timer_idx;
+  return timer[IDX];
 }
 function run_timer() {
+  timer_timeout = -1;
   const now = Date.now();
-  let i2 = 0;
-  let buck = timer_list[i2];
-  while (buck && buck[DUE] - now <= 0) {
-    for (const t of buck) {
-      if (!t[CLEARED]) {
-        t[CALLBACK](...t[ARGS]);
-        if (t[REPEAT]) {
-          t[DUE] = Date.now() + t[INTERVAL];
-          add_timer(t, true);
-        } else {
-          delete all_timers[t[IDX]];
-        }
-      } else {
-        delete all_timers[t[IDX]];
-      }
-    }
-    i2++;
-    buck = timer_list[i2];
+  const due_buckets = [];
+  while (timer_list.length > 0 && timer_list[0][DUE] - now <= 0) {
+    due_buckets.push(timer_list.shift());
   }
-  timer_list.splice(0, i2);
-  if (timer_list.length > 0) {
-    _clearTimeout(timer_timeout);
-    timer_timeout = _setTimeout(run_timer, timer_list[0][DUE] - now);
+  const due_timers = [];
+  for (const bucket of due_buckets) {
+    for (const timer of bucket) {
+      due_timers.push(timer);
+    }
+  }
+  let first_error;
+  for (const timer of due_timers) {
+    if (timer[CLEARED] || all_timers.get(timer[IDX]) !== timer) {
+      all_timers.delete(timer[IDX]);
+      continue;
+    }
+    try {
+      timer[CALLBACK](...timer[ARGS]);
+    } catch (error2) {
+      first_error ?? (first_error = error2);
+    }
+    if (timer[CLEARED]) {
+      all_timers.delete(timer[IDX]);
+      continue;
+    }
+    if (all_timers.get(timer[IDX]) !== timer) {
+      continue;
+    }
+    if (timer[REPEAT]) {
+      timer[DUE] = Date.now() + timer[INTERVAL];
+      add_timer(timer, true);
+    } else {
+      all_timers.delete(timer[IDX]);
+    }
+  }
+  schedule_next_timer();
+  if (first_error !== void 0) {
+    Lilact._setTimeout(() => {
+      throw first_error;
+    }, 0);
   }
 }
 function resetTimers() {
-  _clearTimeout(timer_timeout);
+  Lilact._clearTimeout(timer_timeout);
+  for (const timer of all_timers.values()) {
+    timer[CLEARED] = true;
+  }
   timer_pause_time = void 0;
   current_timer_idx = -1;
   timer_list = [];
   timer_timeout = -1;
-  all_timers = {};
+  all_timers = /* @__PURE__ */ new Map();
 }
 function pauseTimers() {
-  _clearTimeout(timer_timeout);
+  if (timer_pause_time !== void 0) {
+    return;
+  }
+  Lilact._clearTimeout(timer_timeout);
+  timer_timeout = -1;
   timer_pause_time = Date.now();
 }
 function resumeTimers() {
-  if (!timer_pause_time) return;
-  if (timer_list.length > 0) {
-    const now = Date.now();
-    timer_pause_time -= now;
-    for (const t of timer_list) {
-      t[DUE] -= timer_pause_time;
-    }
-    timer_timeout = _setTimeout(run_timer, timer_list[0][DUE] - now);
+  if (timer_pause_time === void 0) {
+    return;
+  }
+  const elapsed = Date.now() - timer_pause_time;
+  for (const bucket of timer_list) {
+    bucket[DUE] += elapsed;
   }
   timer_pause_time = void 0;
+  schedule_next_timer();
 }
-function setTimeout2(callback, delay, ...args) {
-  return add_timer({ [CALLBACK]: callback, [INTERVAL]: delay, [DUE]: Date.now() + delay, [REPEAT]: false, [ARGS]: args });
+function setTimeout2(callback, delay = 0, ...args) {
+  const milliseconds = Math.max(0, Number(delay) || 0);
+  return add_timer({
+    [CALLBACK]: callback,
+    [INTERVAL]: milliseconds,
+    [DUE]: Date.now() + milliseconds,
+    [REPEAT]: false,
+    [CLEARED]: false,
+    [ARGS]: args
+  });
 }
-function setInterval(callback, interval, ...args) {
-  return add_timer({ [CALLBACK]: callback, [INTERVAL]: interval, [DUE]: Date.now() + interval, [REPEAT]: true, [ARGS]: args });
+function setInterval(callback, interval = 0, ...args) {
+  const milliseconds = Math.max(0, Number(interval) || 0);
+  return add_timer({
+    [CALLBACK]: callback,
+    [INTERVAL]: milliseconds,
+    [DUE]: Date.now() + milliseconds,
+    [REPEAT]: true,
+    [CLEARED]: false,
+    [ARGS]: args
+  });
 }
 function clearTimeout2(id) {
-  if (all_timers[id]) all_timers[id][CLEARED] = true;
-  else _clearTimeout(id);
+  const timer = all_timers.get(id);
+  if (timer !== void 0) {
+    timer[CLEARED] = true;
+  } else {
+    Lilact._clearTimeout(id);
+  }
 }
 function clearInterval(id) {
-  if (all_timers[id]) all_timers[id][CLEARED] = true;
-  else _clearInterval(id);
+  const timer = all_timers.get(id);
+  if (timer !== void 0) {
+    timer[CLEARED] = true;
+  } else {
+    Lilact._clearInterval(id);
+  }
 }
 function grabTimers() {
   globalThis.setTimeout = Lilact.setTimeout;
@@ -4581,27 +4619,29 @@ function grabTimers() {
   globalThis.clearInterval = Lilact.clearInterval;
 }
 function releaseTimers() {
-  globalThis.setTimeout = _setTimeout;
-  globalThis.setInterval = _setInterval;
-  globalThis.clearTimeout = _clearTimeout;
-  globalThis.clearInterval = _clearInterval;
+  globalThis.setTimeout = Lilact._setTimeout;
+  globalThis.setInterval = Lilact._setInterval;
+  globalThis.clearTimeout = Lilact._clearTimeout;
+  globalThis.clearInterval = Lilact._clearInterval;
 }
 function timeoutPromise(duration = 0, timerSource = Lilact) {
-  let id, resolve, reject;
-  const promise = new Promise((res, rej) => {
-    resolve = res;
-    reject = rej;
+  let id;
+  let resolve_promise;
+  let reject_promise;
+  const promise = new Promise((resolve, reject) => {
+    resolve_promise = resolve;
+    reject_promise = reject;
     id = timerSource.setTimeout(() => {
       resolve();
     }, duration);
   });
   promise.proceed = () => {
     timerSource.clearTimeout(id);
-    resolve();
+    resolve_promise();
   };
   promise.cancel = () => {
     timerSource.clearTimeout(id);
-    reject();
+    reject_promise();
   };
   return promise;
 }
@@ -4628,9 +4668,9 @@ function number(value) {
 }
 function asError2(value) {
   if (value instanceof Error) return value;
-  if ((value == null ? void 0 : value.error) instanceof Error) return value.error;
+  if (value?.error instanceof Error) return value.error;
   const error2 = new Error(
-    (value == null ? void 0 : value.message) == null ? String(value) : String(value.message)
+    value?.message == null ? String(value) : String(value.message)
   );
   if (value && typeof value === "object") {
     if (value.name) error2.name = value.name;
@@ -4642,7 +4682,7 @@ function asError2(value) {
   return error2;
 }
 function isParserError(error2) {
-  return (error2 == null ? void 0 : error2.name) === "JSXParserError";
+  return error2?.name === "JSXParserError";
 }
 function stackLocation(stack) {
   if (typeof stack !== "string") return null;
@@ -4658,12 +4698,11 @@ function stackLocation(stack) {
   return null;
 }
 function browserLocation(error2) {
-  var _a, _b, _c, _d;
   const line2 = number(
-    (_b = (_a = error2 == null ? void 0 : error2.lineNumber) != null ? _a : error2 == null ? void 0 : error2.lineno) != null ? _b : error2 == null ? void 0 : error2.line
+    error2?.lineNumber ?? error2?.lineno ?? error2?.line
   );
   const column2 = number(
-    (_d = (_c = error2 == null ? void 0 : error2.columnNumber) != null ? _c : error2 == null ? void 0 : error2.colno) != null ? _d : error2 == null ? void 0 : error2.column
+    error2?.columnNumber ?? error2?.colno ?? error2?.column
   );
   return {
     line: line2 == null ? null : Math.max(0, line2 - 1),
@@ -4671,13 +4710,12 @@ function browserLocation(error2) {
   };
 }
 function traceBlock(error2) {
-  const trace = error2 == null ? void 0 : error2.lilact_trace;
+  const trace = error2?.lilact_trace;
   return Array.isArray(trace) ? trace[0] : trace;
 }
 function blockInfo(error2) {
-  var _a, _b;
   const trace = traceBlock(error2);
-  return trace == null ? null : (_b = (_a = lilact_default.blocks_info) == null ? void 0 : _a.labels) == null ? void 0 : _b[trace];
+  return trace == null ? null : lilact_default.blocks_info?.labels?.[trace];
 }
 function mapLocation(mappings, line2, column2) {
   if (!Array.isArray(mappings) || !mappings.length || !Number.isFinite(line2) || !Number.isFinite(column2)) {
@@ -4709,8 +4747,7 @@ function mapLocation(mappings, line2, column2) {
   };
 }
 function traceError(value, runPath) {
-  var _a, _b, _c, _d, _e, _f;
-  if (value == null ? void 0 : value.isTraced) return value;
+  if (value?.isTraced) return value;
   const error2 = asError2(value);
   const source = error2.lilact_source;
   const stack = isParserError(error2) ? null : stackLocation(error2.stack);
@@ -4718,9 +4755,9 @@ function traceError(value, runPath) {
     line: number(error2.lineNumber),
     column: number(error2.columnNumber)
   } : browserLocation(error2);
-  const fileName = (source == null ? void 0 : source.path) || (stack == null ? void 0 : stack.path) || error2.fileName || runPath || null;
-  let line2 = (_b = (_a = stack == null ? void 0 : stack.line) != null ? _a : browser.line) != null ? _b : null;
-  let column2 = (_d = (_c = stack == null ? void 0 : stack.column) != null ? _c : browser.column) != null ? _d : null;
+  const fileName = source?.path || stack?.path || error2.fileName || runPath || null;
+  let line2 = stack?.line ?? browser.line ?? null;
+  let column2 = stack?.column ?? browser.column ?? null;
   const result2 = {
     fileName,
     lineNumber: line2,
@@ -4745,40 +4782,39 @@ function traceError(value, runPath) {
   const block = blockInfo(error2);
   if (block && (result2.lineNumber == null || result2.columnNumber == null || !result2.fileName)) {
     result2.fileName || (result2.fileName = block.path || runPath || null);
-    (_e = result2.lineNumber) != null ? _e : result2.lineNumber = block.line;
-    (_f = result2.columnNumber) != null ? _f : result2.columnNumber = block.col;
+    result2.lineNumber ?? (result2.lineNumber = block.line);
+    result2.columnNumber ?? (result2.columnNumber = block.col);
     result2.label = block.desc;
   }
   lilact_default.error = result2;
   return result2;
 }
 function escapeHtml(value) {
-  return String(value != null ? value : "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
+  return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
 }
 function sourceExcerpt(module2, line2) {
-  var _a, _b, _c, _d;
   if (!module2 || !Number.isFinite(line2)) return null;
-  const lines = String((_a = module2.code) != null ? _a : "").split(/\r?\n/);
+  const lines = String(module2.code ?? "").split(/\r?\n/);
   return {
-    before: (_b = lines[line2 - 1]) != null ? _b : "",
-    current: (_c = lines[line2]) != null ? _c : "",
-    after: (_d = lines[line2 + 1]) != null ? _d : ""
+    before: lines[line2 - 1] ?? "",
+    current: lines[line2] ?? "",
+    after: lines[line2 + 1] ?? ""
   };
 }
 function globalErrorHandler(eventOrError) {
-  var _a, _b;
-  const value = (eventOrError == null ? void 0 : eventOrError.error) instanceof Error ? eventOrError.error : (eventOrError == null ? void 0 : eventOrError.reason) !== void 0 ? eventOrError.reason : eventOrError;
+  const value = eventOrError?.error instanceof Error ? eventOrError.error : eventOrError?.reason !== void 0 ? eventOrError.reason : eventOrError;
   const error2 = traceError(
     value,
-    (eventOrError == null ? void 0 : eventOrError.fileName) || null
+    eventOrError?.fileName || null
   );
   const excerpt = sourceExcerpt(
     required_scripts[error2.fileName],
     error2.lineNumber
   );
   const className = css(`
-		background: linear-gradient(135deg, #fff2f2d4, #ffffffd4);
-		backdrop-filter: blur(10px);
+		background: #fff;
+		text-shadow: 0 0 3px #fff;
+		-backdrop-filter: blur(20px);
 		border: 1px solid rgba(255,255,255,.25);
 		border-radius: 5px;
 		box-shadow: 0 10px 30px rgba(0,0,0,.35);
@@ -4791,17 +4827,18 @@ function globalErrorHandler(eventOrError) {
 		}
 
 		code {
-			border: 1px solid #0003;
+			background: #0001;
 			overflow: auto;
 			padding: 10px;
 			display: block;
+			border-radius: 3px;
 		}
 	`);
   const dialog = document.createElement("dialog");
   dialog.className = className;
   const location = error2.fileName ? `At ${escapeHtml(error2.fileName)}` : "";
   const line2 = Number.isFinite(error2.lineNumber) ? `: Line ${error2.lineNumber + 1}` : "";
-  const componentStack = ((_a = error2._error) == null ? void 0 : _a.componentStackLog) || ((_b = error2._error) == null ? void 0 : _b.componentStack) || "";
+  const componentStack = error2._error?.componentStackLog || error2._error?.componentStack || "";
   dialog.innerHTML = `
 		<h3><red>Error!</red></h3>
 		<b>${location}${line2}</b><br><br>
@@ -4867,7 +4904,6 @@ var createURL = (to) => typeof to === "string" ? to : (to.pathname || "") + (to.
 var escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 function HashRouter({ children, basename = "" }) {
   const readLocation = () => {
-    var _a;
     const raw = window.location.hash || "#/";
     const full = raw.slice(1);
     const baseRe = new RegExp("^" + escapeRegExp(basename));
@@ -4878,7 +4914,7 @@ function HashRouter({ children, basename = "" }) {
       pathname: path2 || "/",
       search: search ? "?" + search : "",
       hash: hashPart ? "#" + hashPart : "",
-      state: (_a = history.state) == null ? void 0 : _a.__state
+      state: history.state?.__state
     };
   };
   const [location, setLocation] = useState(readLocation);
@@ -4901,7 +4937,7 @@ function HashRouter({ children, basename = "" }) {
           done = true;
           window.removeEventListener("popstate", onPop);
           window.removeEventListener("hashchange", onHash);
-          fn == null ? void 0 : fn();
+          fn?.();
           resolve();
         };
         const onPop = () => cleanup(() => setLocation(readLocation()));
@@ -5007,14 +5043,13 @@ function Route({ path: path2, element = null, children }) {
   return null;
 }
 function Routes({ children }) {
-  var _a;
   const location = useLocation();
   const pathname = location.pathname || "/";
   const routes = Children.toArray(children);
   for (let i2 = 0; i2 < routes.length; i2++) {
     const route = routes[i2];
     const path2 = route.props.path === void 0 ? null : route.props.path;
-    const element = (_a = route.props.element) != null ? _a : null;
+    const element = route.props.element ?? null;
     const childRoutes = route.props.children;
     const { matched, params } = matchPath(path2, pathname);
     if (matched) {
@@ -5039,7 +5074,6 @@ __export(accessories_exports, {
   SplitPane: () => SplitPane,
   Suspense: () => Suspense
 });
-var { css: css2, cx: cx2 } = emotion_css_esm_exports;
 function Spinner({
   size = 48,
   className,
@@ -5215,7 +5249,7 @@ function DragHandle({
   }, []);
   const endDrag = useCallback((reason = "up") => {
     if (!draggingRef.current) return;
-    onEnd == null ? void 0 : onEnd(reason);
+    onEnd?.(reason);
     resetDrag();
   }, [onEnd, resetDrag]);
   const onPointerDown = useCallback((e) => {
@@ -5227,17 +5261,17 @@ function DragHandle({
     lastClientXRef.current = e.clientX;
     lastClientYRef.current = e.clientY;
     setIsDragging(true);
-    onStart == null ? void 0 : onStart(data);
+    onStart?.(data);
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
-    } catch (e2) {
+    } catch {
     }
   }, [onStart]);
   const onPointerMove = useCallback((e) => {
     if (!draggingRef.current) return;
     if (activePointerIdRef.current !== e.pointerId) return;
     const { dx, dy } = computeDeltaFromStart(e.clientX, e.clientY);
-    onDelta == null ? void 0 : onDelta(dx, dy, data);
+    onDelta?.(dx, dy, data);
     lastClientXRef.current = e.clientX;
     lastClientYRef.current = e.clientY;
   }, [computeDeltaFromStart, onDelta]);
@@ -5249,7 +5283,7 @@ function DragHandle({
     if (activePointerIdRef.current !== e.pointerId) return;
     endDrag("cancel", data);
   }, [endDrag]);
-  return createComponent("div", { "role": "button", "tabIndex": 0, "style": { ...style, touchAction: "none" }, "className": cx2(className, isDragging ? "dragging" : ""), "onPointerDown": onPointerDown, "onPointerMove": onPointerMove, "onPointerUp": onPointerUp, "onPointerCancel": onPointerCancel }, children);
+  return createComponent("div", { "role": "button", "tabIndex": 0, "style": { ...style, touchAction: "none" }, "className": `${className}  ${isDragging ? "dragging" : ""}`, "onPointerDown": onPointerDown, "onPointerMove": onPointerMove, "onPointerUp": onPointerUp, "onPointerCancel": onPointerCancel }, children);
 }
 var SplitPane = forwardRef(function SplitPane2({
   mode = "horizontal",
@@ -5305,21 +5339,18 @@ var SplitPane = forwardRef(function SplitPane2({
     const { w: w2, h: h2 } = sizeRef.current;
     if (modeNow === "vertical" ? h2 <= 0 : w2 <= 0) {
       if (position2 == null) setInternalPos(next2);
-      onSizeChange == null ? void 0 : onSizeChange(next2);
+      onSizeChange?.(next2);
       return;
     }
     const clamped = clampWithSize(next2, modeNow, w2, h2);
     if (position2 == null) setInternalPos(clamped);
     effectivePosRef.current = clamped;
-    onSizeChange == null ? void 0 : onSizeChange(clamped);
+    onSizeChange?.(clamped);
   };
   useImperativeHandle(ref, () => ({
     setPosition,
     setMode: (nextMode) => setInternalMode(nextMode === "vertical" ? "vertical" : "horizontal"),
-    getPosition: () => {
-      var _a;
-      return (_a = effectivePosRef.current) != null ? _a : posResolved;
-    },
+    getPosition: () => effectivePosRef.current ?? posResolved,
     getMode: () => internalModeRef.current
   }));
   const didInitRef = useRef(false);
@@ -5327,7 +5358,6 @@ var SplitPane = forwardRef(function SplitPane2({
     const el = containerRef.current;
     if (!el) return;
     const ro = new ResizeObserver((entries) => {
-      var _a;
       const rect = el.getBoundingClientRect();
       const prev2 = sizeRef.current;
       const nextSize = { w: rect.width, h: rect.height };
@@ -5341,11 +5371,11 @@ var SplitPane = forwardRef(function SplitPane2({
         const clamped = clampWithSize(raw, modeNow, nextSize.w, nextSize.h);
         if (position2 == null) setInternalPos(clamped);
         effectivePosRef.current = clamped;
-        onSizeChange == null ? void 0 : onSizeChange(clamped);
+        onSizeChange?.(clamped);
         return;
       }
       if (!hadSize || !hasSizeNow) return;
-      const p2 = (_a = effectivePosRef.current) != null ? _a : posResolved;
+      const p2 = effectivePosRef.current ?? posResolved;
       const rp = resizePolicyRef.current;
       const s = splitterSize;
       if (rp === "fixFirst") {
@@ -5395,9 +5425,8 @@ var SplitPane = forwardRef(function SplitPane2({
     if (!dragging) startPosRef.current = posResolved;
   }, [posResolved, dragging]);
   const handleStart = () => {
-    var _a;
     setDragging(true);
-    startPosRef.current = (_a = effectivePosRef.current) != null ? _a : posResolved;
+    startPosRef.current = effectivePosRef.current ?? posResolved;
   };
   const handleDelta = (x, y) => {
     const modeNow = internalModeRef.current;
@@ -6122,14 +6151,14 @@ function preprocessPragmas(node, context) {
   var scope_stack = [];
   var last_block = null;
   const clone_block = (i2, val) => {
-    var _a, _b;
+    var _a;
     last_block = typeof all_nodes[i2] === "object" ? structuredClone(
       { ...all_nodes[i2], children: void 0, attributes: {} }
     ) : all_nodes[i2];
     if (last_block.type === "directive") {
       last_block.value = val;
     }
-    (_b = (_a = scope_stack[0]).out) != null ? _b : _a.out = [];
+    (_a = scope_stack[0]).out ?? (_a.out = []);
     scope_stack[0].out.push(last_block);
     return last_block;
   };
@@ -6660,13 +6689,12 @@ function generateSourceMap(json, path2, jsx_eols, out_eols, mappings = []) {
     "mappings": ""
   };
   const scan_leaves = (node3) => {
-    var _a;
-    if (((_a = node3 == null ? void 0 : node3.out) == null ? void 0 : _a.length) > 0) {
+    if (node3?.out?.length > 0) {
       for (const ch2 of node3.out) {
         scan_leaves(ch2);
       }
     }
-    if ((node3 == null ? void 0 : node3.begin) !== void 0 && (node3 == null ? void 0 : node3.out_index) !== void 0) {
+    if (node3?.begin !== void 0 && node3?.out_index !== void 0) {
       mpps.push([...getRowCol(out_eols, node3.out_index), ...getRowCol(jsx_eols, node3.begin), node3]);
     }
   };
@@ -6715,9 +6743,8 @@ function transpileJSX(jsx2, {
   },
   mappings = []
 } = {}) {
-  var _a, _b;
-  (_a = transpilerConfig.preprocessorDelimiter) != null ? _a : transpilerConfig.preprocessorDelimiter = "\u0294";
-  (_b = transpilerConfig.injectTraceLabels) != null ? _b : transpilerConfig.injectTraceLabels = injectTraceLabels;
+  transpilerConfig.preprocessorDelimiter ?? (transpilerConfig.preprocessorDelimiter = "\u0294");
+  transpilerConfig.injectTraceLabels ?? (transpilerConfig.injectTraceLabels = injectTraceLabels);
   const eols = scanEOLs(jsx2);
   raiseError = ((eols2, msg, index2) => {
     const rc = getRowCol(eols2, index2);
@@ -6814,7 +6841,7 @@ function transpileJSX(jsx2, {
       if (is_attr) {
         return out2.substring(1, out2.length - 1);
       }
-      if (node3 == null ? void 0 : node3.is_xml_js) {
+      if (node3?.is_xml_js) {
         return jsx2.substring(node3.begin + 1, node3.end - 1);
       }
       return out2;
@@ -6898,10 +6925,10 @@ var Lilact2 = {
   PropTypes,
   redux: redux_exports,
   emotion: emotion_css_esm_exports,
-  _setTimeout: window.setTimeout.bind(window),
-  _setInterval: window.setInterval.bind(window),
-  _clearTimeout: window.clearTimeout.bind(window),
-  _clearInterval: window.clearInterval.bind(window)
+  _setTimeout: globalThis.setTimeout.bind(globalThis),
+  _setInterval: globalThis.setInterval.bind(globalThis),
+  _clearTimeout: globalThis.clearTimeout.bind(globalThis),
+  _clearInterval: globalThis.clearInterval.bind(globalThis)
 };
 Lilact2.default = Lilact2;
 var lilact_default = Lilact2;
@@ -6917,8 +6944,7 @@ globalThis.require = Lilact2.require;
 document.addEventListener("DOMContentLoaded", () => {
   Lilact2.grabTimers();
   Lilact2.runScripts().catch((error2) => {
-    var _a;
-    (_a = Lilact2.globalErrorHandler) == null ? void 0 : _a.call(Lilact2, error2);
+    Lilact2.globalErrorHandler?.(error2);
   });
 });
 if (true) {

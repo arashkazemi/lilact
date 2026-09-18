@@ -24,44 +24,6 @@ import { useRef, useEffect, useState, Suspense, Spinner, run, render } from "lil
 import { css,cx,keyframes,injectGlobal } from "@emotion/css";
 
 
-const cache = new Map();
-
-function createResource(url) {
-	let record = cache.get(url);
-	if (!record) {
-		record = {
-			status: "pending",
-			promise: null,
-			data: null,
-			error: null,
-		};
-
-		record.promise = fetch(url)
-			.then(r => {
-				if (!r.ok) throw new Error(`HTTP ${r.status}`);
-				return r.text();
-			})
-			.then(data => {
-				record.status = "success";
-				record.data = data;
-			})
-			.catch(err => {
-				record.status = "error";
-				record.error = err;
-			});
-
-		cache.set(url, record);
-	}
-	return {
-		read() {
-			if (record.status === "pending") throw record.promise;
-			if (record.status === "error") throw record.error;
-			return record.data;
-		}
-	};
-}
-
-
 
 injectGlobal({"*:not(code):not(code *)" : {fontFamily: "Ubuntu, 'Segoe UI', 'Noto Sans', helvetica, sans", fontSize: "14px"}});
 
@@ -146,6 +108,46 @@ const left = css({ float: "left", textAlign: "left" });
 const right = css({ float: "right", textAlign: "right" });
 const demobox = css({ background: "#fff3", borderRadius: "15px", padding: "4px 2px", margin: "4px"});
 
+
+
+
+
+const cache = new Map();
+
+function createResource(url) {
+	let record = cache.get(url);
+	if (!record) {
+		record = {
+			status: "pending",
+			promise: null,
+			data: null,
+			error: null,
+		};
+
+		record.promise = fetch(url)
+			.then(r => {
+				if (!r.ok) throw new Error(`HTTP ${r.status}`);
+				return r.text();
+			})
+			.then(data => {
+				record.status = "success";
+				record.data = data;
+			})
+			.catch(err => {
+				record.status = "error";
+				record.error = err;
+			});
+
+		cache.set(url, record);
+	}
+	return {
+		read() {
+			if (record.status === "pending") throw record.promise;
+			if (record.status === "error") throw record.error;
+			return record.data;
+		}
+	};
+}
 
 
 function DemoView({ entry }) 
@@ -251,6 +253,10 @@ function App()
 		['error-init.jsx',								'Error in Component initialization'],
 		['error-component-stack.jsx',			'Error Component Stack'],
 		['error-callback.jsx',						'Error in Callback'],
+		['error-nested-1.jsx',							'Error in Nested Imports - Parser'],
+		['error-nested-2.jsx',							'Error in Nested Imports - Init'],
+		['error-nested-3.jsx',							'Error in Nested Imports - Stack'],
+		['error-nested-4.jsx',							'Error in Nested Imports - Callback'],
 	];
 
 	return<>

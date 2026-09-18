@@ -126,10 +126,10 @@ export const Lilact =
 	redux,
 	emotion,
 
-	_setTimeout: window.setTimeout.bind(window),
-	_setInterval: window.setInterval.bind(window),
-	_clearTimeout: window.clearTimeout.bind(window),
-	_clearInterval: window.clearInterval.bind(window),
+	_setTimeout: globalThis.setTimeout.bind(globalThis),
+	_setInterval: globalThis.setInterval.bind(globalThis),
+	_clearTimeout: globalThis.clearTimeout.bind(globalThis),
+	_clearInterval: globalThis.clearInterval.bind(globalThis),
 
 }
 

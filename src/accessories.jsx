@@ -32,10 +32,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, useImperativeHandle, useCallback } from "./hooks.jsx";
 import { Children, forwardRef, isThenable } from "./misc.jsx";
 
-//import {setTimeout, clearTimeout} from "./timers.jsx"
 import {Component} from "./components.jsx"
-import {emotion} from "./lilact.jsx"
-const {css,cx} = emotion;
 
 /**
  * A CSS-only loading spinner component.
@@ -375,7 +372,7 @@ export function DragHandle({
 			role="button"
 			tabIndex={0}
 			style={{ ...style, touchAction: "none" }}
-			className={cx(className, isDragging?"dragging":"")}
+			className={`${className}  ${isDragging?"dragging":""}`}
 			onPointerDown={onPointerDown}
 			onPointerMove={onPointerMove}
 			onPointerUp={onPointerUp}

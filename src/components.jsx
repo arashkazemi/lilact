@@ -420,10 +420,10 @@ if(DEBUG) {
 			}
 		}
 		else if(this.entity==="select") {
-			const s = String(patch.value);
-
-			if(s!==this.element.value) {
-				this.element.value=s;
+			if(typeof(patch.value)==='string') {
+			 	if(patch.value!==this.element.value) {
+					this.element.value=patch.value;
+				}
 			}
 		}
 		else if(this.entity==="option") {

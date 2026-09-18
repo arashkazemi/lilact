@@ -301,8 +301,9 @@ export function globalErrorHandler(eventOrError) {
 	);
 
 	const className = css(`
-		background: linear-gradient(135deg, #fff2f2d4, #ffffffd4);
-		backdrop-filter: blur(10px);
+		background: #fff;
+		text-shadow: 0 0 3px #fff;
+		-backdrop-filter: blur(20px);
 		border: 1px solid rgba(255,255,255,.25);
 		border-radius: 5px;
 		box-shadow: 0 10px 30px rgba(0,0,0,.35);
@@ -315,10 +316,11 @@ export function globalErrorHandler(eventOrError) {
 		}
 
 		code {
-			border: 1px solid #0003;
+			background: #0001;
 			overflow: auto;
 			padding: 10px;
 			display: block;
+			border-radius: 3px;
 		}
 	`);
 
