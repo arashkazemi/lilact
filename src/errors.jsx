@@ -37,6 +37,15 @@ import Lilact from "./lilact.jsx";
 import { required_scripts } from "./run.jsx";
 import { css } from "@emotion/css";
 
+function isSafari() {
+  const userAgent = navigator.userAgent;
+
+  return (
+    /Safari/.test(userAgent) &&
+    !/Chrome|Chromium|CriOS|FxiOS|EdgiOS|OPiOS/.test(userAgent)
+  );
+}
+
 function number(value) {
 	const result = Number(value);
 	return Number.isFinite(result) ? result : null;
@@ -87,22 +96,29 @@ function stackLocation(stack) {
 }
 
 function browserLocation(error) {
-	const line = number(
-		error?.lineNumber ??
-		error?.lineno ??
-		error?.line
-	);
+  const line = number(
+    error?.lineNumber ??
+    error?.lineno ??
+    error?.line
+  );
+  const column = number(
+    error?.columnNumber ??
+    error?.colno ??
+    error?.column
+  );
 
-	const column = number(
-		error?.columnNumber ??
-		error?.colno ??
-		error?.column
-	);
+  const lineOffset = isSafari() ? 0 : 1;
 
-	return {
-		line: line == null ? null : Math.max(0, line - 1),
-		column: column == null ? null : Math.max(0, column - 1),
-	};
+  return {
+    line:
+      line == null
+        ? null
+        : Math.max(0, line - lineOffset),
+    column:
+      column == null
+        ? null
+        : Math.max(0, column - 1),
+  };
 }
 
 function traceBlock(error) {
@@ -258,7 +274,7 @@ export function traceError(value, runPath) {
 	) {
 		result.fileName ||= block.path || runPath || null;
 		result.lineNumber ??= block.line;
-		result.columnNumber ??= block.col;
+		result.columnNumber ??= block.column;
 		result.label = block.desc;
 	}
 
@@ -395,7 +411,7 @@ export function scanBlockLabels(code, path) {
 		Lilact.blocks_info.labels[match[1]] = {
 			path,
 			line: Number(match[2]),
-			col: Number(match[3]),
+			column: Number(match[3]),
 			desc: match[4],
 		};
 	}

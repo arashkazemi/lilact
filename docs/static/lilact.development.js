@@ -4662,6 +4662,10 @@ __export(errors_exports, {
   scanBlockLabels: () => scanBlockLabels,
   traceError: () => traceError
 });
+function isSafari() {
+  const userAgent = navigator.userAgent;
+  return /Safari/.test(userAgent) && !/Chrome|Chromium|CriOS|FxiOS|EdgiOS|OPiOS/.test(userAgent);
+}
 function number(value) {
   const result2 = Number(value);
   return Number.isFinite(result2) ? result2 : null;
@@ -4704,8 +4708,9 @@ function browserLocation(error2) {
   const column2 = number(
     error2?.columnNumber ?? error2?.colno ?? error2?.column
   );
+  const lineOffset = isSafari() ? 0 : 1;
   return {
-    line: line2 == null ? null : Math.max(0, line2 - 1),
+    line: line2 == null ? null : Math.max(0, line2 - lineOffset),
     column: column2 == null ? null : Math.max(0, column2 - 1)
   };
 }
@@ -4784,7 +4789,7 @@ function traceError(value, runPath) {
   if (block && (result2.lineNumber == null || result2.columnNumber == null || !result2.fileName)) {
     result2.fileName || (result2.fileName = block.path || runPath || null);
     result2.lineNumber ?? (result2.lineNumber = block.line);
-    result2.columnNumber ?? (result2.columnNumber = block.col);
+    result2.columnNumber ?? (result2.columnNumber = block.column);
     result2.label = block.desc;
   }
   lilact_default.error = result2;
@@ -4877,7 +4882,7 @@ function scanBlockLabels(code2, path2) {
     lilact_default.blocks_info.labels[match2[1]] = {
       path: path2,
       line: Number(match2[2]),
-      col: Number(match2[3]),
+      column: Number(match2[3]),
       desc: match2[4]
     };
   }
