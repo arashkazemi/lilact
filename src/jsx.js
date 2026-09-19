@@ -950,8 +950,10 @@ function generateSourceMap(json, path, jsx_eols, out_eols, mappings=[])
 	}
 	sourcemap.mappings = mstr.substring(1).replace(/;,/g, ";"); 
 
-	return "\n\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,"+btoa(JSON.stringify(sourcemap));
+	let out = "\n\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,"+btoa(JSON.stringify(sourcemap));
+	out += `\n//# sourceURL=eval:/${path}`;
 
+	return out;
 }
 
 

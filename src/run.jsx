@@ -181,7 +181,7 @@ export function run(
 			path,
 			mappings: module.mappings,
 			factory: "createComponent",
-			appendSourcemap: false,
+			appendSourcemap: true,
 			injectTraceLabels: true,
 			produceCJS: true,
 			blocks_info: Lilact.blocks_info,
@@ -205,7 +205,6 @@ export function run(
 	* sourceURL helps when the browser includes eval locations in its stack.
 	* It is not used as the authoritative source; the catch block below is.
 	*/
-	processed += `\n//# sourceURL=eval:/${path}`;
 
 	try {
 		new Function(processed);

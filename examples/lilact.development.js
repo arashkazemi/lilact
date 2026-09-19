@@ -3723,7 +3723,7 @@ function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, {
       path,
       mappings: module.mappings,
       factory: "createComponent",
-      appendSourcemap: false,
+      appendSourcemap: true,
       injectTraceLabels: true,
       produceCJS: true,
       blocks_info: lilact_default.blocks_info
@@ -3740,8 +3740,6 @@ function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, {
   if (typeof lilact_default.scanBlockLabels === "function") {
     lilact_default.scanBlockLabels(processed, path);
   }
-  processed += `
-//# sourceURL=eval:/${path}`;
   try {
     new Function(processed);
     globalThis.Lilact = lilact_default;
@@ -6728,7 +6726,10 @@ function generateSourceMap(json, path2, jsx_eols, out_eols, mappings = []) {
     lc = m[3];
   }
   sourcemap.mappings = mstr.substring(1).replace(/;,/g, ";");
-  return "\n\n//# sourceMappingURL=data:application/json;charset=utf-8;base64," + btoa(JSON.stringify(sourcemap));
+  let out = "\n\n//# sourceMappingURL=data:application/json;charset=utf-8;base64," + btoa(JSON.stringify(sourcemap));
+  out += `
+//# sourceURL=eval:/${path2}`;
+  return out;
 }
 function transpileJSX(jsx2, {
   factory = "createComponent",
