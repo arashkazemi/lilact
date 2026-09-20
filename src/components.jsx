@@ -310,23 +310,29 @@ if(DEBUG) {
 					i--;
 				}
 				else {
-					const core = prepareCore(this, item);
-					this.outlet[i] = core;
+					try {
+						const core = prepareCore(this, item);
+						this.outlet[i] = core;
 
-					if(core[TEXT]===undefined) {
-						core.container= this.element? this : this.container;
-						core.apply(item.props);
-					}
-					else {
-						if(!core.element) {
-							core.element = document.createTextNode(item[TEXT]);
-							core[TEXT] = item[TEXT];
+						if(core[TEXT]===undefined) {
+							core.container = this.element? this : this.container;
+							core.apply(item.props);
 						}
-						else if(core[TEXT]!==item[TEXT]) {
-							core.element.textContent = item[TEXT];
-							core[TEXT] = item[TEXT];
+						else {
+							if(!core.element) {
+								core.element = document.createTextNode(item[TEXT]);
+								core[TEXT] = item[TEXT];
+							}
+							else if(core[TEXT]!==item[TEXT]) {
+								core.element.textContent = item[TEXT];
+								core[TEXT] = item[TEXT];
+							}
 						}
 					}
+					catch(e) {
+						renderErrorHandler(this, e);
+					}
+
 				}
 			}
 
@@ -633,10 +639,12 @@ if(DEBUG) {
 const renderErrorHandler = (c, e) =>
 {
 	const stack = [c];
+
 	while(c && !c.component?.componentDidCatch) {
 		c = c.parent;
 		if(c) stack.push(c);
 	}
+
 	if(c?.component?.componentDidCatch) {
 		if(c.entity?.getDerivedStateFromError) {
 			c.component.setState(c.entity.getDerivedStateFromError.call(c, e));
@@ -655,7 +663,6 @@ const renderErrorHandler = (c, e) =>
 		c.component.componentDidCatch(e, {componentStack: stack, componentStackLog: stack_log});  
 	}
 	else throw(e);
-
 }
 
 

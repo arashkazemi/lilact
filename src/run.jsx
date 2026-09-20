@@ -143,6 +143,7 @@ export function run(
 	{
 		isInline = true,
 		isModule = true,
+		hotReload = true
 	} = {}
 ) {
 	let module = required_scripts[path];

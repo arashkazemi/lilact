@@ -2549,19 +2549,23 @@ var ComponentCore = class {
           this.outlet.splice(i2, 1, ...item);
           i2--;
         } else {
-          const core = prepareCore(this, item);
-          this.outlet[i2] = core;
-          if (core[TEXT2] === void 0) {
-            core.container = this.element ? this : this.container;
-            core.apply(item.props);
-          } else {
-            if (!core.element) {
-              core.element = document.createTextNode(item[TEXT2]);
-              core[TEXT2] = item[TEXT2];
-            } else if (core[TEXT2] !== item[TEXT2]) {
-              core.element.textContent = item[TEXT2];
-              core[TEXT2] = item[TEXT2];
+          try {
+            const core = prepareCore(this, item);
+            this.outlet[i2] = core;
+            if (core[TEXT2] === void 0) {
+              core.container = this.element ? this : this.container;
+              core.apply(item.props);
+            } else {
+              if (!core.element) {
+                core.element = document.createTextNode(item[TEXT2]);
+                core[TEXT2] = item[TEXT2];
+              } else if (core[TEXT2] !== item[TEXT2]) {
+                core.element.textContent = item[TEXT2];
+                core[TEXT2] = item[TEXT2];
+              }
             }
+          } catch (e) {
+            renderErrorHandler(this, e);
           }
         }
       }
@@ -3698,7 +3702,8 @@ function createModule(path2, {
 }
 function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, {
   isInline = true,
-  isModule = true
+  isModule = true,
+  hotReload = true
 } = {}) {
   let module = required_scripts[path];
   if (!module) {
