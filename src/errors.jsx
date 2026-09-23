@@ -51,7 +51,7 @@ function number(value) {
 	return Number.isFinite(result) ? result : null;
 }
 
-function asError(value) {
+export function asError(value) {
 	if (value instanceof Error) return value;
 	if (value?.error instanceof Error) return value.error;
 
@@ -130,7 +130,7 @@ function blockInfo(error) {
 	const trace = traceBlock(error);
 	return trace == null
 		? null
-		: Lilact.blocks_info?.labels?.[trace];
+		: Lilact.blocksInfo?.labels?.[trace];
 }
 
 function mapLocation(mappings, line, column) {
@@ -408,7 +408,7 @@ export function scanBlockLabels(code, path) {
 	for (const match of String(code).matchAll(
 		/LILACTBLOCK(\d+):(\d+),(\d+):([^*]+)\*\//gm
 	)) {
-		Lilact.blocks_info.labels[match[1]] = {
+		Lilact.blocksInfo.labels[match[1]] = {
 			path,
 			line: Number(match[2]),
 			column: Number(match[3]),
@@ -417,7 +417,7 @@ export function scanBlockLabels(code, path) {
 	}
 }
 
-export const blocks_info = {
+export const blocksInfo = {
 	counter: 0,
 	labels: {},
 };

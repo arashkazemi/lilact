@@ -169,148 +169,139 @@ class ComponentCore
 	// TODO: should componentDidUpdate be called after arranging/appending the outlet or before?
 	apply(next_props = this.props, next_state = this.next_state || this.state)
 	{
+		try {
 
-		let do_rerender = true;
+			let do_rerender = true;
 
-		if(this.outlet && this?.[MEMOIZED]) {
+			if(this.outlet && this?.[MEMOIZED]) {
 
-			if( shallowEqual(this.props, next_props, "children") && 
-				shallowEqual(this.props?.children, next_props?.children) ) {
-					do_rerender=false;
-			}
-		}
-
-		if(do_rerender) {
-
-if(DEBUG) {
-
-			if(this.entity?.propTypes) {
-				PropTypes.checkPropTypes(this.entity.propTypes, this.props, 'prop', this.entity.name);
-			}
-			else if(this.component?.propTypes) {
-				PropTypes.checkPropTypes(this.component.propTypes, this.props, 'prop', this.component.name);
-			}
-
-}	
-			if(typeof(next_state)==='function') next_state = next_state(this.state);
-
-			if(this.component.constructor.defaultProps) {
-				next_props = {...this.component.constructor.defaultProps, ...next_props};
-			}
-
-			if(this?.parent?.component?.context || this?.parent?.component?.getChildContext ) {
-				this.context = { ...this.parent.component.context, ...this.parent.component.getChildContext?.() };
-
-				if(DEBUG && this.component.constructor.contextTypes) {
-					PropTypes.checkPropTypes(this.component.constructor.contextTypes, this.context, 'context', this.entity.name);
+				if( shallowEqual(this.props, next_props, "children") && 
+					shallowEqual(this.props?.children, next_props?.children) ) {
+						do_rerender=false;
 				}
 			}
 
-			if( this.component.shouldComponentUpdate && 
-				!this.component.shouldComponentUpdate
-					(next_state, next_props, this.context) ) return;
+			if(do_rerender) {
+
+	if(DEBUG) {
+
+				if(this.entity?.propTypes) {
+					PropTypes.checkPropTypes(this.entity.propTypes, this.props, 'prop', this.entity.name);
+				}
+				else if(this.component?.propTypes) {
+					PropTypes.checkPropTypes(this.component.propTypes, this.props, 'prop', this.component.name);
+				}
+
+	}	
+				if(typeof(next_state)==='function') next_state = next_state(this.state);
+
+				if(this.component.constructor.defaultProps) {
+					next_props = {...this.component.constructor.defaultProps, ...next_props};
+				}
+
+				if(this?.parent?.component?.context || this?.parent?.component?.getChildContext ) {
+					this.context = { ...this.parent.component.context, ...this.parent.component.getChildContext?.() };
+
+					if(DEBUG && this.component.constructor.contextTypes) {
+						PropTypes.checkPropTypes(this.component.constructor.contextTypes, this.context, 'context', this.entity.name);
+					}
+				}
+
+				if( this.component.shouldComponentUpdate && 
+					!this.component.shouldComponentUpdate
+						(next_state, next_props, this.context) ) return;
 
 
-			if( typeof(this.entity)==='string' ) {
-				if(!(this.element instanceof Element)) {
+				if( typeof(this.entity)==='string' ) {
+					if(!(this.element instanceof Element)) {
 
-					if(this.is_svg || this.container.is_svg) {
-						this.is_svg = true;
-						this.element = document.createElementNS(SVG_NS, this.entity);
+						if(this.is_svg || this.container.is_svg) {
+							this.is_svg = true;
+							this.element = document.createElementNS(SVG_NS, this.entity);
+						}
+						else {
+							this.element = document.createElement(this.entity);
+						}
+						if(next_props?.defaultValue) this.element.value = String(next_props.defaultValue).slice(0, next_props?.maxLength);
+						if(next_props?.defaultChecked) this.element.checked = next_props.defaultChecked;
+					}
+					this.element[COMPONENT] = this.component;
+				}
+
+				if(next_props.ref) {
+					if(typeof(next_props.ref)==='function') {
+						next_props.ref(this.element || this.component);
 					}
 					else {
-						this.element = document.createElement(this.entity);
+						next_props.ref.current = this.element || this.component;
 					}
-					if(next_props?.defaultValue) this.element.value = String(next_props.defaultValue).slice(0, next_props?.maxLength);
-					if(next_props?.defaultChecked) this.element.checked = next_props.defaultChecked;
 				}
-				this.element[COMPONENT] = this.component;
-			}
 
-			if(next_props.ref) {
-				if(typeof(next_props.ref)==='function') {
-					next_props.ref(this.element || this.component);
+				if(next_props!==undefined && this.component.componentWillReceiveProps) {
+					this.component.componentWillReceiveProps(next_props);
+				}
+
+				if(this.component.componentWillUpdate) {
+					this.component.componentWillUpdate(next_props, next_state);
+				}
+
+				const prev_state = this.state, prev_props=this.props;
+
+				if(this.element) {
+					this.updateElementProps(next_props);
+				}
+				this.props = next_props;
+
+				if(typeof this.next_state==='object') {
+					if(!this.state) this.state = {...next_state};
+					else Object.assign( this.state, next_state );
+				}
+				else if(this.next_state!==undefined) throw new Error('Component.setState only accepts objects or functions is new state.');
+
+
+				if(this.next_state) delete this.next_state;
+
+
+				if(this.hooks!==undefined) {
+					this.hook_index = 0;
+					Lilact.current_component = [this, Lilact.current_component];
+
+					this.outlet = this.component.render(next_props, {current: this.element || this.component} );
+
+					Lilact.current_component = Lilact.current_component[1];
 				}
 				else {
-					next_props.ref.current = this.element || this.component;
-				}
-			}
-
-			if(next_props!==undefined && this.component.componentWillReceiveProps) {
-				this.component.componentWillReceiveProps(next_props);
-			}
-
-			if(this.component.componentWillUpdate) {
-				this.component.componentWillUpdate(next_props, next_state);
-			}
-
-			const prev_state = this.state, prev_props=this.props;
-
-			if(this.element) {
-				this.updateElementProps(next_props);
-			}
-			this.props = next_props;
-
-			if(typeof this.next_state==='object') {
-				if(!this.state) this.state = {...next_state};
-				else Object.assign( this.state, next_state );
-			}
-			else if(this.next_state!==undefined) throw new Error('Component.setState only accepts objects or functions is new state.');
-
-
-			if(this.next_state) delete this.next_state;
-
-
-			if(this.hooks!==undefined) {
-				this.hook_index = 0;
-				Lilact.current_component = [this, Lilact.current_component];
-
-				try {
-					this.outlet = this.component.render(next_props, {current: this.element || this.component} );
-				}
-				catch(e) {
-					renderErrorHandler(this, e);
-				}
-
-				Lilact.current_component = Lilact.current_component[1];
-			}
-			else {
-				try {
 					this.outlet = this.component.render({current: this.element || this.component});
 				}
-				catch(e) {
-					renderErrorHandler(this, e);
+
+				if( this?.portal ) {
+					this.element = this.portal;
 				}
-			}
 
-			if( this?.portal ) {
-				this.element = this.portal;
-			}
-
-			if(this.outlet?.constructor?.name!=='Array') {
-				this.outlet = [this.outlet];
-			}
-
-			this.outlet = [...this.outlet];			
-
-			for (let i=0;i<this.outlet.length;i++) {
-				let item = this.outlet[i];			
-
-				if(item===undefined || item===null || typeof(item)==='boolean') {
-					this.outlet.splice(i, 1);
-					i--;
-				}
-				else if(typeof item==='function') {
-					const res = this.childFunctionHandler(item);
-					this.outlet.splice(i, 1, res);
-					i--;
-				} 
-				else if(item.constructor.name === 'Array') {
-					this.outlet.splice(i, 1, ...item);
-					i--;
+				if(this.outlet?.constructor?.name!=='Array') {
+					this.outlet = [this.outlet];
 				}
 				else {
-					try {
+					this.outlet = [...this.outlet];
+				}
+
+				for (let i=0;i<this.outlet.length;i++) {
+					let item = this.outlet[i];			
+
+					if(item===undefined || item===null || typeof(item)==='boolean') {
+						this.outlet.splice(i, 1);
+						i--;
+					}
+					else if(typeof item==='function') {
+						const res = this.childFunctionHandler(item);
+						this.outlet.splice(i, 1, res);
+						i--;
+					} 
+					else if(item.constructor.name === 'Array') {
+						this.outlet.splice(i, 1, ...item);
+						i--;
+					}
+					else {
 						const core = prepareCore(this, item);
 						this.outlet[i] = core;
 
@@ -329,23 +320,22 @@ if(DEBUG) {
 							}
 						}
 					}
-					catch(e) {
-						renderErrorHandler(this, e);
-					}
-
 				}
+
+				if(this.cache) this.cache.commit();
+
+				if(this.element) this.arrangeOutlet();
+
+				if(this.component.componentDidUpdate) {
+					this.component.componentDidUpdate(prev_props, prev_state, this.last_snapshot);
+				}
+
+				if(this.last_snapshot) delete this.last_snapshot;
 			}
 
-			if(this.cache) this.cache.commit();
-
-
-			if(this.element) this.arrangeOutlet();
-
-			if(this.component.componentDidUpdate) {
-				this.component.componentDidUpdate(prev_props, prev_state, this.last_snapshot);
-			}
-
-			if(this.last_snapshot) delete this.last_snapshot;
+		}
+		catch(e) {
+			renderErrorHandler(this, e);
 		}
 
 	}
@@ -610,7 +600,7 @@ if(DEBUG) {
 					core.container.appendElement(core);
 				}
 				else {
-					if(core.arrangeOutlet) core.arrangeOutlet();
+					if(core.arrangeOutlet && core.outlet) core.arrangeOutlet();
 
 					// todo: is there a way to remove this useless flag?
 					if(!core?.mounted) {
@@ -624,7 +614,6 @@ if(DEBUG) {
 				}
 			}
 		}
-
 	}
 
 	// note: override this to tailor function children like <Transition>{(state)=>{...}}</Transition>

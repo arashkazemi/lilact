@@ -110,18 +110,14 @@ function report(value, path) {
 export const required_scripts = {};
 
 function createModule(path, {
-	code = "",
-	isInline = false,
-	isModule = true,
+	code = ""
 } = {}) {
 	const module = {
 		path,
 		code: String(code),
 		mappings: [],
+		meta: {},
 		exports: {},
-
-		isInline,
-		isModule,
 
 		// True only after the module has been successfully evaluated.
 		loaded: false,
@@ -137,14 +133,40 @@ function createModule(path, {
 	return module;
 }
 
+function makeImportsObject(mod)
+{
+	mod.importsObject ??= {};
+
+	for(const path in mod.meta.imports) {
+		let exps = required_scripts[path];
+		let imps = mod.meta.imports[path];
+		if(!exps) {
+			exps = Lilact.require(path, {requirer: mod});
+		}
+
+		for(const i in imps.named_imports) {
+			if(i==='') continue;
+			const j = imps.named_imports[i];
+			if(!exps.hasOwnProperty(j)) throw new Error(`Imported module does not export any "${i}".`);
+			mod.importsObject[i] = exps[j];
+		}
+
+		for(const i of imps.import_defaults) {
+			if(!exps.hasOwnProperty('default')) throw new Error(`Imported module does not export a default.`);
+			mod.importsObject[i] = exps.default;
+		}
+
+
+		for(const i of imps.import_stars) {
+			mod.importsObject[i] = {...exps};
+		}
+	}
+}
+
 export function run(
 	jsx,
 	path = `InlineJSX-${++Lilact.eval_num}`,
-	{
-		isInline = true,
-		isModule = true,
-		hotReload = true
-	} = {}
+	{} = {}
 ) {
 	let module = required_scripts[path];
 
@@ -156,8 +178,6 @@ export function run(
 	if (!module) {
 		module = createModule(path, {
 			code: jsx,
-			isInline,
-			isModule,
 		});
 	} else {
 		/*
@@ -169,10 +189,10 @@ export function run(
 		module.code = String(jsx);
 		module.mappings = [];
 		module.exports = {};
-		module.isInline = isInline;
-		module.isModule = isModule;
 		module.loaded = false;
 		module.error = undefined;
+		module.importsObject = undefined;
+		module.meta = {};
 	}
 
 	let processed;
@@ -181,11 +201,13 @@ export function run(
 		processed = Lilact.transpileJSX(String(jsx), {
 			path,
 			mappings: module.mappings,
+			meta: module.meta,
 			factory: "createComponent",
 			appendSourcemap: true,
 			injectTraceLabels: true,
-			produceCJS: true,
-			blocks_info: Lilact.blocks_info,
+			produceCJS: false,
+			referentiateImports: true,
+			blocksInfo: Lilact.blocksInfo,
 		});
 	} 
 	catch (value) {
@@ -208,12 +230,13 @@ export function run(
 	*/
 
 	try {
-		new Function(processed);
-
 		globalThis.Lilact = Lilact;
 		globalThis.createComponent = Lilact.createComponent;
 		globalThis.Fragment = Lilact.Fragment;
 
+		if(!module.importsObject) makeImportsObject(module);
+
+		Lilact.scriptImportsObject = module.importsObject;
 		const result = eval(processed);
 		module.loaded = true;
 
@@ -277,10 +300,7 @@ function loadAsyncResource(path, module) {
 				return undefined;
 			}
 
-			return run(module.code, path, {
-				isInline: false,
-				isModule: true,
-			});
+			return run(module.code, path, {});
 		})
 		.then(result => result?.default ?? result)
 		.catch(error => {
@@ -289,7 +309,7 @@ function loadAsyncResource(path, module) {
 		})
 		.finally(() => {
 			/*
-			* Do not remove a newer request accidentally if a future forceUpdate
+			* Do not remove a newer request accidentally if a future forceReload
 			* request replaced this one.
 			*/
 			if (module.request === request) {
@@ -316,7 +336,7 @@ export function require(path) {
 		return Lilact.importObjectPaths[path];
 	}
 
-	if (options.requirer?.path) {
+	if (options?.requirer?.path) {
 		path = joinPaths(options.requirer.path, path);
 	}
 
@@ -325,16 +345,13 @@ export function require(path) {
 		Boolean(options.isLazy);
 
 
-	const module = getOrCreateModule(path, {
-		isInline: false,
-		isModule: true,
-	});
+	const module = getOrCreateModule(path, {});
 
 	/*
 	* A completed module can be returned synchronously unless the caller
 	* explicitly requests lazy loading.
 	*/
-	if (module.loaded && !options.forceUpdate) {
+	if (module.loaded && !options.forceReload) {
 		return module.exports;
 	}
 
@@ -348,7 +365,7 @@ export function require(path) {
 			);
 		}
 
-		return run(element.textContent || "", path);
+		return run(element.textContent || "", path, {forceReload: options.forceReload});
 	}
 
 	if (loadAsync) {
@@ -357,7 +374,7 @@ export function require(path) {
 		/*
 		* Every subsequent lazy require() receives the first request promise.
 		* This applies even when the module is still being fetched and even when
-		* the first caller used forceUpdate.
+		* the first caller used forceReload.
 		*/
 		if (module.request) {
 			return module.request;
@@ -376,10 +393,7 @@ export function require(path) {
 			return undefined;
 		}
 
-		return run(String(resolved), path, {
-			isInline: false,
-			isModule: true,
-		});
+		return run(String(resolved), path, {forceReload: options.forceReload});
 	}
 
 	const request = new XMLHttpRequest();
@@ -399,10 +413,7 @@ export function require(path) {
 			return undefined;
 		}
 
-		return run(request.responseText, path, {
-			isInline: false,
-			isModule: true,
-		});
+		return run(request.responseText, path, {forceReload: options.forceReload});
 	}
 
 	throw report(

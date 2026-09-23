@@ -2452,104 +2452,97 @@ var ComponentCore = class {
   */
   // TODO: should componentDidUpdate be called after arranging/appending the outlet or before?
   apply(next_props = this.props, next_state = this.next_state || this.state) {
-    let do_rerender = true;
-    if (this.outlet && this?.[MEMOIZED]) {
-      if (shallowEqual(this.props, next_props, "children") && shallowEqual(this.props?.children, next_props?.children)) {
-        do_rerender = false;
-      }
-    }
-    if (do_rerender) {
-      if (true) {
-        if (this.entity?.propTypes) {
-          PropTypes.checkPropTypes(this.entity.propTypes, this.props, "prop", this.entity.name);
-        } else if (this.component?.propTypes) {
-          PropTypes.checkPropTypes(this.component.propTypes, this.props, "prop", this.component.name);
+    try {
+      let do_rerender = true;
+      if (this.outlet && this?.[MEMOIZED]) {
+        if (shallowEqual(this.props, next_props, "children") && shallowEqual(this.props?.children, next_props?.children)) {
+          do_rerender = false;
         }
       }
-      if (typeof next_state === "function") next_state = next_state(this.state);
-      if (this.component.constructor.defaultProps) {
-        next_props = { ...this.component.constructor.defaultProps, ...next_props };
-      }
-      if (this?.parent?.component?.context || this?.parent?.component?.getChildContext) {
-        this.context = { ...this.parent.component.context, ...this.parent.component.getChildContext?.() };
-        if (this.component.constructor.contextTypes) {
-          PropTypes.checkPropTypes(this.component.constructor.contextTypes, this.context, "context", this.entity.name);
-        }
-      }
-      if (this.component.shouldComponentUpdate && !this.component.shouldComponentUpdate(next_state, next_props, this.context)) return;
-      if (typeof this.entity === "string") {
-        if (!(this.element instanceof Element)) {
-          if (this.is_svg || this.container.is_svg) {
-            this.is_svg = true;
-            this.element = document.createElementNS(SVG_NS, this.entity);
-          } else {
-            this.element = document.createElement(this.entity);
+      if (do_rerender) {
+        if (true) {
+          if (this.entity?.propTypes) {
+            PropTypes.checkPropTypes(this.entity.propTypes, this.props, "prop", this.entity.name);
+          } else if (this.component?.propTypes) {
+            PropTypes.checkPropTypes(this.component.propTypes, this.props, "prop", this.component.name);
           }
-          if (next_props?.defaultValue) this.element.value = String(next_props.defaultValue).slice(0, next_props?.maxLength);
-          if (next_props?.defaultChecked) this.element.checked = next_props.defaultChecked;
         }
-        this.element[COMPONENT] = this.component;
-      }
-      if (next_props.ref) {
-        if (typeof next_props.ref === "function") {
-          next_props.ref(this.element || this.component);
-        } else {
-          next_props.ref.current = this.element || this.component;
+        if (typeof next_state === "function") next_state = next_state(this.state);
+        if (this.component.constructor.defaultProps) {
+          next_props = { ...this.component.constructor.defaultProps, ...next_props };
         }
-      }
-      if (next_props !== void 0 && this.component.componentWillReceiveProps) {
-        this.component.componentWillReceiveProps(next_props);
-      }
-      if (this.component.componentWillUpdate) {
-        this.component.componentWillUpdate(next_props, next_state);
-      }
-      const prev_state = this.state, prev_props = this.props;
-      if (this.element) {
-        this.updateElementProps(next_props);
-      }
-      this.props = next_props;
-      if (typeof this.next_state === "object") {
-        if (!this.state) this.state = { ...next_state };
-        else Object.assign(this.state, next_state);
-      } else if (this.next_state !== void 0) throw new Error("Component.setState only accepts objects or functions is new state.");
-      if (this.next_state) delete this.next_state;
-      if (this.hooks !== void 0) {
-        this.hook_index = 0;
-        lilact_default.current_component = [this, lilact_default.current_component];
-        try {
+        if (this?.parent?.component?.context || this?.parent?.component?.getChildContext) {
+          this.context = { ...this.parent.component.context, ...this.parent.component.getChildContext?.() };
+          if (this.component.constructor.contextTypes) {
+            PropTypes.checkPropTypes(this.component.constructor.contextTypes, this.context, "context", this.entity.name);
+          }
+        }
+        if (this.component.shouldComponentUpdate && !this.component.shouldComponentUpdate(next_state, next_props, this.context)) return;
+        if (typeof this.entity === "string") {
+          if (!(this.element instanceof Element)) {
+            if (this.is_svg || this.container.is_svg) {
+              this.is_svg = true;
+              this.element = document.createElementNS(SVG_NS, this.entity);
+            } else {
+              this.element = document.createElement(this.entity);
+            }
+            if (next_props?.defaultValue) this.element.value = String(next_props.defaultValue).slice(0, next_props?.maxLength);
+            if (next_props?.defaultChecked) this.element.checked = next_props.defaultChecked;
+          }
+          this.element[COMPONENT] = this.component;
+        }
+        if (next_props.ref) {
+          if (typeof next_props.ref === "function") {
+            next_props.ref(this.element || this.component);
+          } else {
+            next_props.ref.current = this.element || this.component;
+          }
+        }
+        if (next_props !== void 0 && this.component.componentWillReceiveProps) {
+          this.component.componentWillReceiveProps(next_props);
+        }
+        if (this.component.componentWillUpdate) {
+          this.component.componentWillUpdate(next_props, next_state);
+        }
+        const prev_state = this.state, prev_props = this.props;
+        if (this.element) {
+          this.updateElementProps(next_props);
+        }
+        this.props = next_props;
+        if (typeof this.next_state === "object") {
+          if (!this.state) this.state = { ...next_state };
+          else Object.assign(this.state, next_state);
+        } else if (this.next_state !== void 0) throw new Error("Component.setState only accepts objects or functions is new state.");
+        if (this.next_state) delete this.next_state;
+        if (this.hooks !== void 0) {
+          this.hook_index = 0;
+          lilact_default.current_component = [this, lilact_default.current_component];
           this.outlet = this.component.render(next_props, { current: this.element || this.component });
-        } catch (e) {
-          renderErrorHandler(this, e);
-        }
-        lilact_default.current_component = lilact_default.current_component[1];
-      } else {
-        try {
-          this.outlet = this.component.render({ current: this.element || this.component });
-        } catch (e) {
-          renderErrorHandler(this, e);
-        }
-      }
-      if (this?.portal) {
-        this.element = this.portal;
-      }
-      if (this.outlet?.constructor?.name !== "Array") {
-        this.outlet = [this.outlet];
-      }
-      this.outlet = [...this.outlet];
-      for (let i2 = 0; i2 < this.outlet.length; i2++) {
-        let item = this.outlet[i2];
-        if (item === void 0 || item === null || typeof item === "boolean") {
-          this.outlet.splice(i2, 1);
-          i2--;
-        } else if (typeof item === "function") {
-          const res = this.childFunctionHandler(item);
-          this.outlet.splice(i2, 1, res);
-          i2--;
-        } else if (item.constructor.name === "Array") {
-          this.outlet.splice(i2, 1, ...item);
-          i2--;
+          lilact_default.current_component = lilact_default.current_component[1];
         } else {
-          try {
+          this.outlet = this.component.render({ current: this.element || this.component });
+        }
+        if (this?.portal) {
+          this.element = this.portal;
+        }
+        if (this.outlet?.constructor?.name !== "Array") {
+          this.outlet = [this.outlet];
+        } else {
+          this.outlet = [...this.outlet];
+        }
+        for (let i2 = 0; i2 < this.outlet.length; i2++) {
+          let item = this.outlet[i2];
+          if (item === void 0 || item === null || typeof item === "boolean") {
+            this.outlet.splice(i2, 1);
+            i2--;
+          } else if (typeof item === "function") {
+            const res = this.childFunctionHandler(item);
+            this.outlet.splice(i2, 1, res);
+            i2--;
+          } else if (item.constructor.name === "Array") {
+            this.outlet.splice(i2, 1, ...item);
+            i2--;
+          } else {
             const core = prepareCore(this, item);
             this.outlet[i2] = core;
             if (core[TEXT2] === void 0) {
@@ -2564,17 +2557,17 @@ var ComponentCore = class {
                 core[TEXT2] = item[TEXT2];
               }
             }
-          } catch (e) {
-            renderErrorHandler(this, e);
           }
         }
+        if (this.cache) this.cache.commit();
+        if (this.element) this.arrangeOutlet();
+        if (this.component.componentDidUpdate) {
+          this.component.componentDidUpdate(prev_props, prev_state, this.last_snapshot);
+        }
+        if (this.last_snapshot) delete this.last_snapshot;
       }
-      if (this.cache) this.cache.commit();
-      if (this.element) this.arrangeOutlet();
-      if (this.component.componentDidUpdate) {
-        this.component.componentDidUpdate(prev_props, prev_state, this.last_snapshot);
-      }
-      if (this.last_snapshot) delete this.last_snapshot;
+    } catch (e) {
+      renderErrorHandler(this, e);
     }
   }
   async cleanup() {
@@ -2771,7 +2764,7 @@ var ComponentCore = class {
           core.container = this.element ? this : this.container;
           core.container.appendElement(core);
         } else {
-          if (core.arrangeOutlet) core.arrangeOutlet();
+          if (core.arrangeOutlet && core.outlet) core.arrangeOutlet();
           if (!core?.mounted) {
             core.mounted = true;
             if (core?.component?.componentDidMount) {
@@ -3679,17 +3672,14 @@ function report(value, path2) {
 }
 var required_scripts = {};
 function createModule(path2, {
-  code: code2 = "",
-  isInline: isInline2 = false,
-  isModule: isModule2 = true
+  code: code2 = ""
 } = {}) {
   const module2 = {
     path: path2,
     code: String(code2),
     mappings: [],
+    meta: {},
     exports: {},
-    isInline: isInline2,
-    isModule: isModule2,
     // True only after the module has been successfully evaluated.
     loaded: false,
     // The promise for the request currently loading this resource.
@@ -3700,38 +3690,57 @@ function createModule(path2, {
   required_scripts[path2] = module2;
   return module2;
 }
-function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, {
-  isInline = true,
-  isModule = true,
-  hotReload = true
-} = {}) {
+function makeImportsObject(mod) {
+  mod.importsObject ?? (mod.importsObject = {});
+  for (const path2 in mod.meta.imports) {
+    let exps = required_scripts[path2];
+    let imps = mod.meta.imports[path2];
+    if (!exps) {
+      exps = lilact_default.require(path2, { requirer: mod });
+    }
+    for (const i2 in imps.named_imports) {
+      if (i2 === "") continue;
+      const j = imps.named_imports[i2];
+      if (!exps.hasOwnProperty(j)) throw new Error(`Imported module does not export any "${i2}".`);
+      mod.importsObject[i2] = exps[j];
+    }
+    for (const i2 of imps.import_defaults) {
+      if (!exps.hasOwnProperty("default")) throw new Error(`Imported module does not export a default.`);
+      mod.importsObject[i2] = exps.default;
+    }
+    for (const i2 of imps.import_stars) {
+      mod.importsObject[i2] = { ...exps };
+    }
+  }
+}
+function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, {} = {}) {
   let module = required_scripts[path];
   if (!module) {
     module = createModule(path, {
-      code: jsx,
-      isInline,
-      isModule
+      code: jsx
     });
   } else {
     module.path = path;
     module.code = String(jsx);
     module.mappings = [];
     module.exports = {};
-    module.isInline = isInline;
-    module.isModule = isModule;
     module.loaded = false;
     module.error = void 0;
+    module.importsObject = void 0;
+    module.meta = {};
   }
   let processed;
   try {
     processed = lilact_default.transpileJSX(String(jsx), {
       path,
       mappings: module.mappings,
+      meta: module.meta,
       factory: "createComponent",
       appendSourcemap: true,
       injectTraceLabels: true,
-      produceCJS: true,
-      blocks_info: lilact_default.blocks_info
+      produceCJS: false,
+      referentiateImports: true,
+      blocksInfo: lilact_default.blocksInfo
     });
   } catch (value) {
     const error2 = asError(value);
@@ -3746,10 +3755,11 @@ function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, {
     lilact_default.scanBlockLabels(processed, path);
   }
   try {
-    new Function(processed);
     globalThis.Lilact = lilact_default;
     globalThis.createComponent = lilact_default.createComponent;
     globalThis.Fragment = lilact_default.Fragment;
+    if (!module.importsObject) makeImportsObject(module);
+    lilact_default.scriptImportsObject = module.importsObject;
     const result = eval(processed);
     module.loaded = true;
     return isEmpty(module.exports) ? result : module.exports;
@@ -3797,10 +3807,7 @@ function loadAsyncResource(path2, module2) {
       module2.loaded = true;
       return void 0;
     }
-    return run(module2.code, path2, {
-      isInline: false,
-      isModule: true
-    });
+    return run(module2.code, path2, {});
   }).then((result2) => result2?.default ?? result2).catch((error2) => {
     module2.error = report(error2, path2);
     throw module2.error;
@@ -3820,15 +3827,12 @@ function require2(path2) {
   if (lilact_default.importObjectPaths?.[path2]) {
     return lilact_default.importObjectPaths[path2];
   }
-  if (options.requirer?.path) {
+  if (options?.requirer?.path) {
     path2 = joinPaths(options.requirer.path, path2);
   }
   const loadAsync = Boolean(lilact_default[LAZY]) || Boolean(options.isLazy);
-  const module2 = getOrCreateModule(path2, {
-    isInline: false,
-    isModule: true
-  });
-  if (module2.loaded && !options.forceUpdate) {
+  const module2 = getOrCreateModule(path2, {});
+  if (module2.loaded && !options.forceReload) {
     return module2.exports;
   }
   if (path2.startsWith("#")) {
@@ -3839,7 +3843,7 @@ function require2(path2) {
         path2
       );
     }
-    return run(element.textContent || "", path2);
+    return run(element.textContent || "", path2, { forceReload: options.forceReload });
   }
   if (loadAsync) {
     lilact_default[LAZY] = false;
@@ -3856,10 +3860,7 @@ function require2(path2) {
       module2.loaded = true;
       return void 0;
     }
-    return run(String(resolved), path2, {
-      isInline: false,
-      isModule: true
-    });
+    return run(String(resolved), path2, { forceReload: options.forceReload });
   }
   const request = new XMLHttpRequest();
   try {
@@ -3875,10 +3876,7 @@ function require2(path2) {
       module2.loaded = true;
       return void 0;
     }
-    return run(request.responseText, path2, {
-      isInline: false,
-      isModule: true
-    });
+    return run(request.responseText, path2, { forceReload: options.forceReload });
   }
   throw report(
     new Error(
@@ -4661,7 +4659,8 @@ function animationFramePromise() {
 // .tmp/src/errors.jsx
 var errors_exports = {};
 __export(errors_exports, {
-  blocks_info: () => blocks_info,
+  asError: () => asError2,
+  blocksInfo: () => blocksInfo,
   error: () => error,
   globalErrorHandler: () => globalErrorHandler,
   scanBlockLabels: () => scanBlockLabels,
@@ -4725,7 +4724,7 @@ function traceBlock(error2) {
 }
 function blockInfo(error2) {
   const trace = traceBlock(error2);
-  return trace == null ? null : lilact_default.blocks_info?.labels?.[trace];
+  return trace == null ? null : lilact_default.blocksInfo?.labels?.[trace];
 }
 function mapLocation(mappings, line2, column2) {
   if (!Array.isArray(mappings) || !mappings.length || !Number.isFinite(line2) || !Number.isFinite(column2)) {
@@ -4884,7 +4883,7 @@ function scanBlockLabels(code2, path2) {
   for (const match2 of String(code2).matchAll(
     /LILACTBLOCK(\d+):(\d+),(\d+):([^*]+)\*\//gm
   )) {
-    lilact_default.blocks_info.labels[match2[1]] = {
+    lilact_default.blocksInfo.labels[match2[1]] = {
       path: path2,
       line: Number(match2[2]),
       column: Number(match2[3]),
@@ -4892,7 +4891,7 @@ function scanBlockLabels(code2, path2) {
     };
   }
 }
-var blocks_info = {
+var blocksInfo = {
   counter: 0,
   labels: {}
 };
@@ -5769,7 +5768,7 @@ function generateSequence(arr, labeler2 = labeler2.bind(null, null)) {
 }
 var import_export_regexp = /(?:i[C \n]*(?:(?:I|J|(?:\*[C \n]*a[C \n]*I))[C \n]*,[C \n]*)*(?:(?:(?:I(?:[C \n]*a[C \n]*I)?)|J|(?:\*[C \n]*a[C \n]*I))[C \n]*f[C \n]*)?S)|(?:e[C \n]*(?:(?:[*J][C \n]*f[C \n]*S)|(?:d[C \n]*[IFJ])|J|(?:[VF][c \n]*I)|I))|(?:r[c \n]*P)/mg;
 var props_regexp = /O[C \n]*(?:[Id](?:[C \n]*a[C \n]*I)?[C \n]*,[C \n]*)*(?:I(?:[C \n]*a[C \n]*I)?)[C \n]*O/mg;
-function processImportExports(node3, jsx2) {
+function processImportExports(node3, jsx2, meta) {
   const s = generateSequence(
     node3.out,
     labeler.bind(
@@ -5814,6 +5813,8 @@ function processImportExports(node3, jsx2) {
     }
   }
   begins.push(node3.end);
+  meta.imports ?? (meta.imports = {});
+  const imported_names = /* @__PURE__ */ new Set();
   for (const m of s.matchAll(import_export_regexp)) {
     if (m[0].startsWith("r")) {
       const req = m[0];
@@ -5827,9 +5828,9 @@ function processImportExports(node3, jsx2) {
       skip_spaces(-1);
       if (s[i2] === ".") continue;
       const src = jsx2.substring(node3.out[m.index + imp.length - 1].begin, node3.out[m.index + imp.length - 1].end);
-      const imports = {};
-      let star_imports = [];
-      let import_alls = [];
+      const named_imports = {};
+      let import_stars = [];
+      let import_defaults = [];
       for (i2 = m.index + 1; i2 < m.index + imp.length - 1; i2++) {
         node3.out.splice(m.index, 1, {
           type: "import",
@@ -5842,7 +5843,7 @@ function processImportExports(node3, jsx2) {
           case ",":
             break;
           case "I": {
-            import_alls.push(node3.out[i2]);
+            import_defaults.push(node3.out[i2]);
             continue;
           }
           case "J": {
@@ -5864,10 +5865,10 @@ function processImportExports(node3, jsx2) {
               if (sj[j] === "a") {
                 j++;
                 while (sj[j] === " " || sj[j] === "\n" || sj[j] === "C") j++;
-                imports[ps[j]] = prop;
+                named_imports[ps[j]] = prop;
                 j++;
               } else {
-                imports[prop] = prop;
+                named_imports[prop] = prop;
               }
             }
             continue;
@@ -5877,7 +5878,7 @@ function processImportExports(node3, jsx2) {
             skip_spaces();
             i2++;
             skip_spaces();
-            star_imports.push(node3.out[i2]);
+            import_stars.push(node3.out[i2]);
             continue;
           }
           case "S":
@@ -5885,28 +5886,31 @@ function processImportExports(node3, jsx2) {
               node3.out[i2] = null;
             }
             let cjs = "";
-            for (const s2 of star_imports) {
+            for (const s2 of import_stars) {
               cjs += `const ${s2} = require(${src},{requirer:module});
 `;
+              imported_names.add(s2);
             }
-            for (const s2 of import_alls) {
+            for (const s2 of import_defaults) {
               cjs += `const ${s2} = require(${src},{requirer:module, checkExport: ['default']}).default;
 `;
+              imported_names.add(s2);
             }
-            if (Object.keys(imports).length) {
+            if (Object.keys(named_imports).length) {
               let o = "{";
               let ls = "[";
-              for (const p in imports) {
+              for (const p in named_imports) {
+                imported_names.add(p);
                 if (o.length > 1) {
                   o += ",";
                   ls += ",";
                 }
-                if (p === imports[p]) {
+                if (p === named_imports[p]) {
                   o += p;
                   ls += `'${p}'`;
                 } else {
-                  o += p + ":" + imports[p];
-                  ls += `'${imports[p]}'`;
+                  o += p + ":" + named_imports[p];
+                  ls += `'${named_imports[p]}'`;
                 }
               }
               o += "}";
@@ -5914,11 +5918,20 @@ function processImportExports(node3, jsx2) {
               cjs += `const ${o} = require(${src}, {checkExport: ${ls},requirer:module})`;
             } else if (cjs.length === 0) {
               cjs += `require(${src},{requirer:module})`;
+              named_imports[""] = src;
             }
             node3.out[m.index].cjs = cjs;
             continue;
         }
       }
+      const ss = src.slice(1, src.length - 1);
+      if (meta.imports[ss]) {
+        meta.imports[ss] = {
+          import_stars: [...meta.imports[ss].import_stars, ...import_stars],
+          import_defaults: [...meta.imports[ss].import_defaults, ...import_defaults],
+          named_imports: { ...meta.imports[ss].named_imports, ...named_imports }
+        };
+      } else meta.imports[ss] = { import_stars, import_defaults, named_imports };
     } else {
       const exp = m[0];
       node3.out.splice(m.index, 1, {
@@ -6032,13 +6045,17 @@ function processImportExports(node3, jsx2) {
       }
     }
   }
+  if (meta.imported_names) {
+    meta.imported_names = /* @__PURE__ */ new Set([...meta.imported_names, ...imported_names]);
+  } else {
+    meta.imported_names = imported_names;
+  }
 }
 
 // .tmp/src/jsx.js
 var transpilerConfig = {
   setBlockLabels: true,
   enableLabelStack: false,
-  injectLabels: true,
   // todo: alt+shift+7 on apple abc extended layout is better i think, 
   // but my current editor doesn't support syntax highlighting with it.
   preprocessorDelimiter: "\u0294"
@@ -6596,7 +6613,7 @@ function parseJS(code2, index2 = 0, is_block = false, container2) {
   if (container2) container2.children.push(b2);
   return b2;
 }
-function labelFunctions(node3, eols, blocks_info2) {
+function labelFunctions(node3, eols, blocksInfo2) {
   node3.already_labeled = true;
   function getNext(i3, step = 1) {
     while ((i3 += step) < node3.children.length && i3 >= 0) {
@@ -6625,11 +6642,11 @@ function labelFunctions(node3, eols, blocks_info2) {
       if (nxt === null) continue;
       if (transpilerConfig.injectTraceLabels && typeof nxt === "object" && nxt.type === "js") {
         const begin = getRowCol(eols, chi);
-        nxt.children.splice(1, 0, `/*LILACTBLOCK${++blocks_info2.counter}:${begin}:${label}*/try{`);
+        nxt.children.splice(1, 0, `/*LILACTBLOCK${++blocksInfo2.counter}:${begin}:${label}*/try{`);
         if (transpilerConfig.enableLabelStack) {
-          nxt.children.splice(nxt.children.length - 1, 0, `} catch(e){ if(typeof(e)!=='object') e=new Error(e);e.lilact_trace=[${blocks_info2.counter},e.lilact_trace];throw e}`);
+          nxt.children.splice(nxt.children.length - 1, 0, `} catch(e){ if(typeof(e)!=='object') e=new Error(e);e.lilact_trace=[${blocksInfo2.counter},e.lilact_trace];throw e}`);
         } else {
-          nxt.children.splice(nxt.children.length - 1, 0, `} catch(e){ if(typeof(e)!=='object') e=new Error(e);e.lilact_trace=${blocks_info2.counter};throw e}`);
+          nxt.children.splice(nxt.children.length - 1, 0, `} catch(e){ if(typeof(e)!=='object') e=new Error(e);e.lilact_trace=${blocksInfo2.counter};throw e}`);
         }
         chi += 2;
       }
@@ -6643,19 +6660,19 @@ function labelFunctions(node3, eols, blocks_info2) {
             nxt.children.splice(
               1,
               0,
-              `/*LILACTBLOCK${++blocks_info2.counter}:${begin}:<ARROW>*/try {`
+              `/*LILACTBLOCK${++blocksInfo2.counter}:${begin}:<ARROW>*/try {`
             );
             if (transpilerConfig.enableLabelStack) {
               nxt.children.splice(
                 nxt.children.length - 1,
                 0,
-                `} catch(e){if(typeof(e)!=='object') e=new Error(e);e.lilact_trace=[${blocks_info2.counter},e.lilact_trace];throw e}`
+                `} catch(e){if(typeof(e)!=='object') e=new Error(e);e.lilact_trace=[${blocksInfo2.counter},e.lilact_trace];throw e}`
               );
             } else {
               nxt.children.splice(
                 nxt.children.length - 1,
                 0,
-                `} catch(e){if(typeof(e)!=='object') e=new Error(e);e.lilact_trace=${blocks_info2.counter};throw e}`
+                `} catch(e){if(typeof(e)!=='object') e=new Error(e);e.lilact_trace=${blocksInfo2.counter};throw e}`
               );
             }
           }
@@ -6749,13 +6766,19 @@ function transpileJSX(jsx2, {
   injectTraceLabels = false,
   discardComments = false,
   produceCJS = false,
+  referentiateImports = false,
+  importsObject = "Lilact.scriptImportsObject",
+  // first letter must be capital so components work as expected
+  importsObjectVar = "LilactImports",
+  // first letter must be capital so components work as expected
   logErrors = false,
   // lilact internal
-  blocks_info: blocks_info2 = {
+  mappings = [],
+  meta,
+  blocksInfo: blocksInfo2 = {
     labels: {},
     counter: 0
-  },
-  mappings = []
+  }
 } = {}) {
   transpilerConfig.preprocessorDelimiter ?? (transpilerConfig.preprocessorDelimiter = "\u0294");
   transpilerConfig.injectTraceLabels ?? (transpilerConfig.injectTraceLabels = injectTraceLabels);
@@ -6817,18 +6840,31 @@ function transpileJSX(jsx2, {
       }
       node3.children = node3.children.filter((x) => x !== "");
       if (transpilerConfig.setBlockLabels && !node3.already_labeled) {
-        labelFunctions(node3, eols, blocks_info2);
+        labelFunctions(node3, eols, blocksInfo2);
       }
     }
   };
   prepare(json);
   preprocessPragmas(json);
+  const flattened_nodes = [];
   const codify = (outlen, node3, is_attr = false, is_xml = false) => {
-    if (typeof node3 !== "object") return node3;
+    flattened_nodes.push(node3);
+    if (typeof node3 !== "object") {
+      if (referentiateImports && typeof node3 === "string") {
+        if (meta?.imported_names.has(node3)) {
+          let j = flattened_nodes.length - 2;
+          while (typeof flattened_nodes[j] === "string" && flattened_nodes[j].trim() === "" || typeof flattened_nodes[j] === "object" && flattened_nodes[j].type === "comment") j--;
+          if (typeof flattened_nodes[j] !== "string" || flattened_nodes[j] !== ".") {
+            return importsObjectVar + "." + node3;
+          }
+        }
+      }
+      return node3;
+    }
     if (node3 === null) return "";
     node3.out_index = outlen;
     if (node3.type === "string") return jsx2.substring(node3.begin, node3.end);
-    if (node3.type === "import") return node3.cjs;
+    if (node3.type === "import") return referentiateImports ? "" : node3.cjs;
     if (node3.type === "export") return node3.cjs;
     if (node3.type === "regex") return jsx2.substring(node3.begin, node3.end);
     if (node3.type === "comment") return discardComments || is_attr ? "" : jsx2.substring(node3.begin, node3.end);
@@ -6836,7 +6872,7 @@ function transpileJSX(jsx2, {
     if (node3.type === "parenthesis") {
       let out2 = "(";
       if (node3.out) {
-        if (produceCJS) processImportExports(node3, jsx2);
+        if (produceCJS || referentiateImports) processImportExports(node3, jsx2, meta);
         for (const ch2 of node3.out) {
           out2 += codify(outlen + out2.length - 1, ch2);
         }
@@ -6846,7 +6882,7 @@ function transpileJSX(jsx2, {
     if (node3.type === "js") {
       let out2 = "";
       if (node3.out) {
-        if (produceCJS) processImportExports(node3, jsx2);
+        if (produceCJS || referentiateImports) processImportExports(node3, jsx2, meta);
         for (const ch2 of node3.out) {
           if (is_xml && ch2.type === "comment") continue;
           out2 += codify(outlen + out2.length - (is_attr ? 1 : 0), ch2);
@@ -6861,6 +6897,9 @@ function transpileJSX(jsx2, {
       return out2;
     }
     if (node3.type === "xml") {
+      if (referentiateImports && meta?.imported_names?.has(node3.tag) && node3.tag[0] === node3.tag[0].toUpperCase()) {
+        node3.tag = importsObjectVar + "." + node3.tag;
+      }
       if (node3.tag.length === 0) {
         node3.tag = fragment;
       } else if (node3.tag[0] !== node3.tag[0].toUpperCase()) {
@@ -6896,14 +6935,17 @@ function transpileJSX(jsx2, {
   };
   let out = "";
   if (injectTraceLabels) {
-    out = `/*LILACTBLOCK${++blocks_info2.counter}:0,0:<EXEC>*/try{`;
+    out = `/*LILACTBLOCK${++blocksInfo2.counter}:0,0:<EXEC>*/try{`;
+  }
+  if (referentiateImports) {
+    out += `const ${importsObjectVar} = ${importsObject};`;
   }
   out += codify(out.length, json);
   if (injectTraceLabels) {
     if (transpilerConfig.enableLabelStack) {
-      out += `}catch(e){ if(typeof(e)!=='object') e=new Error(e);e.lilact_trace=[${blocks_info2.counter},e.lilact_trace];throw e}`;
+      out += `}catch(e){ if(typeof(e)!=='object') e=new Error(e);e.lilact_trace=[${blocksInfo2.counter},e.lilact_trace];throw e}`;
     } else {
-      out += `}catch(e){ if(typeof(e)!=='object') e=new Error(e);e.lilact_trace=${blocks_info2.counter};throw e}`;
+      out += `}catch(e){ if(typeof(e)!=='object') e=new Error(e);e.lilact_trace=${blocksInfo2.counter};throw e}`;
     }
   }
   const inline_sm = generateSourceMap(json, path2, eols, scanEOLs(out), mappings);
@@ -7013,7 +7055,8 @@ export {
   TransitionGroup,
   addWrappedEventListener,
   animationFramePromise,
-  blocks_info,
+  asError2 as asError,
+  blocksInfo,
   boolean_html_attributes_set,
   capture_events_set,
   clearInterval,

@@ -106,7 +106,7 @@ export function generateSequence(arr, labeler = labeler.bind(null, null))
 const import_export_regexp = /(?:i[C \n]*(?:(?:I|J|(?:\*[C \n]*a[C \n]*I))[C \n]*,[C \n]*)*(?:(?:(?:I(?:[C \n]*a[C \n]*I)?)|J|(?:\*[C \n]*a[C \n]*I))[C \n]*f[C \n]*)?S)|(?:e[C \n]*(?:(?:[*J][C \n]*f[C \n]*S)|(?:d[C \n]*[IFJ])|J|(?:[VF][c \n]*I)|I))|(?:r[c \n]*P)/mg;
 const props_regexp = /O[C \n]*(?:[Id](?:[C \n]*a[C \n]*I)?[C \n]*,[C \n]*)*(?:I(?:[C \n]*a[C \n]*I)?)[C \n]*O/mg;
 
-export function processImportExports(node, jsx)
+export function processImportExports(node, jsx, meta)
 {
 	const s = generateSequence(node.out, 
 					labeler.bind(null, 
@@ -150,6 +150,10 @@ export function processImportExports(node, jsx)
 
 	begins.push(node.end);
 	
+	meta.imports ??= {};
+
+	const imported_names = new Set;
+
 	for (const m of s.matchAll(import_export_regexp)) {
 
 		// Require (to inject requirer argument)
@@ -173,9 +177,10 @@ export function processImportExports(node, jsx)
 			if(s[i]==='.') continue;
 
 			const src = jsx.substring(node.out[m.index+imp.length-1].begin, node.out[m.index+imp.length-1].end);
-			const imports = {};
-			let star_imports = [];
-			let import_alls = [];
+			const named_imports = {};
+			let import_stars = [];
+			let import_defaults = [];
+
 
 			for(i = m.index+1;i<m.index+imp.length-1;i++) {
 
@@ -192,7 +197,7 @@ export function processImportExports(node, jsx)
 				case ',':
 					break;
 				case 'I': {
-					import_alls.push(node.out[i]);
+					import_defaults.push(node.out[i]);
 					continue;
 				}
 				case 'J': {
@@ -214,11 +219,11 @@ export function processImportExports(node, jsx)
 						if(sj[j]==='a') {
 							j++;
 							while(sj[j]===' ' || sj[j]==='\n' || sj[j]==='C') j++;
-							imports[ps[j]] = prop;
+							named_imports[ps[j]] = prop;
 							j++;
 						}
 						else {
-							imports[prop] = prop; 
+							named_imports[prop] = prop; 
 						}
 					}
 					continue;
@@ -230,7 +235,7 @@ export function processImportExports(node, jsx)
 					i++;
 					skip_spaces();
 
-					star_imports.push(node.out[i]); 
+					import_stars.push(node.out[i]); 
 					continue;
 				}
 				case 'S':
@@ -240,28 +245,31 @@ export function processImportExports(node, jsx)
 					}
 
 					let cjs = '';
-					for(const s of star_imports) {
+					for(const s of import_stars) {
 						cjs+=`const ${s} = require(${src},{requirer:module});\n`;
+						imported_names.add(s);
 					}
-					for(const s of import_alls) {
+					for(const s of import_defaults) {
 						cjs+=`const ${s} = require(${src},{requirer:module, checkExport: ['default']}).default;\n`;
+						imported_names.add(s);
 					}
-					if(Object.keys(imports).length) {
+					if(Object.keys(named_imports).length) {
 						let o = '{';
 						let ls = '[';
 
-						for(const p in imports) {
+						for(const p in named_imports) {
+							imported_names.add(p);
 							if(o.length>1) {
 								o+=',';
 								ls+=',';
 							}
-							if(p===imports[p]) {
+							if(p===named_imports[p]) {
 								o+=p;
 								ls+=`'${p}'`;
 							}
 							else {
-								o+=p+":"+imports[p];
-								ls+=`'${imports[p]}'`;
+								o+=p+":"+named_imports[p];
+								ls+=`'${named_imports[p]}'`;
 							}
 
 						}
@@ -272,6 +280,7 @@ export function processImportExports(node, jsx)
 					}
 					else if(cjs.length===0) {
 						cjs+=`require(${src},{requirer:module})`;
+						named_imports[''] = src;
 					}
 
 					// 2. add nodes
@@ -279,6 +288,15 @@ export function processImportExports(node, jsx)
 					continue;
 				}
 			}
+
+			const ss = src.slice(1,src.length-1);
+			if(meta.imports[ss]) {
+				meta.imports[ss] = { import_stars: [ ...meta.imports[ss].import_stars, ...import_stars],
+															import_defaults: [ ...meta.imports[ss].import_defaults, ...import_defaults],
+															named_imports: { ...meta.imports[ss].named_imports, ...named_imports } }
+			}
+			else meta.imports[ss] = {import_stars, import_defaults, named_imports };
+
 		}
 		// Export
 		else {
@@ -417,5 +435,12 @@ export function processImportExports(node, jsx)
 				}
 			}
 		}
+	}
+
+	if(meta.imported_names) {
+    meta.imported_names = new Set([...meta.imported_names,...imported_names]);
+	}
+	else {
+		meta.imported_names = imported_names;
 	}
 }

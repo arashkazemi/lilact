@@ -23,7 +23,6 @@
 import { useRef, useEffect, useState, Suspense, Spinner, run, render } from "lilact";
 import { css,cx,keyframes,injectGlobal } from "@emotion/css";
 
-
 injectGlobal({"*:not(code):not(code *)" : {fontFamily: "Ubuntu, 'Segoe UI', 'Noto Sans', helvetica, sans", fontSize: "14px"}});
 
 injectGlobal({ 	
@@ -152,8 +151,8 @@ function DemoView({ entry })
 {
 	const [isOpen, setOpen] = useState(false);
 
-	const viewRef = useRef();
-	const codeRef = useRef();
+	const viewRef = useRef(null);
+	const codeRef = useRef(null);
 
 	const resource = createResource("demos/"+entry[0]);
 	const code = resource.read(); // Suspense will handle the promise
@@ -255,7 +254,7 @@ function App()
 		['error-nested-2.jsx',							'Error in Nested Imports - Init'],
 		['error-nested-3.jsx',							'Error in Nested Imports - Stack'],
 		['error-nested-4.jsx',							'Error in Nested Imports - Callback'],
-		['error-nested-5.jsx',							'Error in Nested Imports - JS Syntax'],
+		// ['error-nested-5.jsx',							'Error in Nested Imports - JS Syntax'],
 	];
 
 	return<>
