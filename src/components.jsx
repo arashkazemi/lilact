@@ -1392,7 +1392,7 @@ export const events_set = new Set([
 	"onafterprint","onbeforeprint","onbeforeunload","onerror","onhashchange","onload","onmessage",
 	"onoffline","ononline","onpagehide","onpageshow","onpopstate","onresize","onstorage","onunload",
 	"onblur","onchange","oncontextmenu","onfocus","oninput","oninvalid","onreset","onsearch","onselect",
-	"onsubmit",
+	"onsubmit", "oncancel",
 	"onkeydown","onkeypress","onkeyup",
 	"onclick","ondblclick","onmousedown","onmousemove","onmouseout","onmouseover","onmouseup","onmousewheel",
 	"onwheel",

@@ -133,39 +133,161 @@ function createModule(path, {
 	return module;
 }
 
+function loadModule(path, options = {}) {
+  if (Lilact.importObjectPaths?.[path]) {
+    return Lilact.importObjectPaths[path];
+  }
+
+  if (options.requirer?.path) {
+    path = joinPaths(options.requirer.path, path);
+  }
+
+  const loadAsync =
+    Boolean(Lilact[LAZY]) ||
+    Boolean(options.isLazy);
+
+  const module = getOrCreateModule(path, {});
+
+  if (module.loaded && !options.forceReload) {
+    return module.exports;
+  }
+
+  if (path.startsWith("#")) {
+    const element = document.getElementById(path.slice(1));
+
+    if (!element) {
+      throw report(
+        new Error(`Required element not found (${path})`),
+        path
+      );
+    }
+
+    return run(
+      element.textContent || "",
+      path,
+      {forceReload: options.forceReload}
+    );
+  }
+
+  if (loadAsync) {
+    Lilact[LAZY] = false;
+
+    if (module.request) {
+      return module.request;
+    }
+
+    return loadAsyncResource(path, module);
+  }
+
+  const resolved = Lilact.resolver?.(path);
+
+  if (resolved != null) {
+    if (path.endsWith(".css")) {
+      injectGlobal(String(resolved));
+      module.code = String(resolved);
+      module.loaded = true;
+      return undefined;
+    }
+
+    return run(
+      String(resolved),
+      path,
+      {forceReload: options.forceReload}
+    );
+  }
+
+  const request = new XMLHttpRequest();
+
+  try {
+    request.open("GET", path, false);
+    request.send(null);
+  } catch (value) {
+    throw report(value, path);
+  }
+
+  if (request.status >= 200 && request.status < 300) {
+    if (path.endsWith(".css")) {
+      module.code = request.responseText;
+      injectGlobal(module.code);
+      module.loaded = true;
+      return undefined;
+    }
+
+    return run(
+      request.responseText,
+      path,
+      {forceReload: true}
+    );
+  }
+
+  throw report(
+    new Error(
+      `Unable to load ${path}: HTTP ${request.status || 0}`
+    ),
+    path
+  );
+}
+
+export function require(path) 
+{
+  let options = {};
+
+  if (
+    arguments.length === 2 &&
+    arguments[1] &&
+    typeof arguments[1] === "object"
+  ) {
+    options = arguments[1];
+  }
+
+  return loadModule(path, options);
+}
+
+
 function makeImportsObject(mod)
 {
-	mod.importsObject ??= {};
+	mod.importsObject = {};
 
-	for(const path in mod.meta.imports) {
-		let exps = required_scripts[path];
-		let imps = mod.meta.imports[path];
-		if(!exps) {
-			exps = Lilact.require(path, {requirer: mod});
+	for (const path in mod.meta.imports) {
+		const imps = mod.meta.imports[path];
+
+/*
+ * Do not use require() here. loadModule() resolves and loads the
+ * dependency, then evaluates it directly through run().
+ */
+		const exps = loadModule(path, {
+			requirer: mod,
+		});
+
+		for (const i in imps.named_imports) {
+			if (i === '') continue;
+
+			const exportedName = imps.named_imports[i];
+
+			if (!Object.prototype.hasOwnProperty.call(exps, exportedName)) {
+				throw new Error(
+				`Imported module does not export any "${i}".`
+			);
+			}
+
+			mod.importsObject[i] = exps[exportedName];
 		}
 
-		for(const i in imps.named_imports) {
-			if(i==='') continue;
-			const j = imps.named_imports[i];
-			if(!exps.hasOwnProperty(j)) throw new Error(`Imported module does not export any "${i}".`);
-			mod.importsObject[i] = exps[j];
-		}
+		for (const i of imps.import_defaults) {
+			if (!Object.prototype.hasOwnProperty.call(exps, 'default')) {
+				throw new Error(
+				`Imported module does not export a default.`
+			);
+			}
 
-		for(const i of imps.import_defaults) {
-			if(!exps.hasOwnProperty('default')) throw new Error(`Imported module does not export a default.`);
 			mod.importsObject[i] = exps.default;
 		}
 
-
-		for(const i of imps.import_stars) {
+		for (const i of imps.import_stars) {
 			mod.importsObject[i] = {...exps};
 		}
 	}
 }
-
-
-// ERROR IS FOUND WHEN run IS CALLED, AND NOT REQUIRE.
-// REQUIRE REWRITES MODULE ANYWAY. THAT IS ALSO A PROBLEM.
 
 export function run(
 	jsx,
@@ -325,108 +447,6 @@ function loadAsyncResource(path, module) {
 	return request;
 }
 
-export function require(path) {
-	let options = {};
-
-	if (
-		arguments.length === 2 &&
-		arguments[1] &&
-		typeof arguments[1] === "object"
-	) {
-		options = arguments[1];
-	}
-
-	if (Lilact.importObjectPaths?.[path]) {
-		return Lilact.importObjectPaths[path];
-	}
-
-	if (options?.requirer?.path) {
-		path = joinPaths(options.requirer.path, path);
-	}
-
-	const loadAsync =
-		Boolean(Lilact[LAZY]) ||
-		Boolean(options.isLazy);
-
-
-	const module = getOrCreateModule(path, {});
-
-	/*
-	* A completed module can be returned synchronously unless the caller
-	* explicitly requests lazy loading.
-	*/
-	if (module.loaded && !options.forceReload) {
-		return module.exports;
-	}
-
-	if (path.startsWith("#")) {
-		const element = document.getElementById(path.slice(1));
-
-		if (!element) {
-			throw report(
-				new Error(`Required element not found (${path})`),
-				path
-			);
-		}
-
-		return run(element.textContent || "", path, {forceReload: options.forceReload});
-	}
-
-	if (loadAsync) {
-		Lilact[LAZY] = false;
-
-		/*
-		* Every subsequent lazy require() receives the first request promise.
-		* This applies even when the module is still being fetched and even when
-		* the first caller used forceReload.
-		*/
-		if (module.request) {
-			return module.request;
-		}
-
-		return loadAsyncResource(path, module);
-	}
-
-	const resolved = Lilact.resolver?.(path);
-
-	if (resolved != null) {
-		if (path.endsWith(".css")) {
-			injectGlobal(String(resolved));
-			module.code = String(resolved);
-			module.loaded = true;
-			return undefined;
-		}
-
-		return run(String(resolved), path, {forceReload: options.forceReload});
-	}
-
-	const request = new XMLHttpRequest();
-
-	try {
-		request.open("GET", path, false);
-		request.send(null);
-	} catch (value) {
-		throw report(value, path);
-	}
-
-	if (request.status >= 200 && request.status < 300) {
-		if (path.endsWith(".css")) {
-			module.code = request.responseText;
-			injectGlobal(module.code);
-			module.loaded = true;
-			return undefined;
-		}
-
-		return run(request.responseText, path, {forceReload: true});
-	}
-
-	throw report(
-		new Error(
-			`Unable to load ${path}: HTTP ${request.status || 0}`
-		),
-		path
-	);
-}
 
 export function lazy(factory) {
 	let status = "pending";

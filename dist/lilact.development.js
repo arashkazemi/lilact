@@ -3211,6 +3211,7 @@ var events_set = /* @__PURE__ */ new Set([
   "onsearch",
   "onselect",
   "onsubmit",
+  "oncancel",
   "onkeydown",
   "onkeypress",
   "onkeyup",
@@ -3695,22 +3696,110 @@ function createModule(path2, {
   required_scripts[path2] = module2;
   return module2;
 }
-function makeImportsObject(mod) {
-  mod.importsObject ?? (mod.importsObject = {});
-  for (const path2 in mod.meta.imports) {
-    let exps = required_scripts[path2];
-    let imps = mod.meta.imports[path2];
-    if (!exps) {
-      exps = lilact_default.require(path2, { requirer: mod });
+function loadModule(path2, options = {}) {
+  if (lilact_default.importObjectPaths?.[path2]) {
+    return lilact_default.importObjectPaths[path2];
+  }
+  if (options.requirer?.path) {
+    path2 = joinPaths(options.requirer.path, path2);
+  }
+  const loadAsync = Boolean(lilact_default[LAZY]) || Boolean(options.isLazy);
+  const module2 = getOrCreateModule(path2, {});
+  if (module2.loaded && !options.forceReload) {
+    return module2.exports;
+  }
+  if (path2.startsWith("#")) {
+    const element = document.getElementById(path2.slice(1));
+    if (!element) {
+      throw report(
+        new Error(`Required element not found (${path2})`),
+        path2
+      );
     }
+    return run(
+      element.textContent || "",
+      path2,
+      { forceReload: options.forceReload }
+    );
+  }
+  if (loadAsync) {
+    lilact_default[LAZY] = false;
+    if (module2.request) {
+      return module2.request;
+    }
+    return loadAsyncResource(path2, module2);
+  }
+  const resolved = lilact_default.resolver?.(path2);
+  if (resolved != null) {
+    if (path2.endsWith(".css")) {
+      injectGlobal(String(resolved));
+      module2.code = String(resolved);
+      module2.loaded = true;
+      return void 0;
+    }
+    return run(
+      String(resolved),
+      path2,
+      { forceReload: options.forceReload }
+    );
+  }
+  const request = new XMLHttpRequest();
+  try {
+    request.open("GET", path2, false);
+    request.send(null);
+  } catch (value) {
+    throw report(value, path2);
+  }
+  if (request.status >= 200 && request.status < 300) {
+    if (path2.endsWith(".css")) {
+      module2.code = request.responseText;
+      injectGlobal(module2.code);
+      module2.loaded = true;
+      return void 0;
+    }
+    return run(
+      request.responseText,
+      path2,
+      { forceReload: true }
+    );
+  }
+  throw report(
+    new Error(
+      `Unable to load ${path2}: HTTP ${request.status || 0}`
+    ),
+    path2
+  );
+}
+function require2(path2) {
+  let options = {};
+  if (arguments.length === 2 && arguments[1] && typeof arguments[1] === "object") {
+    options = arguments[1];
+  }
+  return loadModule(path2, options);
+}
+function makeImportsObject(mod) {
+  mod.importsObject = {};
+  for (const path2 in mod.meta.imports) {
+    const imps = mod.meta.imports[path2];
+    const exps = loadModule(path2, {
+      requirer: mod
+    });
     for (const i2 in imps.named_imports) {
       if (i2 === "") continue;
-      const j = imps.named_imports[i2];
-      if (!exps.hasOwnProperty(j)) throw new Error(`Imported module does not export any "${i2}".`);
-      mod.importsObject[i2] = exps[j];
+      const exportedName = imps.named_imports[i2];
+      if (!Object.prototype.hasOwnProperty.call(exps, exportedName)) {
+        throw new Error(
+          `Imported module does not export any "${i2}".`
+        );
+      }
+      mod.importsObject[i2] = exps[exportedName];
     }
     for (const i2 of imps.import_defaults) {
-      if (!exps.hasOwnProperty("default")) throw new Error(`Imported module does not export a default.`);
+      if (!Object.prototype.hasOwnProperty.call(exps, "default")) {
+        throw new Error(
+          `Imported module does not export a default.`
+        );
+      }
       mod.importsObject[i2] = exps.default;
     }
     for (const i2 of imps.import_stars) {
@@ -3823,72 +3912,6 @@ function loadAsyncResource(path2, module2) {
   });
   module2.request = request;
   return request;
-}
-function require2(path2) {
-  let options = {};
-  if (arguments.length === 2 && arguments[1] && typeof arguments[1] === "object") {
-    options = arguments[1];
-  }
-  if (lilact_default.importObjectPaths?.[path2]) {
-    return lilact_default.importObjectPaths[path2];
-  }
-  if (options?.requirer?.path) {
-    path2 = joinPaths(options.requirer.path, path2);
-  }
-  const loadAsync = Boolean(lilact_default[LAZY]) || Boolean(options.isLazy);
-  const module2 = getOrCreateModule(path2, {});
-  if (module2.loaded && !options.forceReload) {
-    return module2.exports;
-  }
-  if (path2.startsWith("#")) {
-    const element = document.getElementById(path2.slice(1));
-    if (!element) {
-      throw report(
-        new Error(`Required element not found (${path2})`),
-        path2
-      );
-    }
-    return run(element.textContent || "", path2, { forceReload: options.forceReload });
-  }
-  if (loadAsync) {
-    lilact_default[LAZY] = false;
-    if (module2.request) {
-      return module2.request;
-    }
-    return loadAsyncResource(path2, module2);
-  }
-  const resolved = lilact_default.resolver?.(path2);
-  if (resolved != null) {
-    if (path2.endsWith(".css")) {
-      injectGlobal(String(resolved));
-      module2.code = String(resolved);
-      module2.loaded = true;
-      return void 0;
-    }
-    return run(String(resolved), path2, { forceReload: options.forceReload });
-  }
-  const request = new XMLHttpRequest();
-  try {
-    request.open("GET", path2, false);
-    request.send(null);
-  } catch (value) {
-    throw report(value, path2);
-  }
-  if (request.status >= 200 && request.status < 300) {
-    if (path2.endsWith(".css")) {
-      module2.code = request.responseText;
-      injectGlobal(module2.code);
-      module2.loaded = true;
-      return void 0;
-    }
-    return run(request.responseText, path2, { forceReload: true });
-  }
-  throw report(
-    new Error(
-      `Unable to load ${path2}: HTTP ${request.status || 0}`
-    ),
-    path2
-  );
 }
 function lazy(factory) {
   let status = "pending";
