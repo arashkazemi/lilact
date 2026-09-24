@@ -31,7 +31,7 @@
 import Lilact from './lilact.jsx';
 
 import { CORE, COMPONENT, TEXT, IS_ZOMBIE, IDX, CHILD_CLASS_ADDENDUM, MEMOIZED } from "./symbols.jsx"
-import { shallowEqual, toBool, isClass } from "./misc.jsx";
+import { shallowEqual, toBool, isClass, isThenable } from "./misc.jsx";
 
 import { PropTypes } from './proptypes.jsx';
 
@@ -627,6 +627,18 @@ class ComponentCore
 
 const renderErrorHandler = (c, e) =>
 {
+	const value =
+		e?.error instanceof Error
+			? e.error
+			: e?.reason !== undefined
+				? e.reason
+				: e;
+
+	const error = Lilact.isThenable(e)? e : Lilact.traceError(
+		value,
+		e?.fileName || null
+	);
+
 	const stack = [c];
 
 	while(c && !c.component?.componentDidCatch) {
@@ -636,7 +648,7 @@ const renderErrorHandler = (c, e) =>
 
 	if(c?.component?.componentDidCatch) {
 		if(c.entity?.getDerivedStateFromError) {
-			c.component.setState(c.entity.getDerivedStateFromError.call(c, e));
+			c.component.setState(c.entity.getDerivedStateFromError.call(c, error));
 		}
 	}
 
@@ -645,13 +657,13 @@ const renderErrorHandler = (c, e) =>
 																	x.component.displayName():x.component.displayName}` ) ) 
 								.join('\n');
 
-	e.componentStack = stack;
-	e.componentStackLog = stack_log;
+	error.componentStack = stack;
+	error.componentStackLog = stack_log;
 
 	if(c?.component?.componentDidCatch) {
-		c.component.componentDidCatch(e, {componentStack: stack, componentStackLog: stack_log});  
+		c.component.componentDidCatch(error, {componentStack: stack, componentStackLog: stack_log});  
 	}
-	else throw(e);
+	else throw(e); // should be e not error
 }
 
 

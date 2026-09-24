@@ -2781,6 +2781,11 @@ var ComponentCore = class {
   }
 };
 var renderErrorHandler = (c, e) => {
+  const value = e?.error instanceof Error ? e.error : e?.reason !== void 0 ? e.reason : e;
+  const error2 = lilact_default.isThenable(e) ? e : lilact_default.traceError(
+    value,
+    e?.fileName || null
+  );
   const stack = [c];
   while (c && !c.component?.componentDidCatch) {
     c = c.parent;
@@ -2788,14 +2793,14 @@ var renderErrorHandler = (c, e) => {
   }
   if (c?.component?.componentDidCatch) {
     if (c.entity?.getDerivedStateFromError) {
-      c.component.setState(c.entity.getDerivedStateFromError.call(c, e));
+      c.component.setState(c.entity.getDerivedStateFromError.call(c, error2));
     }
   }
   let stack_log = Array.prototype.map.call(stack, (x) => `in  ${typeof x.component.displayName === "function" ? x.component.displayName() : x.component.displayName}`).join("\n");
-  e.componentStack = stack;
-  e.componentStackLog = stack_log;
+  error2.componentStack = stack;
+  error2.componentStackLog = stack_log;
   if (c?.component?.componentDidCatch) {
-    c.component.componentDidCatch(e, { componentStack: stack, componentStackLog: stack_log });
+    c.component.componentDidCatch(error2, { componentStack: stack, componentStackLog: stack_log });
   } else throw e;
 };
 function constructFunc(core, parent) {
@@ -3758,7 +3763,7 @@ function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, {} = {}) {
     globalThis.Lilact = lilact_default;
     globalThis.createComponent = lilact_default.createComponent;
     globalThis.Fragment = lilact_default.Fragment;
-    if (!module.importsObject) makeImportsObject(module);
+    makeImportsObject(module);
     lilact_default.scriptImportsObject = module.importsObject;
     const result = eval(processed);
     module.loaded = true;
@@ -3876,7 +3881,7 @@ function require2(path2) {
       module2.loaded = true;
       return void 0;
     }
-    return run(request.responseText, path2, { forceReload: options.forceReload });
+    return run(request.responseText, path2, { forceReload: true });
   }
   throw report(
     new Error(
@@ -6957,7 +6962,7 @@ function transpileJSX(jsx2, {
 
 // .tmp/src/lilact.jsx
 var Lilact2 = {
-  VERSION: "RC.4",
+  VERSION: "RC.5",
   // Configuration
   defaultTransitionTimeout: 300,
   defaultIsEqual: Object.is,

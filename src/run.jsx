@@ -163,6 +163,10 @@ function makeImportsObject(mod)
 	}
 }
 
+
+// ERROR IS FOUND WHEN run IS CALLED, AND NOT REQUIRE.
+// REQUIRE REWRITES MODULE ANYWAY. THAT IS ALSO A PROBLEM.
+
 export function run(
 	jsx,
 	path = `InlineJSX-${++Lilact.eval_num}`,
@@ -234,7 +238,7 @@ export function run(
 		globalThis.createComponent = Lilact.createComponent;
 		globalThis.Fragment = Lilact.Fragment;
 
-		if(!module.importsObject) makeImportsObject(module);
+		makeImportsObject(module);
 
 		Lilact.scriptImportsObject = module.importsObject;
 		const result = eval(processed);
@@ -413,7 +417,7 @@ export function require(path) {
 			return undefined;
 		}
 
-		return run(request.responseText, path, {forceReload: options.forceReload});
+		return run(request.responseText, path, {forceReload: true});
 	}
 
 	throw report(
