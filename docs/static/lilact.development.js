@@ -463,18 +463,18 @@ function sheetForTag(tag) {
   }
   return void 0;
 }
-function createStyleElement(options) {
+function createStyleElement(options2) {
   var tag = document.createElement("style");
-  tag.setAttribute("data-emotion", options.key);
-  if (options.nonce !== void 0) {
-    tag.setAttribute("nonce", options.nonce);
+  tag.setAttribute("data-emotion", options2.key);
+  if (options2.nonce !== void 0) {
+    tag.setAttribute("nonce", options2.nonce);
   }
   tag.appendChild(document.createTextNode(""));
   tag.setAttribute("data-s", "");
   return tag;
 }
 var StyleSheet = /* @__PURE__ */ (function() {
-  function StyleSheet2(options) {
+  function StyleSheet2(options2) {
     var _this = this;
     this._insertTag = function(tag) {
       var before;
@@ -492,14 +492,14 @@ var StyleSheet = /* @__PURE__ */ (function() {
       _this.container.insertBefore(tag, before);
       _this.tags.push(tag);
     };
-    this.isSpeedy = options.speedy === void 0 ? !isDevelopment : options.speedy;
+    this.isSpeedy = options2.speedy === void 0 ? !isDevelopment : options2.speedy;
     this.tags = [];
     this.ctr = 0;
-    this.nonce = options.nonce;
-    this.key = options.key;
-    this.container = options.container;
-    this.prepend = options.prepend;
-    this.insertionPoint = options.insertionPoint;
+    this.nonce = options2.nonce;
+    this.key = options2.key;
+    this.container = options2.container;
+    this.prepend = options2.prepend;
+    this.insertionPoint = options2.insertionPoint;
     this.before = null;
   }
   var _proto = StyleSheet2.prototype;
@@ -1187,8 +1187,8 @@ var prefixer = function prefixer2(element, index2, children, callback) {
   }
 };
 var defaultStylisPlugins = [prefixer];
-var createCache = function createCache2(options) {
-  var key = options.key;
+var createCache = function createCache2(options2) {
+  var key = options2.key;
   if (key === "css") {
     var ssrStyles = document.querySelectorAll("style[data-emotion]:not([data-s])");
     Array.prototype.forEach.call(ssrStyles, function(node3) {
@@ -1200,12 +1200,12 @@ var createCache = function createCache2(options) {
       node3.setAttribute("data-s", "");
     });
   }
-  var stylisPlugins = options.stylisPlugins || defaultStylisPlugins;
+  var stylisPlugins = options2.stylisPlugins || defaultStylisPlugins;
   var inserted = {};
   var container2;
   var nodesToHydrate = [];
   {
-    container2 = options.container || document.head;
+    container2 = options2.container || document.head;
     Array.prototype.forEach.call(
       // this means we will ignore elements which don't have a space in them which
       // means that the style elements we're looking at are only Emotion 11 server-rendered style elements
@@ -1243,12 +1243,12 @@ var createCache = function createCache2(options) {
     sheet: new StyleSheet({
       key,
       container: container2,
-      nonce: options.nonce,
-      speedy: options.speedy,
-      prepend: options.prepend,
-      insertionPoint: options.insertionPoint
+      nonce: options2.nonce,
+      speedy: options2.speedy,
+      prepend: options2.prepend,
+      insertionPoint: options2.insertionPoint
     }),
-    nonce: options.nonce,
+    nonce: options2.nonce,
     inserted,
     registered: {},
     insert: _insert
@@ -1569,8 +1569,8 @@ function merge(registered, css2, className) {
   }
   return rawClassName + css2(registeredStyles);
 }
-var createEmotion = function createEmotion2(options) {
-  var cache2 = createCache(options);
+var createEmotion = function createEmotion2(options2) {
+  var cache2 = createCache(options2);
   cache2.sheet.speedy = function(value) {
     this.isSpeedy = value;
   };
@@ -2365,6 +2365,32 @@ __export(components_exports, {
   update_timeout: () => update_timeout
 });
 var SVG_NS = "http://www.w3.org/2000/svg";
+function getComponentEntity(entity) {
+  return entity?.[MEMOIZED] ? entity.component : entity;
+}
+function replaceComponentEntity(comp, nextEntity) {
+  const core = comp?.[CORE];
+  if (!core || typeof nextEntity !== "function") {
+    return;
+  }
+  const oldEntity = getComponentEntity(core.entity);
+  const newEntity = getComponentEntity(nextEntity);
+  if (oldEntity === newEntity) {
+    return;
+  }
+  const oldIsClass = isClass(oldEntity);
+  const newIsClass = isClass(newEntity);
+  if (oldIsClass !== newIsClass) {
+    return false;
+  }
+  if (newIsClass) {
+    Object.setPrototypeOf(comp, newEntity.prototype);
+  } else {
+    comp.render = newEntity.bind(comp);
+  }
+  core.entity = newEntity;
+  return true;
+}
 var ComponentCache = class {
   constructor(owner) {
     __publicField(this, "owner");
@@ -2373,32 +2399,35 @@ var ComponentCache = class {
     __publicField(this, "pick_index", 0);
     this.owner = owner;
   }
-  pick(key, construct_func) {
+  pick(key, construct_func, nextEntity) {
     var _a;
     let comp;
-    let buck = this.current_map.get(key);
-    if (buck && buck.length > buck[IDX]) {
-      comp = buck[buck[IDX]];
-      buck[IDX]++;
-      buck = this.new_map.get(key);
-      if (buck !== void 0) {
-        buck.push(comp);
+    let bucket = this.current_map.get(key);
+    const reusable = bucket && bucket.length > bucket[IDX];
+    if (reusable) {
+      comp = bucket[bucket[IDX]];
+      bucket[IDX]++;
+      const oldEntity = getComponentEntity(comp?.[CORE]?.entity);
+      const newEntity = getComponentEntity(nextEntity);
+      const incompatible = typeof oldEntity === "function" && typeof newEntity === "function" && isClass(oldEntity) !== isClass(newEntity);
+      if (incompatible) {
+        comp = construct_func();
       } else {
-        buck = [comp];
-        this.new_map.set(key, buck);
-        buck[IDX] = 0;
+        replaceComponentEntity(comp, nextEntity);
       }
     } else {
       comp = construct_func();
-      buck = this.new_map.get(key);
-      if (buck !== void 0) {
-        buck.push(comp);
-      } else {
-        buck = [comp];
-        this.new_map.set(key, buck);
-        buck[IDX] = 0;
-      }
-      if (comp[CORE]) (_a = comp[CORE]).parent ?? (_a.parent = this.owner);
+    }
+    bucket = this.new_map.get(key);
+    if (bucket !== void 0) {
+      bucket.push(comp);
+    } else {
+      bucket = [comp];
+      this.new_map.set(key, bucket);
+      bucket[IDX] = 0;
+    }
+    if (comp[CORE]) {
+      (_a = comp[CORE]).parent ?? (_a.parent = this.owner);
     }
     return comp;
   }
@@ -2867,15 +2896,20 @@ function constructFunc(core, parent) {
 function prepareCore(parent, core) {
   try {
     parent.cache ?? (parent.cache = new ComponentCache(parent));
-    core = parent.cache.pick(
-      core[TEXT2] === void 0 ? core?.props?.key : ":text:",
-      () => core[TEXT2] !== void 0 || core instanceof ComponentCore ? core : constructFunc(core, parent)[CORE]
+    const isText = core[TEXT2] !== void 0;
+    const key = isText ? ":text:" : core.props?.key;
+    const entity = isText || core instanceof ComponentCore ? void 0 : core.entity;
+    return parent.cache.pick(
+      key,
+      () => isText || core instanceof ComponentCore ? core : constructFunc(core, parent)[CORE],
+      entity
     );
-    return core;
   } catch (e) {
     if (core?.component?.componentDidCatch) {
       core.component.componentDidCatch(e);
-    } else throw e;
+    } else {
+      throw e;
+    }
   }
 }
 function doUpdates() {
@@ -3696,16 +3730,16 @@ function createModule(path2, {
   required_scripts[path2] = module2;
   return module2;
 }
-function loadModule(path2, options = {}) {
+function loadModule(path2, options2 = {}) {
   if (lilact_default.importObjectPaths?.[path2]) {
     return lilact_default.importObjectPaths[path2];
   }
-  if (options.requirer?.path) {
-    path2 = joinPaths(options.requirer.path, path2);
+  if (options2.requirer?.path) {
+    path2 = joinPaths(options2.requirer.path, path2);
   }
-  const loadAsync = Boolean(lilact_default[LAZY]) || Boolean(options.isLazy);
+  const loadAsync = Boolean(lilact_default[LAZY]) || Boolean(options2.isLazy);
   const module2 = getOrCreateModule(path2, {});
-  if (module2.loaded && !options.forceReload) {
+  if (module2.loaded && !options2.forceReload) {
     return module2.exports;
   }
   if (path2.startsWith("#")) {
@@ -3719,15 +3753,15 @@ function loadModule(path2, options = {}) {
     return run(
       element.textContent || "",
       path2,
-      { forceReload: options.forceReload }
+      { forceReload: options2.forceReload }
     );
   }
   if (loadAsync) {
     lilact_default[LAZY] = false;
-    if (module2.request) {
+    if (module2.request && !options2.forceReload) {
       return module2.request;
     }
-    return loadAsyncResource(path2, module2);
+    return loadAsyncResource(path2, module2, options2);
   }
   const resolved = lilact_default.resolver?.(path2);
   if (resolved != null) {
@@ -3740,7 +3774,7 @@ function loadModule(path2, options = {}) {
     return run(
       String(resolved),
       path2,
-      { forceReload: options.forceReload }
+      { forceReload: options2.forceReload }
     );
   }
   const request = new XMLHttpRequest();
@@ -3771,18 +3805,19 @@ function loadModule(path2, options = {}) {
   );
 }
 function require2(path2) {
-  let options = {};
+  let options2 = {};
   if (arguments.length === 2 && arguments[1] && typeof arguments[1] === "object") {
-    options = arguments[1];
+    options2 = arguments[1];
   }
-  return loadModule(path2, options);
+  return loadModule(path2, options2);
 }
-function makeImportsObject(mod) {
+function makeImportsObject(mod, options2 = {}) {
   mod.importsObject = {};
   for (const path2 in mod.meta.imports) {
     const imps = mod.meta.imports[path2];
     const exps = loadModule(path2, {
-      requirer: mod
+      requirer: mod,
+      forceReload: options2.forceReload
     });
     for (const i2 in imps.named_imports) {
       if (i2 === "") continue;
@@ -3807,7 +3842,7 @@ function makeImportsObject(mod) {
     }
   }
 }
-function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, {} = {}) {
+function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, options = {}) {
   let module = required_scripts[path];
   if (!module) {
     module = createModule(path, {
@@ -3852,7 +3887,7 @@ function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, {} = {}) {
     globalThis.Lilact = lilact_default;
     globalThis.createComponent = lilact_default.createComponent;
     globalThis.Fragment = lilact_default.Fragment;
-    makeImportsObject(module);
+    makeImportsObject(module, options);
     lilact_default.scriptImportsObject = module.importsObject;
     const result = eval(processed);
     module.loaded = true;
@@ -3864,10 +3899,10 @@ function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, {} = {}) {
     throw error2;
   }
 }
-function getOrCreateModule(path2, options = {}) {
-  return required_scripts[path2] || createModule(path2, options);
+function getOrCreateModule(path2, options2 = {}) {
+  return required_scripts[path2] || createModule(path2, options2);
 }
-function loadAsyncResource(path2, module2) {
+function loadAsyncResource(path2, module2, options2 = {}) {
   let source;
   try {
     const resolved = lilact_default.resolver?.(path2);
@@ -3901,7 +3936,7 @@ function loadAsyncResource(path2, module2) {
       module2.loaded = true;
       return void 0;
     }
-    return run(module2.code, path2, {});
+    return run(module2.code, path2, options2);
   }).then((result2) => result2?.default ?? result2).catch((error2) => {
     module2.error = report(error2, path2);
     throw module2.error;
@@ -4365,10 +4400,10 @@ function wrapListener(fn, opts = {}) {
     }
   };
 }
-function addWrappedEventListener(target, type, fn, options = {}) {
-  const handler = wrapListener(fn, options);
-  target.addEventListener(type, handler, options);
-  return () => target.removeEventListener(type, handler, options);
+function addWrappedEventListener(target, type, fn, options2 = {}) {
+  const handler = wrapListener(fn, options2);
+  target.addEventListener(type, handler, options2);
+  return () => target.removeEventListener(type, handler, options2);
 }
 
 // .tmp/src/redux.jsx

@@ -172,11 +172,11 @@ function loadModule(path, options = {}) {
   if (loadAsync) {
     Lilact[LAZY] = false;
 
-    if (module.request) {
-      return module.request;
-    }
+	if (module.request && !options.forceReload) {
+	  return module.request;
+	}
 
-    return loadAsyncResource(path, module);
+	return loadAsyncResource(path, module, options);
   }
 
   const resolved = Lilact.resolver?.(path);
@@ -244,55 +244,52 @@ export function require(path)
 }
 
 
-function makeImportsObject(mod)
-{
-	mod.importsObject = {};
+function makeImportsObject(mod, options = {}) {
+  mod.importsObject = {};
 
-	for (const path in mod.meta.imports) {
-		const imps = mod.meta.imports[path];
+  for (const path in mod.meta.imports) {
+    const imps = mod.meta.imports[path];
 
-/*
- * Do not use require() here. loadModule() resolves and loads the
- * dependency, then evaluates it directly through run().
- */
-		const exps = loadModule(path, {
-			requirer: mod,
-		});
+    const exps = loadModule(path, {
+      requirer: mod,
+      forceReload: options.forceReload,
+    });
 
-		for (const i in imps.named_imports) {
-			if (i === '') continue;
+    for (const i in imps.named_imports) {
+      if (i === '') continue;
 
-			const exportedName = imps.named_imports[i];
+      const exportedName = imps.named_imports[i];
 
-			if (!Object.prototype.hasOwnProperty.call(exps, exportedName)) {
-				throw new Error(
-				`Imported module does not export any "${i}".`
-			);
-			}
+      if (!Object.prototype.hasOwnProperty.call(exps, exportedName)) {
+        throw new Error(
+          `Imported module does not export any "${i}".`
+        );
+      }
 
-			mod.importsObject[i] = exps[exportedName];
-		}
+      mod.importsObject[i] = exps[exportedName];
+    }
 
-		for (const i of imps.import_defaults) {
-			if (!Object.prototype.hasOwnProperty.call(exps, 'default')) {
-				throw new Error(
-				`Imported module does not export a default.`
-			);
-			}
+    for (const i of imps.import_defaults) {
+      if (!Object.prototype.hasOwnProperty.call(exps, 'default')) {
+        throw new Error(
+          `Imported module does not export a default.`
+        );
+      }
 
-			mod.importsObject[i] = exps.default;
-		}
+      mod.importsObject[i] = exps.default;
+    }
 
-		for (const i of imps.import_stars) {
-			mod.importsObject[i] = {...exps};
-		}
-	}
+    for (const i of imps.import_stars) {
+      mod.importsObject[i] = { ...exps };
+    }
+  }
 }
 
+
 export function run(
-	jsx,
-	path = `InlineJSX-${++Lilact.eval_num}`,
-	{} = {}
+  jsx,
+  path = `InlineJSX-${++Lilact.eval_num}`,
+  options = {}
 ) {
 	let module = required_scripts[path];
 
@@ -360,7 +357,7 @@ export function run(
 		globalThis.createComponent = Lilact.createComponent;
 		globalThis.Fragment = Lilact.Fragment;
 
-		makeImportsObject(module);
+		makeImportsObject(module, options);
 
 		Lilact.scriptImportsObject = module.importsObject;
 		const result = eval(processed);
@@ -380,7 +377,8 @@ function getOrCreateModule(path, options = {}) {
 	return required_scripts[path] || createModule(path, options);
 }
 
-function loadAsyncResource(path, module) {
+function loadAsyncResource(path, module, options = {}) 
+{
 	let source;
 
 	try {
@@ -426,7 +424,7 @@ function loadAsyncResource(path, module) {
 				return undefined;
 			}
 
-			return run(module.code, path, {});
+			return run(module.code, path, options);
 		})
 		.then(result => result?.default ?? result)
 		.catch(error => {

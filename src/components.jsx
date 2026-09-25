@@ -37,6 +37,50 @@ import { PropTypes } from './proptypes.jsx';
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 
+
+function getComponentEntity(entity) {
+  return entity?.[MEMOIZED]
+    ? entity.component
+    : entity;
+}
+
+function replaceComponentEntity(comp, nextEntity) {
+  const core = comp?.[CORE];
+
+  if (!core || typeof nextEntity !== "function") {
+    return;
+  }
+
+  const oldEntity = getComponentEntity(core.entity);
+  const newEntity = getComponentEntity(nextEntity);
+
+  if (oldEntity === newEntity) {
+    return;
+  }
+
+  const oldIsClass = isClass(oldEntity);
+  const newIsClass = isClass(newEntity);
+
+  // A function component and a class component have different instance
+  // semantics. Let the cache create a fresh instance in that case.
+  if (oldIsClass !== newIsClass) {
+    return false;
+  }
+
+  if (newIsClass) {
+    // Preserve the existing instance and state, but use the new class
+    // prototype and therefore the new render/lifecycle methods.
+    Object.setPrototypeOf(comp, newEntity.prototype);
+  } else {
+    // Preserve hooks and state, but replace the function implementation.
+    comp.render = newEntity.bind(comp);
+  }
+
+  core.entity = newEntity;
+  return true;
+}
+
+
 /* 
 ComponentCache is for internal use. It is the heart of the JSX runtime,
 it holds child components and detects which one is being rendered or updated.
@@ -54,39 +98,46 @@ class ComponentCache
 		this.owner = owner;
 	}
 
-	pick(key, construct_func)
-	{
+	pick(key, construct_func, nextEntity) {
 		let comp;
-		let buck = this.current_map.get(key);
+		let bucket = this.current_map.get(key);
+		const reusable =
+		bucket && bucket.length > bucket[IDX];
 
-		if(buck && buck.length>buck[IDX]) {
-			comp = buck[buck[IDX]];
-			buck[IDX]++;
+		if (reusable) {
+			comp = bucket[bucket[IDX]];
+			bucket[IDX]++;
 
-			buck = this.new_map.get(key);
-			if(buck!==undefined) {
-				buck.push( comp );
+			const oldEntity = getComponentEntity(comp?.[CORE]?.entity);
+			const newEntity = getComponentEntity(nextEntity);
+
+			const incompatible =
+			typeof oldEntity === "function" &&
+			typeof newEntity === "function" &&
+			isClass(oldEntity) !== isClass(newEntity);
+
+			if (incompatible) {
+	      	// Do not reuse a class instance as a function component or vice versa.
+				comp = construct_func();
+			} else {
+				replaceComponentEntity(comp, nextEntity);
 			}
-			else {
-				buck = [ comp ];
-				this.new_map.set(key, buck);
-				buck[IDX]=0;
-			}
-		}
-		else {
+		} else {
 			comp = construct_func();
+		}
 
-			buck = this.new_map.get(key);
-			if(buck!==undefined) {
-				buck.push( comp );
-			}
-			else {
-				buck = [ comp ];
-				this.new_map.set(key, buck);
-				buck[IDX]=0;
-			}
+		bucket = this.new_map.get(key);
 
-			if(comp[CORE]) comp[CORE].parent ??= this.owner;
+		if (bucket !== undefined) {
+			bucket.push(comp);
+		} else {
+			bucket = [comp];
+			this.new_map.set(key, bucket);
+			bucket[IDX] = 0;
+		}
+
+		if (comp[CORE]) {
+			comp[CORE].parent ??= this.owner;
 		}
 
 		return comp;
@@ -757,22 +808,35 @@ function constructFunc(core, parent) // returns {text} or component, and not com
 }
 
 
-function prepareCore(parent, core)
-{
-	try {
-		parent.cache ??= new ComponentCache(parent);
-		core =  parent.cache.pick( 	core[TEXT]===undefined?core?.props?.key:':text:', 
-									()=>(  (core[TEXT]!==undefined || core instanceof ComponentCore) ?   
-											 core : constructFunc(core, parent)[CORE]  ) 
-								);
-		return core;
-	}
-	catch(e) {
-		if(core?.component?.componentDidCatch) {
-			core.component.componentDidCatch(e);
-		}
-		else throw(e);
-	}
+function prepareCore(parent, core) {
+  try {
+    parent.cache ??= new ComponentCache(parent);
+
+    const isText = core[TEXT] !== undefined;
+    const key = isText
+      ? ':text:'
+      : core.props?.key;
+
+    const entity = isText || core instanceof ComponentCore
+      ? undefined
+      : core.entity;
+
+    return parent.cache.pick(
+      key,
+      () => (
+        isText || core instanceof ComponentCore
+          ? core
+          : constructFunc(core, parent)[CORE]
+      ),
+      entity
+    );
+  } catch (e) {
+    if (core?.component?.componentDidCatch) {
+      core.component.componentDidCatch(e);
+    } else {
+      throw e;
+    }
+  }
 }
 
 
