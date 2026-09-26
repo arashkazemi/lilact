@@ -39,45 +39,48 @@ const SVG_NS = "http://www.w3.org/2000/svg";
 
 
 function getComponentEntity(entity) {
-  return entity?.[MEMOIZED]
-    ? entity.component
-    : entity;
+	return entity?.[MEMOIZED]
+	? entity.component
+	: entity;
 }
 
-function replaceComponentEntity(comp, nextEntity) {
-  const core = comp?.[CORE];
+export function replaceComponentEntity(componentCore, nextEntity) {
+	if (!componentCore || typeof nextEntity !== "function") {
+		return false;
+	}
 
-  if (!core || typeof nextEntity !== "function") {
-    return;
-  }
+	const oldEntity = getComponentEntity(componentCore.entity);
+	const newEntity = getComponentEntity(nextEntity);
 
-  const oldEntity = getComponentEntity(core.entity);
-  const newEntity = getComponentEntity(nextEntity);
+	if (oldEntity === newEntity) {
+		return true;
+	}
 
-  if (oldEntity === newEntity) {
-    return;
-  }
+	const component = componentCore.component;
 
-  const oldIsClass = isClass(oldEntity);
-  const newIsClass = isClass(newEntity);
+	if (!component) {
+		return false;
+	}
 
-  // A function component and a class component have different instance
-  // semantics. Let the cache create a fresh instance in that case.
-  if (oldIsClass !== newIsClass) {
-    return false;
-  }
+	const oldIsClass = isClass(oldEntity);
+	const newIsClass = isClass(newEntity);
 
-  if (newIsClass) {
-    // Preserve the existing instance and state, but use the new class
-    // prototype and therefore the new render/lifecycle methods.
-    Object.setPrototypeOf(comp, newEntity.prototype);
-  } else {
-    // Preserve hooks and state, but replace the function implementation.
-    comp.render = newEntity.bind(comp);
-  }
+  // A function component cannot reuse a class instance, and vice versa.
+	if (oldIsClass !== newIsClass) {
+		return false;
+	}
 
-  core.entity = newEntity;
-  return true;
+	if (newIsClass) {
+    // componentCore.state and the component instance are preserved.
+    // Only the class implementation changes.
+		Object.setPrototypeOf(component, newEntity.prototype);
+	} else {
+    // The function is invoked with the ComponentCore as `this` by apply().
+		component.render = newEntity;
+	}
+
+	componentCore.entity = newEntity;
+	return true;
 }
 
 
@@ -99,48 +102,46 @@ class ComponentCache
 	}
 
 	pick(key, construct_func, nextEntity) {
-		let comp;
+		let componentCore;
 		let bucket = this.current_map.get(key);
-		const reusable =
-		bucket && bucket.length > bucket[IDX];
 
-		if (reusable) {
-			comp = bucket[bucket[IDX]];
+		if (bucket && bucket.length > bucket[IDX]) {
+			componentCore = bucket[bucket[IDX]];
 			bucket[IDX]++;
 
-			const oldEntity = getComponentEntity(comp?.[CORE]?.entity);
+			const oldEntity = getComponentEntity(componentCore.entity);
 			const newEntity = getComponentEntity(nextEntity);
 
 			const incompatible =
-			typeof oldEntity === "function" &&
-			typeof newEntity === "function" &&
-			isClass(oldEntity) !== isClass(newEntity);
+				typeof oldEntity === "function" &&
+				typeof newEntity === "function" &&
+				isClass(oldEntity) !== isClass(newEntity);
 
 			if (incompatible) {
-	      	// Do not reuse a class instance as a function component or vice versa.
-				comp = construct_func();
-			} else {
-				replaceComponentEntity(comp, nextEntity);
+				componentCore = construct_func();
+			} 
+			else if (newEntity) {
+				replaceComponentEntity(componentCore, newEntity);
 			}
 		} else {
-			comp = construct_func();
+			componentCore = construct_func();
 		}
 
 		bucket = this.new_map.get(key);
 
-		if (bucket !== undefined) {
-			bucket.push(comp);
+		if (bucket) {
+			bucket.push(componentCore);
 		} else {
-			bucket = [comp];
+			bucket = [componentCore];
 			this.new_map.set(key, bucket);
 			bucket[IDX] = 0;
 		}
 
-		if (comp[CORE]) {
-			comp[CORE].parent ??= this.owner;
+		if (componentCore) {
+			componentCore.parent ??= this.owner;
 		}
 
-		return comp;
+		return componentCore;
 	}
 
 	commit() 
@@ -317,7 +318,7 @@ class ComponentCore
 					this.hook_index = 0;
 					Lilact.current_component = [this, Lilact.current_component];
 
-					this.outlet = this.component.render(next_props, {current: this.element || this.component} );
+					this.outlet = this.component.render.call(this, next_props, {current: this.element || this.component} );
 
 					Lilact.current_component = Lilact.current_component[1];
 				}
@@ -785,7 +786,7 @@ function constructFunc(core, parent) // returns {text} or component, and not com
 
 				// the binding is not necessary and is not according to the specs, 
 				// probably not even recommended! but helpful.
-				comp.render = entity.bind(comp); 
+				comp.render = entity; //.bind(comp); 
 				comp[CORE].hooks = [];
 				comp[CORE].hook_index = 0;
 			}
@@ -807,36 +808,37 @@ function constructFunc(core, parent) // returns {text} or component, and not com
 	return comp;
 }
 
-
 function prepareCore(parent, core) {
-  try {
-    parent.cache ??= new ComponentCache(parent);
+	try {
+		parent.cache ??= new ComponentCache(parent);
 
-    const isText = core[TEXT] !== undefined;
-    const key = isText
-      ? ':text:'
-      : core.props?.key;
+		const isText = core[TEXT] !== undefined;
 
-    const entity = isText || core instanceof ComponentCore
-      ? undefined
-      : core.entity;
+		const key = isText
+		? ':text:'
+		: core.props?.key;
 
-    return parent.cache.pick(
-      key,
-      () => (
-        isText || core instanceof ComponentCore
-          ? core
-          : constructFunc(core, parent)[CORE]
-      ),
-      entity
-    );
-  } catch (e) {
-    if (core?.component?.componentDidCatch) {
-      core.component.componentDidCatch(e);
-    } else {
-      throw e;
-    }
-  }
+		const entity =
+		isText || core instanceof ComponentCore
+		? undefined
+		: core.entity;
+
+		return parent.cache.pick(
+			key,
+			() => (
+				isText || core instanceof ComponentCore
+				? core
+				: constructFunc(core, parent)[CORE]
+			),
+			entity
+		);
+	} catch (e) {
+		if (core?.component?.componentDidCatch) {
+			core.component.componentDidCatch(e);
+		} else {
+			throw e;
+		}
+	}
 }
 
 
@@ -1292,6 +1294,28 @@ export function createRoot(element)
 		}
 	}
 }
+
+
+
+export function hotReloadRoot(rootCore, nextEntity, props) {
+  if (!rootCore || !rootCore.component) {
+    throw new Error("Invalid Lilact root component.");
+  }
+
+  const replaced = replaceComponentEntity(rootCore, nextEntity);
+
+  if (!replaced) {
+    throw new Error(
+      "Cannot hot-reload the root from a class component to a function component, or vice versa."
+    );
+  }
+
+  rootCore.apply(props === undefined ? rootCore.props : props);
+
+  return rootCore;
+}
+
+
 
 /**
  * Creates a portal — a way to render children into a DOM node

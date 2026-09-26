@@ -2350,6 +2350,7 @@ __export(components_exports, {
   current_component: () => current_component,
   effect_timeout: () => effect_timeout,
   events_set: () => events_set,
+  hotReloadRoot: () => hotReloadRoot,
   insertion_effects: () => insertion_effects,
   layout_effects: () => layout_effects,
   length_css_attributes_set: () => length_css_attributes_set,
@@ -2357,6 +2358,7 @@ __export(components_exports, {
   passive_effects: () => passive_effects,
   processEffects: () => processEffects,
   render: () => render,
+  replaceComponentEntity: () => replaceComponentEntity,
   roots: () => roots,
   special_attributes: () => special_attributes,
   update_cbs: () => update_cbs,
@@ -2368,15 +2370,18 @@ var SVG_NS = "http://www.w3.org/2000/svg";
 function getComponentEntity(entity) {
   return entity?.[MEMOIZED] ? entity.component : entity;
 }
-function replaceComponentEntity(comp, nextEntity) {
-  const core = comp?.[CORE];
-  if (!core || typeof nextEntity !== "function") {
-    return;
+function replaceComponentEntity(componentCore, nextEntity) {
+  if (!componentCore || typeof nextEntity !== "function") {
+    return false;
   }
-  const oldEntity = getComponentEntity(core.entity);
+  const oldEntity = getComponentEntity(componentCore.entity);
   const newEntity = getComponentEntity(nextEntity);
   if (oldEntity === newEntity) {
-    return;
+    return true;
+  }
+  const component = componentCore.component;
+  if (!component) {
+    return false;
   }
   const oldIsClass = isClass(oldEntity);
   const newIsClass = isClass(newEntity);
@@ -2384,11 +2389,11 @@ function replaceComponentEntity(comp, nextEntity) {
     return false;
   }
   if (newIsClass) {
-    Object.setPrototypeOf(comp, newEntity.prototype);
+    Object.setPrototypeOf(component, newEntity.prototype);
   } else {
-    comp.render = newEntity.bind(comp);
+    component.render = newEntity;
   }
-  core.entity = newEntity;
+  componentCore.entity = newEntity;
   return true;
 }
 var ComponentCache = class {
@@ -2400,36 +2405,34 @@ var ComponentCache = class {
     this.owner = owner;
   }
   pick(key, construct_func, nextEntity) {
-    var _a;
-    let comp;
+    let componentCore;
     let bucket = this.current_map.get(key);
-    const reusable = bucket && bucket.length > bucket[IDX];
-    if (reusable) {
-      comp = bucket[bucket[IDX]];
+    if (bucket && bucket.length > bucket[IDX]) {
+      componentCore = bucket[bucket[IDX]];
       bucket[IDX]++;
-      const oldEntity = getComponentEntity(comp?.[CORE]?.entity);
+      const oldEntity = getComponentEntity(componentCore.entity);
       const newEntity = getComponentEntity(nextEntity);
       const incompatible = typeof oldEntity === "function" && typeof newEntity === "function" && isClass(oldEntity) !== isClass(newEntity);
       if (incompatible) {
-        comp = construct_func();
-      } else {
-        replaceComponentEntity(comp, nextEntity);
+        componentCore = construct_func();
+      } else if (newEntity) {
+        replaceComponentEntity(componentCore, newEntity);
       }
     } else {
-      comp = construct_func();
+      componentCore = construct_func();
     }
     bucket = this.new_map.get(key);
-    if (bucket !== void 0) {
-      bucket.push(comp);
+    if (bucket) {
+      bucket.push(componentCore);
     } else {
-      bucket = [comp];
+      bucket = [componentCore];
       this.new_map.set(key, bucket);
       bucket[IDX] = 0;
     }
-    if (comp[CORE]) {
-      (_a = comp[CORE]).parent ?? (_a.parent = this.owner);
+    if (componentCore) {
+      componentCore.parent ?? (componentCore.parent = this.owner);
     }
-    return comp;
+    return componentCore;
   }
   commit() {
     this.current_map.forEach((arr) => {
@@ -2546,7 +2549,7 @@ var ComponentCore = class {
         if (this.hooks !== void 0) {
           this.hook_index = 0;
           lilact_default.current_component = [this, lilact_default.current_component];
-          this.outlet = this.component.render(next_props, { current: this.element || this.component });
+          this.outlet = this.component.render.call(this, next_props, { current: this.element || this.component });
           lilact_default.current_component = lilact_default.current_component[1];
         } else {
           this.outlet = this.component.render({ current: this.element || this.component });
@@ -2877,7 +2880,7 @@ function constructFunc(core, parent) {
           core.props = { ...entity.defaultProps, ...core.props };
         }
         comp = new Component(core.props);
-        comp.render = entity.bind(comp);
+        comp.render = entity;
         comp[CORE].hooks = [];
         comp[CORE].hook_index = 0;
       } else {
@@ -3172,6 +3175,19 @@ function createRoot(element) {
       }
     }
   };
+}
+function hotReloadRoot(rootCore, nextEntity, props) {
+  if (!rootCore || !rootCore.component) {
+    throw new Error("Invalid Lilact root component.");
+  }
+  const replaced = replaceComponentEntity(rootCore, nextEntity);
+  if (!replaced) {
+    throw new Error(
+      "Cannot hot-reload the root from a class component to a function component, or vice versa."
+    );
+  }
+  rootCore.apply(props === void 0 ? rootCore.props : props);
+  return rootCore;
 }
 function createPortal(children, element) {
   return createComponent2(lilact_default.Portal, { "view": element }, children);
@@ -7147,6 +7163,7 @@ export {
   getComponentByPointer,
   globalErrorHandler,
   grabTimers,
+  hotReloadRoot,
   id_num,
   insertion_effects,
   isAsync,
@@ -7167,6 +7184,7 @@ export {
   releaseSyntheticEvent,
   releaseTimers,
   render,
+  replaceComponentEntity,
   require2 as require,
   required_scripts,
   resetTimers,
