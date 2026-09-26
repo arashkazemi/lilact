@@ -94,7 +94,7 @@ export {transpileJSX, transpilerConfig} from "./jsx";
 export const Lilact = 
 {	
 
-	VERSION: "RC.5",
+	VERSION: "RC.6",
 	
 	// Configuration
 

@@ -318,7 +318,7 @@ class ComponentCore
 					this.hook_index = 0;
 					Lilact.current_component = [this, Lilact.current_component];
 
-					this.outlet = this.component.render.call(this, next_props, {current: this.element || this.component} );
+					this.outlet = this.component.render(next_props, {current: this.element || this.component} );
 
 					Lilact.current_component = Lilact.current_component[1];
 				}
@@ -786,7 +786,7 @@ function constructFunc(core, parent) // returns {text} or component, and not com
 
 				// the binding is not necessary and is not according to the specs, 
 				// probably not even recommended! but helpful.
-				comp.render = entity; //.bind(comp); 
+				comp.render = entity.bind(comp); 
 				comp[CORE].hooks = [];
 				comp[CORE].hook_index = 0;
 			}

@@ -981,9 +981,6 @@ export function transpileJSX( jsx, {
 		injectTraceLabels = false,
 		discardComments = false,
 		produceCJS = false,
-		referentiateImports = false,
-		importsObject = "Lilact.scriptImportsObject", // first letter must be capital so components work as expected
-		importsObjectVar = "LilactImports", // first letter must be capital so components work as expected
 		logErrors = false,
 
 		// lilact internal
@@ -1086,41 +1083,26 @@ export function transpileJSX( jsx, {
 
 	const codify = (outlen, node, is_attr=false, is_xml=false)=> {
 
+
 		flattened_nodes.push(node);
 
-		if(typeof(node)!=='object') {
-			if(referentiateImports && typeof(node)==='string') {
-				if(meta?.imported_names.has(node)) {
-					let j = flattened_nodes.length-2;
-					while( (typeof(flattened_nodes[j])==='string' && flattened_nodes[j].trim()==='') ||
-									(typeof(flattened_nodes[j])==='object' && flattened_nodes[j].type==='comment') ) j--;
-
-					if( typeof(flattened_nodes[j])!=='string' || flattened_nodes[j]!==".") {
-						return importsObjectVar+"."+node;
-					}
-				}
-			}
-			return node;
-		}
-		if(node===null) return '';
+		if(typeof(node)!=='object') return node;
+		if(!node) return '';
 
 		node.out_index = outlen;
 
-		//console.log("CODIFY", node, node.out_index);
-
 		if(node.type==='string') return jsx.substring(node.begin, node.end);
-		if(node.type==='import') return referentiateImports?'':node.cjs;
+		if(node.type==='import') return node.cjs;
 		if(node.type==='export') return node.cjs;
 		if(node.type==='regex') return jsx.substring(node.begin, node.end);
 		if(node.type==='comment') return (discardComments || is_attr)?'':jsx.substring(node.begin, node.end);
 		if(node.type==='directive') return node.value;
 
-
 		if(node.type==='parenthesis') {
 			let out = "(";
 
 			if(node.out) {
-				if(produceCJS || referentiateImports) processImportExports(node, jsx, meta);
+				if(produceCJS) processImportExports(node, jsx, meta);
 				for(const ch of node.out) {
 					out+=codify(outlen+out.length-1, ch);
 				}
@@ -1132,7 +1114,7 @@ export function transpileJSX( jsx, {
 			let out = "";
 
 			if(node.out) {
-				if(produceCJS || referentiateImports) processImportExports(node, jsx, meta);
+				if(produceCJS) processImportExports(node, jsx, meta);
 				for(const ch of node.out) {
 					if(is_xml && ch.type==='comment') continue;
 					out+=codify( outlen + out.length - (is_attr?1:0), ch);
@@ -1153,10 +1135,6 @@ export function transpileJSX( jsx, {
 
 		if(node.type==='xml') {
 			
-			if(referentiateImports && meta?.imported_names?.has(node.tag) && node.tag[0]===node.tag[0].toUpperCase()) {
-				node.tag=importsObjectVar+"."+node.tag;
-			}
-
 			if(node.tag.length===0) {
 				node.tag = fragment;
 			}
@@ -1207,9 +1185,6 @@ export function transpileJSX( jsx, {
 	if(injectTraceLabels) {
 		out=`/*LILACTBLOCK${++blocksInfo.counter}:0,0:<EXEC>*/try{`
 	}
-	if(referentiateImports) {
-		out+=`const ${importsObjectVar} = ${importsObject};`;
-	}
 	out+=codify(out.length, json);
 
 	if(injectTraceLabels) {
@@ -1225,7 +1200,7 @@ export function transpileJSX( jsx, {
 	if(appendSourcemap) {
 		out += inline_sm;
 	}
-	//console.log(out);
+	// console.log(out);
 
 	return out;
 }

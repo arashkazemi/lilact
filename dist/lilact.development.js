@@ -2549,7 +2549,7 @@ var ComponentCore = class {
         if (this.hooks !== void 0) {
           this.hook_index = 0;
           lilact_default.current_component = [this, lilact_default.current_component];
-          this.outlet = this.component.render.call(this, next_props, { current: this.element || this.component });
+          this.outlet = this.component.render(next_props, { current: this.element || this.component });
           lilact_default.current_component = lilact_default.current_component[1];
         } else {
           this.outlet = this.component.render({ current: this.element || this.component });
@@ -2880,7 +2880,7 @@ function constructFunc(core, parent) {
           core.props = { ...entity.defaultProps, ...core.props };
         }
         comp = new Component(core.props);
-        comp.render = entity;
+        comp.render = entity.bind(comp);
         comp[CORE].hooks = [];
         comp[CORE].hook_index = 0;
       } else {
@@ -3871,7 +3871,6 @@ function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, options = {})
     module.exports = {};
     module.loaded = false;
     module.error = void 0;
-    module.importsObject = void 0;
     module.meta = {};
   }
   let processed;
@@ -3883,8 +3882,7 @@ function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, options = {})
       factory: "createComponent",
       appendSourcemap: true,
       injectTraceLabels: true,
-      produceCJS: false,
-      referentiateImports: true,
+      produceCJS: true,
       blocksInfo: lilact_default.blocksInfo
     });
   } catch (value) {
@@ -3903,8 +3901,6 @@ function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, options = {})
     globalThis.Lilact = lilact_default;
     globalThis.createComponent = lilact_default.createComponent;
     globalThis.Fragment = lilact_default.Fragment;
-    makeImportsObject(module, options);
-    lilact_default.scriptImportsObject = module.importsObject;
     const result = eval(processed);
     module.loaded = true;
     return isEmpty(module.exports) ? result : module.exports;
@@ -6845,11 +6841,6 @@ function transpileJSX(jsx2, {
   injectTraceLabels = false,
   discardComments = false,
   produceCJS = false,
-  referentiateImports = false,
-  importsObject = "Lilact.scriptImportsObject",
-  // first letter must be capital so components work as expected
-  importsObjectVar = "LilactImports",
-  // first letter must be capital so components work as expected
   logErrors = false,
   // lilact internal
   mappings = [],
@@ -6928,22 +6919,11 @@ function transpileJSX(jsx2, {
   const flattened_nodes = [];
   const codify = (outlen, node3, is_attr = false, is_xml = false) => {
     flattened_nodes.push(node3);
-    if (typeof node3 !== "object") {
-      if (referentiateImports && typeof node3 === "string") {
-        if (meta?.imported_names.has(node3)) {
-          let j = flattened_nodes.length - 2;
-          while (typeof flattened_nodes[j] === "string" && flattened_nodes[j].trim() === "" || typeof flattened_nodes[j] === "object" && flattened_nodes[j].type === "comment") j--;
-          if (typeof flattened_nodes[j] !== "string" || flattened_nodes[j] !== ".") {
-            return importsObjectVar + "." + node3;
-          }
-        }
-      }
-      return node3;
-    }
-    if (node3 === null) return "";
+    if (typeof node3 !== "object") return node3;
+    if (!node3) return "";
     node3.out_index = outlen;
     if (node3.type === "string") return jsx2.substring(node3.begin, node3.end);
-    if (node3.type === "import") return referentiateImports ? "" : node3.cjs;
+    if (node3.type === "import") return node3.cjs;
     if (node3.type === "export") return node3.cjs;
     if (node3.type === "regex") return jsx2.substring(node3.begin, node3.end);
     if (node3.type === "comment") return discardComments || is_attr ? "" : jsx2.substring(node3.begin, node3.end);
@@ -6951,7 +6931,7 @@ function transpileJSX(jsx2, {
     if (node3.type === "parenthesis") {
       let out2 = "(";
       if (node3.out) {
-        if (produceCJS || referentiateImports) processImportExports(node3, jsx2, meta);
+        if (produceCJS) processImportExports(node3, jsx2, meta);
         for (const ch2 of node3.out) {
           out2 += codify(outlen + out2.length - 1, ch2);
         }
@@ -6961,7 +6941,7 @@ function transpileJSX(jsx2, {
     if (node3.type === "js") {
       let out2 = "";
       if (node3.out) {
-        if (produceCJS || referentiateImports) processImportExports(node3, jsx2, meta);
+        if (produceCJS) processImportExports(node3, jsx2, meta);
         for (const ch2 of node3.out) {
           if (is_xml && ch2.type === "comment") continue;
           out2 += codify(outlen + out2.length - (is_attr ? 1 : 0), ch2);
@@ -6976,9 +6956,6 @@ function transpileJSX(jsx2, {
       return out2;
     }
     if (node3.type === "xml") {
-      if (referentiateImports && meta?.imported_names?.has(node3.tag) && node3.tag[0] === node3.tag[0].toUpperCase()) {
-        node3.tag = importsObjectVar + "." + node3.tag;
-      }
       if (node3.tag.length === 0) {
         node3.tag = fragment;
       } else if (node3.tag[0] !== node3.tag[0].toUpperCase()) {
@@ -7016,9 +6993,6 @@ function transpileJSX(jsx2, {
   if (injectTraceLabels) {
     out = `/*LILACTBLOCK${++blocksInfo2.counter}:0,0:<EXEC>*/try{`;
   }
-  if (referentiateImports) {
-    out += `const ${importsObjectVar} = ${importsObject};`;
-  }
   out += codify(out.length, json);
   if (injectTraceLabels) {
     if (transpilerConfig.enableLabelStack) {
@@ -7036,7 +7010,7 @@ function transpileJSX(jsx2, {
 
 // .tmp/src/lilact.jsx
 var Lilact2 = {
-  VERSION: "RC.5",
+  VERSION: "RC.6",
   // Configuration
   defaultTransitionTimeout: 300,
   defaultIsEqual: Object.is,

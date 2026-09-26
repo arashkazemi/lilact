@@ -314,7 +314,6 @@ export function run(
 		module.exports = {};
 		module.loaded = false;
 		module.error = undefined;
-		module.importsObject = undefined;
 		module.meta = {};
 	}
 
@@ -328,8 +327,7 @@ export function run(
 			factory: "createComponent",
 			appendSourcemap: true,
 			injectTraceLabels: true,
-			produceCJS: false,
-			referentiateImports: true,
+			produceCJS: true,
 			blocksInfo: Lilact.blocksInfo,
 		});
 	} 
@@ -357,9 +355,6 @@ export function run(
 		globalThis.createComponent = Lilact.createComponent;
 		globalThis.Fragment = Lilact.Fragment;
 
-		makeImportsObject(module, options);
-
-		Lilact.scriptImportsObject = module.importsObject;
 		const result = eval(processed);
 		module.loaded = true;
 
