@@ -38,8 +38,28 @@ import { PropTypes } from './proptypes.jsx';
 const SVG_NS = "http://www.w3.org/2000/svg";
 
 
+
 function getComponentEntity(entity) {
 	return entity?.[MEMOIZED] ? entity.component : entity;
+}
+
+const hotEntityAliases = new Map();
+
+function resolveHotEntity(entity) {
+	entity = getComponentEntity(entity);
+
+	const visited = new Set();
+
+	while (
+		typeof entity === "function" &&
+		hotEntityAliases.has(entity) &&
+		!visited.has(entity)
+	) {
+		visited.add(entity);
+		entity = hotEntityAliases.get(entity);
+	}
+
+	return entity;
 }
 
 const componentInstances = new Map();
@@ -105,7 +125,7 @@ export function replaceComponentEntity(componentCore, nextEntity) {
 	}
 
 	const oldEntity = getComponentEntity(componentCore.entity);
-	const newEntity = getComponentEntity(nextEntity);
+	const newEntity = resolveHotEntity(nextEntity);
 
 	if (oldEntity === newEntity) {
 		return true;
@@ -148,6 +168,16 @@ export function replaceAllComponentInstances(oldEntity, newEntity) {
 		return 0;
 	}
 
+	newEntity = resolveHotEntity(newEntity);
+
+	if (oldEntity === newEntity) {
+		return 0;
+	}
+
+  // Keep this alias even when there are currently no instances.
+  // A future instance may still be created with oldEntity.
+	hotEntityAliases.set(oldEntity, newEntity);
+
 	const instances = componentInstances.get(oldEntity);
 
 	if (!instances) {
@@ -167,6 +197,7 @@ export function replaceAllComponentInstances(oldEntity, newEntity) {
 
 	return count;
 }
+
 
 /* 
 ComponentCache is for internal use. It is the heart of the JSX runtime,
@@ -194,19 +225,18 @@ class ComponentCache
 			bucket[IDX]++;
 
 			const oldEntity = getComponentEntity(componentCore.entity);
-			const newEntity = getComponentEntity(nextEntity);
+			const newEntity = resolveHotEntity(nextEntity);
 
 			const incompatible =
-					typeof oldEntity !== typeof newEntity ||
-					(
-						typeof oldEntity === "function" &&
-						isClass(oldEntity) !== isClass(newEntity)
-					);
-			
+			typeof oldEntity !== typeof newEntity ||
+			(
+				typeof oldEntity === "function" &&
+				isClass(oldEntity) !== isClass(newEntity)
+			);
+
 			if (incompatible) {
 				componentCore = construct_func();
-			} 
-			else if (newEntity) {
+			} else if (newEntity) {
 				replaceComponentEntity(componentCore, newEntity);
 			}
 		} else {
@@ -810,91 +840,96 @@ const renderErrorHandler = (c, e) =>
 
 
 
-function constructFunc(core, parent) // returns {text} or component, and not component core.
-{
+function constructFunc(core, parent) {
 	let comp = core;
 
-	if( core[TEXT]!==undefined ) {
-		// do nothing...
-	}
-	else {
+	if (core[TEXT] === undefined) {
 		let entity = core.entity;
 		let memoized = false;
 
-		if(typeof(entity)==='object') {
-			if( entity[MEMOIZED] )  {
+		if (typeof entity === "object") {
+			if (entity[MEMOIZED]) {
 				memoized = entity[MEMOIZED];
 				entity = entity.component;
-			}
-			else {
+			} else {
 				throw new Error("Invalid component.");
 			}
 		}
 
-		if(typeof(entity)==='string') {
+		entity = resolveHotEntity(entity);
+
+		if (typeof entity === "string") {
 			comp = new HTMLComponent(entity, core.props);
-		}
-		else {
+		} else if (isClass(entity)) {
+			if (entity?.defaultProps) {
+				core.props = {
+					...entity.defaultProps,
+					...core.props,
+				};
+			}
 
-			if( isClass(entity) ) {
-				if(entity?.defaultProps) {
-					core.props = { ...entity.defaultProps, ...core.props };
-				}
+			comp = new entity(core.props);
 
-				comp = new entity(core.props);
+			const desc = Object.getOwnPropertyDescriptor(comp, "state");
 
-				const desc = Object.getOwnPropertyDescriptor(comp, "state");
-				if(desc) {
-					if (typeof desc.get !== "function" && typeof desc.set !== "function") {
-						comp[CORE].state = comp.state;
+			if (desc) {
+				if (
+					typeof desc.get !== "function" &&
+					typeof desc.set !== "function"
+				) {
+					comp[CORE].state = comp.state;
 
-						Object.defineProperty(comp, "state", {
-							get() { return this[CORE].state },
-							set(v) { 
-								// todo: this should be changed, it should be only directly settable in constructor.
-								if(this[CORE].state===undefined) {
-									this[CORE].state = v;
-								}
-								else {
-									throw new Error('Assigning component state this way is not allowed.');
-								}
+					Object.defineProperty(comp, "state", {
+						get() {
+							return this[CORE].state;
+						},
+						set(value) {
+							if (this[CORE].state === undefined) {
+								this[CORE].state = value;
+							} else {
+								throw new Error(
+									"Assigning component state this way is not allowed."
+								);
 							}
-						});
-					}
+						},
+					});
 				}
 			}
-			else if(typeof(entity)==='function') {
-
-				if(entity?.defaultProps) {
-					core.props = { ...entity.defaultProps, ...core.props };
-				}
-
-				comp = new Component(core.props);
-
-				// the binding is not necessary and is not according to the specs, 
-				// probably not even recommended! but helpful.
-				comp.render = entity.bind(comp); 
-				comp[CORE].hooks = [];
-				comp[CORE].hook_index = 0;
-			}
-			else {
-				throw new Error("Error in constructing component.");
+		} else if (typeof entity === "function") {
+			if (entity?.defaultProps) {
+				core.props = {
+					...entity.defaultProps,
+					...core.props,
+				};
 			}
 
-			comp[CORE].entity = entity;
-			registerComponentCore(comp[CORE]);
-
-			if (core.container) {
-				comp[CORE].container = core.container;
-			}
+			comp = new Component(core.props);
+			comp.render = entity.bind(comp);
+			comp[CORE].hooks = [];
+			comp[CORE].hook_index = 0;
+		} else {
+			throw new Error("Error in constructing component.");
 		}
 
-		if(memoized) comp[CORE][MEMOIZED] = true;
+		comp[CORE].entity = entity;
+		registerComponentCore(comp[CORE]);
+
+		if (core.container) {
+			comp[CORE].container = core.container;
+		}
+
+		if (memoized) {
+			comp[CORE][MEMOIZED] = true;
+		}
 	}
 
-	if(parent instanceof ComponentCore) comp[CORE].parent = parent;
+	if (parent instanceof ComponentCore) {
+		comp[CORE].parent = parent;
+	}
+
 	return comp;
 }
+
 
 function prepareCore(parent, core) {
 	try {
@@ -1387,26 +1422,6 @@ export function createRoot(element)
 			return root[CORE];
 		}
 	}
-}
-
-
-
-export function hotReloadRoot(rootCore, nextEntity, props) {
-  if (!rootCore || !rootCore.component) {
-    throw new Error("Invalid root component.");
-  }
-
-  const replaced = replaceComponentEntity(rootCore, nextEntity);
-
-  if (!replaced) {
-    throw new Error(
-      "Cannot hot-reload the root from a class component to a function component, or vice versa."
-    );
-  }
-
-  rootCore.apply(props === undefined ? rootCore.props : {...rootCore.props, ...props});
-
-  return rootCore;
 }
 
 

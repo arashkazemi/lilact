@@ -2350,7 +2350,6 @@ __export(components_exports, {
   current_component: () => current_component,
   effect_timeout: () => effect_timeout,
   events_set: () => events_set,
-  hotReloadRoot: () => hotReloadRoot,
   insertion_effects: () => insertion_effects,
   layout_effects: () => layout_effects,
   length_css_attributes_set: () => length_css_attributes_set,
@@ -2370,6 +2369,16 @@ __export(components_exports, {
 var SVG_NS = "http://www.w3.org/2000/svg";
 function getComponentEntity(entity) {
   return entity?.[MEMOIZED] ? entity.component : entity;
+}
+var hotEntityAliases = /* @__PURE__ */ new Map();
+function resolveHotEntity(entity) {
+  entity = getComponentEntity(entity);
+  const visited = /* @__PURE__ */ new Set();
+  while (typeof entity === "function" && hotEntityAliases.has(entity) && !visited.has(entity)) {
+    visited.add(entity);
+    entity = hotEntityAliases.get(entity);
+  }
+  return entity;
 }
 var componentInstances = /* @__PURE__ */ new Map();
 function registerComponentCore(core) {
@@ -2416,7 +2425,7 @@ function replaceComponentEntity(componentCore, nextEntity) {
     return false;
   }
   const oldEntity = getComponentEntity(componentCore.entity);
-  const newEntity = getComponentEntity(nextEntity);
+  const newEntity = resolveHotEntity(nextEntity);
   if (oldEntity === newEntity) {
     return true;
   }
@@ -2442,6 +2451,11 @@ function replaceAllComponentInstances(oldEntity, newEntity) {
   if (typeof oldEntity !== "function" || typeof newEntity !== "function") {
     return 0;
   }
+  newEntity = resolveHotEntity(newEntity);
+  if (oldEntity === newEntity) {
+    return 0;
+  }
+  hotEntityAliases.set(oldEntity, newEntity);
   const instances = componentInstances.get(oldEntity);
   if (!instances) {
     return 0;
@@ -2471,7 +2485,7 @@ var ComponentCache = class {
       componentCore = bucket[bucket[IDX]];
       bucket[IDX]++;
       const oldEntity = getComponentEntity(componentCore.entity);
-      const newEntity = getComponentEntity(nextEntity);
+      const newEntity = resolveHotEntity(nextEntity);
       const incompatible = typeof oldEntity !== typeof newEntity || typeof oldEntity === "function" && isClass(oldEntity) !== isClass(newEntity);
       if (incompatible) {
         componentCore = construct_func();
@@ -2898,8 +2912,7 @@ var renderErrorHandler = (c, e) => {
 };
 function constructFunc(core, parent) {
   let comp = core;
-  if (core[TEXT2] !== void 0) {
-  } else {
+  if (core[TEXT2] === void 0) {
     let entity = core.entity;
     let memoized = false;
     if (typeof entity === "object") {
@@ -2910,52 +2923,63 @@ function constructFunc(core, parent) {
         throw new Error("Invalid component.");
       }
     }
+    entity = resolveHotEntity(entity);
     if (typeof entity === "string") {
       comp = new HTMLComponent(entity, core.props);
-    } else {
-      if (isClass(entity)) {
-        if (entity?.defaultProps) {
-          core.props = { ...entity.defaultProps, ...core.props };
-        }
-        comp = new entity(core.props);
-        const desc = Object.getOwnPropertyDescriptor(comp, "state");
-        if (desc) {
-          if (typeof desc.get !== "function" && typeof desc.set !== "function") {
-            comp[CORE].state = comp.state;
-            Object.defineProperty(comp, "state", {
-              get() {
-                return this[CORE].state;
-              },
-              set(v) {
-                if (this[CORE].state === void 0) {
-                  this[CORE].state = v;
-                } else {
-                  throw new Error("Assigning component state this way is not allowed.");
-                }
+    } else if (isClass(entity)) {
+      if (entity?.defaultProps) {
+        core.props = {
+          ...entity.defaultProps,
+          ...core.props
+        };
+      }
+      comp = new entity(core.props);
+      const desc = Object.getOwnPropertyDescriptor(comp, "state");
+      if (desc) {
+        if (typeof desc.get !== "function" && typeof desc.set !== "function") {
+          comp[CORE].state = comp.state;
+          Object.defineProperty(comp, "state", {
+            get() {
+              return this[CORE].state;
+            },
+            set(value) {
+              if (this[CORE].state === void 0) {
+                this[CORE].state = value;
+              } else {
+                throw new Error(
+                  "Assigning component state this way is not allowed."
+                );
               }
-            });
-          }
+            }
+          });
         }
-      } else if (typeof entity === "function") {
-        if (entity?.defaultProps) {
-          core.props = { ...entity.defaultProps, ...core.props };
-        }
-        comp = new Component(core.props);
-        comp.render = entity.bind(comp);
-        comp[CORE].hooks = [];
-        comp[CORE].hook_index = 0;
-      } else {
-        throw new Error("Error in constructing component.");
       }
-      comp[CORE].entity = entity;
-      registerComponentCore(comp[CORE]);
-      if (core.container) {
-        comp[CORE].container = core.container;
+    } else if (typeof entity === "function") {
+      if (entity?.defaultProps) {
+        core.props = {
+          ...entity.defaultProps,
+          ...core.props
+        };
       }
+      comp = new Component(core.props);
+      comp.render = entity.bind(comp);
+      comp[CORE].hooks = [];
+      comp[CORE].hook_index = 0;
+    } else {
+      throw new Error("Error in constructing component.");
     }
-    if (memoized) comp[CORE][MEMOIZED] = true;
+    comp[CORE].entity = entity;
+    registerComponentCore(comp[CORE]);
+    if (core.container) {
+      comp[CORE].container = core.container;
+    }
+    if (memoized) {
+      comp[CORE][MEMOIZED] = true;
+    }
   }
-  if (parent instanceof ComponentCore) comp[CORE].parent = parent;
+  if (parent instanceof ComponentCore) {
+    comp[CORE].parent = parent;
+  }
   return comp;
 }
 function prepareCore(parent, core) {
@@ -3241,19 +3265,6 @@ function createRoot(element) {
       return root[CORE];
     }
   };
-}
-function hotReloadRoot(rootCore, nextEntity, props) {
-  if (!rootCore || !rootCore.component) {
-    throw new Error("Invalid root component.");
-  }
-  const replaced = replaceComponentEntity(rootCore, nextEntity);
-  if (!replaced) {
-    throw new Error(
-      "Cannot hot-reload the root from a class component to a function component, or vice versa."
-    );
-  }
-  rootCore.apply(props === void 0 ? rootCore.props : { ...rootCore.props, ...props });
-  return rootCore;
 }
 function createPortal(children, element) {
   return createComponent2(lilact_default.Portal, { "view": element }, children);
@@ -7098,7 +7109,7 @@ function transpileJSX(jsx2, {
 
 // .tmp/src/lilact.jsx
 var Lilact2 = {
-  VERSION: "RC.6",
+  VERSION: "RC.7",
   // Configuration
   defaultTransitionTimeout: 300,
   defaultIsEqual: Object.is,
@@ -7225,7 +7236,6 @@ export {
   getComponentByPointer,
   globalErrorHandler,
   grabTimers,
-  hotReloadRoot,
   id_num,
   insertion_effects,
   isAsync,
