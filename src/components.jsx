@@ -39,9 +39,64 @@ const SVG_NS = "http://www.w3.org/2000/svg";
 
 
 function getComponentEntity(entity) {
-	return entity?.[MEMOIZED]
-	? entity.component
-	: entity;
+	return entity?.[MEMOIZED] ? entity.component : entity;
+}
+
+const componentInstances = new Map();
+
+function registerComponentCore(core) {
+	const entity = getComponentEntity(core.entity);
+
+	if (typeof entity !== "function") return;
+
+	let instances = componentInstances.get(entity);
+
+	if (!instances) {
+		instances = new Set();
+		componentInstances.set(entity, instances);
+	}
+
+	instances.add(core);
+	core.registered_entity = entity;
+}
+
+function unregisterComponentCore(core) {
+	const entity = core.registered_entity;
+	if (!entity) return;
+
+	const instances = componentInstances.get(entity);
+
+	if (instances) {
+		instances.delete(core);
+
+		if (instances.size === 0) {
+			componentInstances.delete(entity);
+		}
+	}
+
+	delete core.registered_entity;
+}
+
+function moveComponentCore(core, oldEntity, newEntity) {
+	const oldInstances = componentInstances.get(oldEntity);
+
+	if (oldInstances) {
+		oldInstances.delete(core);
+
+		if (oldInstances.size === 0) {
+			componentInstances.delete(oldEntity);
+		}
+	}
+
+	let newInstances = componentInstances.get(newEntity);
+
+	if (!newInstances) {
+		newInstances = new Set();
+		componentInstances.set(newEntity, newInstances);
+	}
+
+	newInstances.add(core);
+	core.registered_entity = newEntity;
 }
 
 export function replaceComponentEntity(componentCore, nextEntity) {
@@ -62,27 +117,56 @@ export function replaceComponentEntity(componentCore, nextEntity) {
 		return false;
 	}
 
-	const oldIsClass = isClass(oldEntity);
-	const newIsClass = isClass(newEntity);
-
-  // A function component cannot reuse a class instance, and vice versa.
-	if (oldIsClass !== newIsClass) {
+	if (
+		typeof oldEntity !== "function" ||
+		typeof newEntity !== "function" ||
+		isClass(oldEntity) !== isClass(newEntity)
+	) {
 		return false;
 	}
 
-	if (newIsClass) {
-    // componentCore.state and the component instance are preserved.
-    // Only the class implementation changes.
+	if (isClass(newEntity)) {
 		Object.setPrototypeOf(component, newEntity.prototype);
 	} else {
-    // The function is invoked with the ComponentCore as `this` by apply().
-		component.render = newEntity;
+		component.render = newEntity.bind(component);
 	}
 
 	componentCore.entity = newEntity;
+	moveComponentCore(componentCore, oldEntity, newEntity);
+
 	return true;
 }
 
+export function replaceAllComponentInstances(oldEntity, newEntity) {
+	oldEntity = getComponentEntity(oldEntity);
+	newEntity = getComponentEntity(newEntity);
+
+	if (
+		typeof oldEntity !== "function" ||
+		typeof newEntity !== "function"
+	) {
+		return 0;
+	}
+
+	const instances = componentInstances.get(oldEntity);
+
+	if (!instances) {
+		return 0;
+	}
+
+	let count = 0;
+
+	for (const core of [...instances]) {
+		if (!replaceComponentEntity(core, newEntity)) {
+			continue;
+		}
+
+		core.apply(core.props, core.state);
+		count++;
+	}
+
+	return count;
+}
 
 /* 
 ComponentCache is for internal use. It is the heart of the JSX runtime,
@@ -113,10 +197,12 @@ class ComponentCache
 			const newEntity = getComponentEntity(nextEntity);
 
 			const incompatible =
-				typeof oldEntity === "function" &&
-				typeof newEntity === "function" &&
-				isClass(oldEntity) !== isClass(newEntity);
-
+					typeof oldEntity !== typeof newEntity ||
+					(
+						typeof oldEntity === "function" &&
+						isClass(oldEntity) !== isClass(newEntity)
+					);
+			
 			if (incompatible) {
 				componentCore = construct_func();
 			} 
@@ -394,7 +480,8 @@ class ComponentCore
 
 	async cleanup()
 	{
-		try {
+  		unregisterComponentCore(this);
+  		try {
 			const promises = [];
 			
 			if(this.props?.ref) {
@@ -795,8 +882,9 @@ function constructFunc(core, parent) // returns {text} or component, and not com
 			}
 
 			comp[CORE].entity = entity;
+			registerComponentCore(comp[CORE]);
 
-			if(core.container) {
+			if (core.container) {
 				comp[CORE].container = core.container;
 			}
 		}
@@ -1274,6 +1362,7 @@ export function createRoot(element)
 	let root;
 
 	return {
+
 		render(component) {
 			if(!root) {
 				root = new RootComponent( element, {children:[component]} );
@@ -1291,6 +1380,11 @@ export function createRoot(element)
 				root.cleanup();
 				element.innerHTML="";
 			}
+		},
+
+		getCore() {
+			console.log(root, root[CORE]);
+			return root[CORE];
 		}
 	}
 }
@@ -1299,7 +1393,7 @@ export function createRoot(element)
 
 export function hotReloadRoot(rootCore, nextEntity, props) {
   if (!rootCore || !rootCore.component) {
-    throw new Error("Invalid Lilact root component.");
+    throw new Error("Invalid root component.");
   }
 
   const replaced = replaceComponentEntity(rootCore, nextEntity);
@@ -1310,7 +1404,7 @@ export function hotReloadRoot(rootCore, nextEntity, props) {
     );
   }
 
-  rootCore.apply(props === undefined ? rootCore.props : props);
+  rootCore.apply(props === undefined ? rootCore.props : {...rootCore.props, ...props});
 
   return rootCore;
 }

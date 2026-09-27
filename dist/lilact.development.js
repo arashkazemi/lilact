@@ -2358,6 +2358,7 @@ __export(components_exports, {
   passive_effects: () => passive_effects,
   processEffects: () => processEffects,
   render: () => render,
+  replaceAllComponentInstances: () => replaceAllComponentInstances,
   replaceComponentEntity: () => replaceComponentEntity,
   roots: () => roots,
   special_attributes: () => special_attributes,
@@ -2369,6 +2370,46 @@ __export(components_exports, {
 var SVG_NS = "http://www.w3.org/2000/svg";
 function getComponentEntity(entity) {
   return entity?.[MEMOIZED] ? entity.component : entity;
+}
+var componentInstances = /* @__PURE__ */ new Map();
+function registerComponentCore(core) {
+  const entity = getComponentEntity(core.entity);
+  if (typeof entity !== "function") return;
+  let instances = componentInstances.get(entity);
+  if (!instances) {
+    instances = /* @__PURE__ */ new Set();
+    componentInstances.set(entity, instances);
+  }
+  instances.add(core);
+  core.registered_entity = entity;
+}
+function unregisterComponentCore(core) {
+  const entity = core.registered_entity;
+  if (!entity) return;
+  const instances = componentInstances.get(entity);
+  if (instances) {
+    instances.delete(core);
+    if (instances.size === 0) {
+      componentInstances.delete(entity);
+    }
+  }
+  delete core.registered_entity;
+}
+function moveComponentCore(core, oldEntity, newEntity) {
+  const oldInstances = componentInstances.get(oldEntity);
+  if (oldInstances) {
+    oldInstances.delete(core);
+    if (oldInstances.size === 0) {
+      componentInstances.delete(oldEntity);
+    }
+  }
+  let newInstances = componentInstances.get(newEntity);
+  if (!newInstances) {
+    newInstances = /* @__PURE__ */ new Set();
+    componentInstances.set(newEntity, newInstances);
+  }
+  newInstances.add(core);
+  core.registered_entity = newEntity;
 }
 function replaceComponentEntity(componentCore, nextEntity) {
   if (!componentCore || typeof nextEntity !== "function") {
@@ -2383,18 +2424,37 @@ function replaceComponentEntity(componentCore, nextEntity) {
   if (!component) {
     return false;
   }
-  const oldIsClass = isClass(oldEntity);
-  const newIsClass = isClass(newEntity);
-  if (oldIsClass !== newIsClass) {
+  if (typeof oldEntity !== "function" || typeof newEntity !== "function" || isClass(oldEntity) !== isClass(newEntity)) {
     return false;
   }
-  if (newIsClass) {
+  if (isClass(newEntity)) {
     Object.setPrototypeOf(component, newEntity.prototype);
   } else {
-    component.render = newEntity;
+    component.render = newEntity.bind(component);
   }
   componentCore.entity = newEntity;
+  moveComponentCore(componentCore, oldEntity, newEntity);
   return true;
+}
+function replaceAllComponentInstances(oldEntity, newEntity) {
+  oldEntity = getComponentEntity(oldEntity);
+  newEntity = getComponentEntity(newEntity);
+  if (typeof oldEntity !== "function" || typeof newEntity !== "function") {
+    return 0;
+  }
+  const instances = componentInstances.get(oldEntity);
+  if (!instances) {
+    return 0;
+  }
+  let count = 0;
+  for (const core of [...instances]) {
+    if (!replaceComponentEntity(core, newEntity)) {
+      continue;
+    }
+    core.apply(core.props, core.state);
+    count++;
+  }
+  return count;
 }
 var ComponentCache = class {
   constructor(owner) {
@@ -2412,7 +2472,7 @@ var ComponentCache = class {
       bucket[IDX]++;
       const oldEntity = getComponentEntity(componentCore.entity);
       const newEntity = getComponentEntity(nextEntity);
-      const incompatible = typeof oldEntity === "function" && typeof newEntity === "function" && isClass(oldEntity) !== isClass(newEntity);
+      const incompatible = typeof oldEntity !== typeof newEntity || typeof oldEntity === "function" && isClass(oldEntity) !== isClass(newEntity);
       if (incompatible) {
         componentCore = construct_func();
       } else if (newEntity) {
@@ -2603,6 +2663,7 @@ var ComponentCore = class {
     }
   }
   async cleanup() {
+    unregisterComponentCore(this);
     try {
       const promises = [];
       if (this.props?.ref) {
@@ -2887,6 +2948,7 @@ function constructFunc(core, parent) {
         throw new Error("Error in constructing component.");
       }
       comp[CORE].entity = entity;
+      registerComponentCore(comp[CORE]);
       if (core.container) {
         comp[CORE].container = core.container;
       }
@@ -3173,12 +3235,16 @@ function createRoot(element) {
         root.cleanup();
         element.innerHTML = "";
       }
+    },
+    getCore() {
+      console.log(root, root[CORE]);
+      return root[CORE];
     }
   };
 }
 function hotReloadRoot(rootCore, nextEntity, props) {
   if (!rootCore || !rootCore.component) {
-    throw new Error("Invalid Lilact root component.");
+    throw new Error("Invalid root component.");
   }
   const replaced = replaceComponentEntity(rootCore, nextEntity);
   if (!replaced) {
@@ -3186,7 +3252,7 @@ function hotReloadRoot(rootCore, nextEntity, props) {
       "Cannot hot-reload the root from a class component to a function component, or vice versa."
     );
   }
-  rootCore.apply(props === void 0 ? rootCore.props : props);
+  rootCore.apply(props === void 0 ? rootCore.props : { ...rootCore.props, ...props });
   return rootCore;
 }
 function createPortal(children, element) {
@@ -3828,7 +3894,10 @@ function require2(path2) {
   return loadModule(path2, options2);
 }
 function makeImportsObject(mod, options2 = {}) {
-  mod.importsObject = {};
+  mod.importsObject ?? (mod.importsObject = {});
+  for (const key of Object.keys(mod.importsObject)) {
+    delete mod.importsObject[key];
+  }
   for (const path2 in mod.meta.imports) {
     const imps = mod.meta.imports[path2];
     const exps = loadModule(path2, {
@@ -3848,7 +3917,7 @@ function makeImportsObject(mod, options2 = {}) {
     for (const i2 of imps.import_defaults) {
       if (!Object.prototype.hasOwnProperty.call(exps, "default")) {
         throw new Error(
-          `Imported module does not export a default.`
+          "Imported module does not export a default."
         );
       }
       mod.importsObject[i2] = exps.default;
@@ -3857,9 +3926,26 @@ function makeImportsObject(mod, options2 = {}) {
       mod.importsObject[i2] = { ...exps };
     }
   }
+  return mod.importsObject;
+}
+function exportEntries(value) {
+  return value && typeof value === "object" ? value : { default: value };
+}
+function replaceReloadedExports(previousExports2, nextExports2) {
+  if (!previousExports2) return;
+  const oldExports = exportEntries(previousExports2);
+  const newExports = exportEntries(nextExports2);
+  for (const name of Object.keys(oldExports)) {
+    const oldExport = oldExports[name];
+    const newExport = newExports[name];
+    if (typeof oldExport === "function" && typeof newExport === "function") {
+      lilact_default.replaceAllComponentInstances(oldExport, newExport);
+    }
+  }
 }
 function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, options = {}) {
   let module = required_scripts[path];
+  const previousExports = module?.loaded ? module.exports : void 0;
   if (!module) {
     module = createModule(path, {
       code: jsx
@@ -3903,7 +3989,9 @@ function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, options = {})
     globalThis.Fragment = lilact_default.Fragment;
     const result = eval(processed);
     module.loaded = true;
-    return isEmpty(module.exports) ? result : module.exports;
+    const nextExports = isEmpty(module.exports) ? result : module.exports;
+    replaceReloadedExports(previousExports, nextExports);
+    return nextExports;
   } catch (value) {
     const error2 = report(value, path);
     error2.sourcePhase ?? (error2.sourcePhase = "runtime");
@@ -7158,6 +7246,7 @@ export {
   releaseSyntheticEvent,
   releaseTimers,
   render,
+  replaceAllComponentInstances,
   replaceComponentEntity,
   require2 as require,
   required_scripts,

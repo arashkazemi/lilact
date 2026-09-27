@@ -245,69 +245,96 @@ export function require(path)
 
 
 function makeImportsObject(mod, options = {}) {
-  mod.importsObject = {};
+	mod.importsObject ??= {};
 
-  for (const path in mod.meta.imports) {
-    const imps = mod.meta.imports[path];
+	for (const key of Object.keys(mod.importsObject)) {
+		delete mod.importsObject[key];
+	}
 
-    const exps = loadModule(path, {
-      requirer: mod,
-      forceReload: options.forceReload,
-    });
+	for (const path in mod.meta.imports) {
+		const imps = mod.meta.imports[path];
 
-    for (const i in imps.named_imports) {
-      if (i === '') continue;
+		const exps = loadModule(path, {
+			requirer: mod,
+			forceReload: options.forceReload,
+		});
 
-      const exportedName = imps.named_imports[i];
+		for (const i in imps.named_imports) {
+			if (i === "") continue;
 
-      if (!Object.prototype.hasOwnProperty.call(exps, exportedName)) {
-        throw new Error(
-          `Imported module does not export any "${i}".`
-        );
-      }
+			const exportedName = imps.named_imports[i];
 
-      mod.importsObject[i] = exps[exportedName];
-    }
+			if (!Object.prototype.hasOwnProperty.call(exps, exportedName)) {
+				throw new Error(
+				`Imported module does not export any "${i}".`
+			);
+			}
 
-    for (const i of imps.import_defaults) {
-      if (!Object.prototype.hasOwnProperty.call(exps, 'default')) {
-        throw new Error(
-          `Imported module does not export a default.`
-        );
-      }
+			mod.importsObject[i] = exps[exportedName];
+		}
 
-      mod.importsObject[i] = exps.default;
-    }
+		for (const i of imps.import_defaults) {
+			if (!Object.prototype.hasOwnProperty.call(exps, "default")) {
+				throw new Error(
+					"Imported module does not export a default."
+				);
+			}
 
-    for (const i of imps.import_stars) {
-      mod.importsObject[i] = { ...exps };
-    }
-  }
+			mod.importsObject[i] = exps.default;
+		}
+
+		for (const i of imps.import_stars) {
+			mod.importsObject[i] = { ...exps };
+		}
+	}
+
+	return mod.importsObject;
+}
+
+
+function exportEntries(value) {
+	return value && typeof value === "object"
+			? value
+			: { default: value };
+}
+
+function replaceReloadedExports(previousExports, nextExports) {
+	if (!previousExports) return;
+
+	const oldExports = exportEntries(previousExports);
+	const newExports = exportEntries(nextExports);
+
+	for (const name of Object.keys(oldExports)) {
+		const oldExport = oldExports[name];
+		const newExport = newExports[name];
+
+		if (
+			typeof oldExport === "function" &&
+			typeof newExport === "function"
+		) {
+			Lilact.replaceAllComponentInstances(oldExport, newExport);
+		}
+	}
 }
 
 
 export function run(
-  jsx,
-  path = `InlineJSX-${++Lilact.eval_num}`,
-  options = {}
+	jsx,
+	path = `InlineJSX-${++Lilact.eval_num}`,
+	options = {}
 ) {
 	let module = required_scripts[path];
 
-	/*
-	* A module may already have been created by require() while its source is
-	* being fetched. Reuse that module so the request and its exports remain
-	* associated with the same entry.
-	*/
+	const previousExports =
+	module?.loaded
+	? module.exports
+	: undefined;
+
 	if (!module) {
 		module = createModule(path, {
 			code: jsx,
 		});
 	} else {
-		/*
-		* Preserve module.request. It may represent the request that led to this
-		* run() call, and clearing it here would make retry/deduplication logic
-		* fragile.
-		*/
 		module.path = path;
 		module.code = String(jsx);
 		module.mappings = [];
@@ -330,14 +357,16 @@ export function run(
 			produceCJS: true,
 			blocksInfo: Lilact.blocksInfo,
 		});
-	} 
-	catch (value) {
+	} catch (value) {
 		const error = asError(value);
+
 		error.fileName ??= path;
-		error.lilact_source ??= {path};
+		error.lilact_source ??= { path };
 		error.sourcePhase = "transpile";
+
 		module.error = error;
 		Lilact.error = error;
+
 		throw error;
 	}
 
@@ -345,25 +374,28 @@ export function run(
 		Lilact.scanBlockLabels(processed, path);
 	}
 
-	/*
-	* sourceURL helps when the browser includes eval locations in its stack.
-	* It is not used as the authoritative source; the catch block below is.
-	*/
-
 	try {
 		globalThis.Lilact = Lilact;
 		globalThis.createComponent = Lilact.createComponent;
 		globalThis.Fragment = Lilact.Fragment;
 
 		const result = eval(processed);
+
 		module.loaded = true;
 
-		return isEmpty(module.exports) ? result : module.exports;
-	} 
-	catch (value) {
+		const nextExports = isEmpty(module.exports)
+		? result
+		: module.exports;
+
+		replaceReloadedExports(previousExports, nextExports);
+
+		return nextExports;
+	} catch (value) {
 		const error = report(value, path);
+
 		error.sourcePhase ??= "runtime";
 		module.error = error;
+
 		throw error;
 	}
 }
