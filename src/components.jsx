@@ -30,7 +30,7 @@
 
 import Lilact from './lilact.jsx';
 
-import { CORE, COMPONENT, TEXT, IS_ZOMBIE, IDX, CHILD_CLASS_ADDENDUM, MEMOIZED } from "./symbols.jsx"
+import { CORE, COMPONENT, TEXT, IS_ZOMBIE, IDX, CHILD_CLASS_ADDENDUM, MEMOIZED, LOCATION } from "./symbols.jsx"
 import { shallowEqual, toBool, isClass, isThenable } from "./misc.jsx";
 
 import { PropTypes } from './proptypes.jsx';
@@ -847,6 +847,9 @@ function constructFunc(core, parent) {
 		let entity = core.entity;
 		let memoized = false;
 
+		const loc = core.props[LOCATION];
+		if(loc) delete core.props[LOCATION];
+
 		if (typeof entity === "object") {
 			if (entity[MEMOIZED]) {
 				memoized = entity[MEMOIZED];
@@ -860,7 +863,8 @@ function constructFunc(core, parent) {
 
 		if (typeof entity === "string") {
 			comp = new HTMLComponent(entity, core.props);
-		} else if (isClass(entity)) {
+		} 
+		else if (isClass(entity)) {
 			if (entity?.defaultProps) {
 				core.props = {
 					...entity.defaultProps,
@@ -895,7 +899,8 @@ function constructFunc(core, parent) {
 					});
 				}
 			}
-		} else if (typeof entity === "function") {
+		} 
+		else if (typeof entity === "function") {
 			if (entity?.defaultProps) {
 				core.props = {
 					...entity.defaultProps,
@@ -907,9 +912,12 @@ function constructFunc(core, parent) {
 			comp.render = entity.bind(comp);
 			comp[CORE].hooks = [];
 			comp[CORE].hook_index = 0;
-		} else {
+		}
+		else {
 			throw new Error("Error in constructing component.");
 		}
+
+		if(loc) comp[CORE].location = loc;
 
 		comp[CORE].entity = entity;
 		registerComponentCore(comp[CORE]);
@@ -938,13 +946,12 @@ function prepareCore(parent, core) {
 		const isText = core[TEXT] !== undefined;
 
 		const key = isText
-		? ':text:'
-		: core.props?.key;
+						? ':text:'
+						: core.props?.key;
 
-		const entity =
-		isText || core instanceof ComponentCore
-		? undefined
-		: core.entity;
+		const entity =	isText || core instanceof ComponentCore
+							? undefined
+							: core.entity;
 
 		return parent.cache.pick(
 			key,
@@ -955,10 +962,12 @@ function prepareCore(parent, core) {
 			),
 			entity
 		);
-	} catch (e) {
+	}
+	catch (e) {
 		if (core?.component?.componentDidCatch) {
 			core.component.componentDidCatch(e);
-		} else {
+		}
+		else {
 			throw e;
 		}
 	}
@@ -1418,7 +1427,6 @@ export function createRoot(element)
 		},
 
 		getCore() {
-			console.log(root, root[CORE]);
 			return root[CORE];
 		}
 	}

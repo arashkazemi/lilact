@@ -355,6 +355,7 @@ export function run(
 			appendSourcemap: true,
 			injectTraceLabels: true,
 			produceCJS: true,
+			addLocationProp: true,
 			blocksInfo: Lilact.blocksInfo,
 		});
 	} catch (value) {

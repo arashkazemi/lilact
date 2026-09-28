@@ -1716,11 +1716,13 @@ __export(symbols_exports, {
   INTERVAL: () => INTERVAL,
   IS_ZOMBIE: () => IS_ZOMBIE,
   LAZY: () => LAZY,
+  LOCATION: () => LOCATION,
   MEMOIZED: () => MEMOIZED,
   REPEAT: () => REPEAT,
   TEXT: () => TEXT2
 });
 var [
+  LOCATION,
   CORE,
   COMPONENT,
   TEXT2,
@@ -1736,6 +1738,7 @@ var [
   CALLBACK,
   ARGS
 ] = [
+  /* @__PURE__ */ Symbol.for("LILACT:LOCATION"),
   /* @__PURE__ */ Symbol.for("LILACT:CORE"),
   /* @__PURE__ */ Symbol.for("LILACT:COMPONENT"),
   /* @__PURE__ */ Symbol.for("LILACT:TEXT"),
@@ -2915,6 +2918,8 @@ function constructFunc(core, parent) {
   if (core[TEXT2] === void 0) {
     let entity = core.entity;
     let memoized = false;
+    const loc = core.props[LOCATION];
+    if (loc) delete core.props[LOCATION];
     if (typeof entity === "object") {
       if (entity[MEMOIZED]) {
         memoized = entity[MEMOIZED];
@@ -2968,6 +2973,7 @@ function constructFunc(core, parent) {
     } else {
       throw new Error("Error in constructing component.");
     }
+    if (loc) comp[CORE].location = loc;
     comp[CORE].entity = entity;
     registerComponentCore(comp[CORE]);
     if (core.container) {
@@ -3261,7 +3267,6 @@ function createRoot(element) {
       }
     },
     getCore() {
-      console.log(root, root[CORE]);
       return root[CORE];
     }
   };
@@ -3980,6 +3985,7 @@ function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, options = {})
       appendSourcemap: true,
       injectTraceLabels: true,
       produceCJS: true,
+      addLocationProp: true,
       blocksInfo: lilact_default.blocksInfo
     });
   } catch (value) {
@@ -6227,6 +6233,7 @@ function processImportExports(node3, jsx2, meta) {
 }
 
 // .tmp/src/jsx.js
+var LOCATION2 = /* @__PURE__ */ Symbol.for("LILACT:LOCATION");
 var transpilerConfig = {
   setBlockLabels: true,
   enableLabelStack: false,
@@ -6941,6 +6948,7 @@ function transpileJSX(jsx2, {
   discardComments = false,
   produceCJS = false,
   logErrors = false,
+  addLocationProp = false,
   // lilact internal
   mappings = [],
   meta,
@@ -7084,7 +7092,10 @@ function transpileJSX(jsx2, {
         }
       }
       const loc = getRowCol(eols, node3.begin);
-      out2 = ` ${factory}( ${node3.tag}, { ${out2} )`;
+      if (addLocationProp)
+        out2 = ` ${factory}( ${node3.tag}, { [Lilact.LOCATION]:["${path2}", ${loc}], ${out2} )`;
+      else
+        out2 = ` ${factory}( ${node3.tag}, { ${out2} )`;
       return out2;
     }
   };
@@ -7187,6 +7198,7 @@ export {
   INTERVAL,
   IS_ZOMBIE,
   LAZY,
+  LOCATION,
   Lilact2 as Lilact,
   Link,
   MEMOIZED,

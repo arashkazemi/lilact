@@ -30,6 +30,8 @@
 
 
 export const [ 	
+				LOCATION,
+
 				CORE,
 				COMPONENT,
 				TEXT,
@@ -44,9 +46,11 @@ export const [
 				CLEARED,
 				INTERVAL,
 				CALLBACK,
-				ARGS 
+				ARGS
 			] = 
 			[
+				Symbol.for('LILACT:LOCATION'),
+				
 				Symbol.for('LILACT:CORE'),
 				Symbol.for('LILACT:COMPONENT'),
 				Symbol.for('LILACT:TEXT'),

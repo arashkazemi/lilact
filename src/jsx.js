@@ -50,7 +50,7 @@
 import * as vlq from './vlq.js' 
 import {processImportExports} from './expscan.js'
 
-
+const LOCATION = Symbol.for('LILACT:LOCATION'); // it is also defined in symbols.jsx. 
 
 /** @ignore */
 export const transpilerConfig = {
@@ -982,6 +982,7 @@ export function transpileJSX( jsx, {
 		discardComments = false,
 		produceCJS = false,
 		logErrors = false,
+		addLocationProp = false,
 
 		// lilact internal
 		mappings = [],
@@ -1175,7 +1176,10 @@ export function transpileJSX( jsx, {
 			}
 
 			const loc = getRowCol(eols,node.begin);
-			out = ` ${factory}( ${node.tag}, { ${out} )`; //lilact_jsx_loc:["${path}", ${loc}]
+			if(addLocationProp)
+				out = ` ${factory}( ${node.tag}, { [Lilact.LOCATION]:["${path}", ${loc}], ${out} )`;
+			else
+				out = ` ${factory}( ${node.tag}, { ${out} )`;
 
 			return out;
 		}
