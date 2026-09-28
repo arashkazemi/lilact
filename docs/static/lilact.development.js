@@ -1689,7 +1689,7 @@ __export(misc_exports, {
   eval_num: () => eval_num,
   findDOMNode: () => findDOMNode,
   forwardRef: () => forwardRef,
-  getComponentByPointer: () => getComponentByPointer,
+  getComponentUnderPointer: () => getComponentUnderPointer,
   id_num: () => id_num,
   isAsync: () => isAsync,
   isClass: () => isClass,
@@ -1929,15 +1929,20 @@ var forwardRef = (render2) => {
   forwarded.displayName = "Forwarded " + render2.displayName;
   return forwarded;
 };
-function getComponentByPointer() {
+function getComponentUnderPointer() {
   let resolve_func;
   const pr = new Promise((res, rej) => {
     resolve_func = res;
   });
+  const overlay = document.createElement("div");
+  overlay.style.cssText = "position:fixed;inset:0;z-index:2147483647;cursor:crosshair;background:transparent;";
+  document.body.appendChild(overlay);
   function click_handler(event) {
     event.stopImmediatePropagation();
     window.removeEventListener("click", click_handler, true);
-    let t = event.target;
+    overlay.style.display = "none";
+    let t = document.elementFromPoint(event.clientX, event.clientY);
+    overlay.remove();
     while (!t[COMPONENT] && t.parentNode) {
       t = t.parentNode;
     }
@@ -7245,7 +7250,7 @@ export {
   events_set,
   findDOMNode,
   forwardRef,
-  getComponentByPointer,
+  getComponentUnderPointer,
   globalErrorHandler,
   grabTimers,
   id_num,

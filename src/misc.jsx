@@ -311,33 +311,40 @@ export const forwardRef = (render)=>
  *
  * @returns A promise that is resolved when the user clicks on screen and its value will be the component if any.
  */
-export function getComponentByPointer()
+export function getComponentUnderPointer()
 {
-	let resolve_func;
+  let resolve_func;
 
-	const pr = new Promise( (res, rej)=> {
-		resolve_func = res;
-	});
+  const pr = new Promise( (res, rej)=> {
+    resolve_func = res;
+  });
 
-	function click_handler(event) {
+  const overlay = document.createElement('div');
+  overlay.style.cssText =
+    'position:fixed;inset:0;z-index:2147483647;cursor:crosshair;background:transparent;';
+  document.body.appendChild(overlay);
 
-		event.stopImmediatePropagation();
-		window.removeEventListener('click', click_handler, true);
+  function click_handler(event) {
 
-		let t = event.target;
+    event.stopImmediatePropagation();
+    window.removeEventListener('click', click_handler, true);
 
-		while( !t[COMPONENT] && t.parentNode ) {
-			t = t.parentNode;
-		}
+    overlay.style.display = 'none';
+    let t = document.elementFromPoint(event.clientX, event.clientY);
+    overlay.remove();
 
-		resolve_func( t[COMPONENT] );
+    while( !t[COMPONENT] && t.parentNode ) {
+      t = t.parentNode;
+    }
 
-		return false;
-	}
+    resolve_func( t[COMPONENT] );
 
-	window.addEventListener('click', click_handler, true);
+    return false;
+  }
 
-	return pr;
+  window.addEventListener('click', click_handler, true);
+
+  return pr;
 }
 
 
