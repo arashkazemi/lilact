@@ -29,7 +29,7 @@ If you find Lilact useful, please consider sponsoring. Your support funds ongoin
 
 ## Overview
 
-`Lilact` is a very lightweight implementation of the React API designed to run in the browser. It can be used as a single script that is around `98kb` minified and around `34kb` gzipped and includes its whole API. It is tested and works on **Chrome**, **Firefox**, **Edge**, and **Safari**.
+`Lilact` is a very lightweight implementation of the React API designed to run in the browser. It can be used as a single script that is around `108kb` minified and around `37kb` gzipped and includes its whole API. It is tested and works on **Chrome**, **Firefox**, **Edge**, and **Safari**.
 
 `Lilact` is very fast, uses minimal resources, and handles memory very efficiently.
 
@@ -70,7 +70,7 @@ and helper components like:
 - `SplitPane`
 - `DragHandle`
 
-It also includes a specific timeout implementation that can be paused and resumed at will. `Lilact`’s `Suspense` includes additional features beyond the standard API.
+`Lilact` supports module **hot-reload** and **async (lazy)** loading of components. It also includes an internal timeout implementation that can be paused and resumed at will. `Lilact`’s `Suspense` includes additional features beyond the standard API.
 
 You can see all available members and methods in the documentation. There is also a list of demos you can view alongside their code at:  
 [Lilact Demo Examples](https://arashkazemi.github.io/lilact/static)
@@ -84,10 +84,10 @@ Note: modules are separated in the documentation to improve structure, but in pr
 An `ESBuild` based bundler is available in the `bin` directory. It can be used like this:
 
 ```bash
-npx lilact-bundle --watch --minify --entry client/App.jsx --mode production --name bundle.js --out public/dist
+npx lilact-bundler --watch --minify --entry client/App.jsx --mode production --name bundle --out public/dist
 ```
 
-If you add a `--watch` argument, the bundler will stay running and keep watching the input file(s),
+If you add the `--watch` argument, the bundler will stay running and keep watching the input file(s),
 and update the bundle if any file is changed. 
 
 ---
