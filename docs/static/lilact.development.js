@@ -4079,6 +4079,8 @@ function lazy(factory) {
   } catch (error2) {
     status = "error";
     result2 = error2;
+  } finally {
+    lilact_default[LAZY] = false;
   }
   if (lilact_default.isThenable(result2)) {
     result2.then(
@@ -4095,13 +4097,10 @@ function lazy(factory) {
     status = "success";
   }
   function LazyComponent(props) {
-    if (status === "pending") {
+    if (status === "pending" || status === "error") {
       throw result2;
     }
-    if (status === "error") {
-      throw result2;
-    }
-    const Component2 = result2;
+    const Component2 = result2?.default ?? result2;
     return createComponent(Component2, { ...props });
   }
   return LazyComponent;

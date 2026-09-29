@@ -134,113 +134,113 @@ function createModule(path, {
 }
 
 function loadModule(path, options = {}) {
-  if (Lilact.importObjectPaths?.[path]) {
-    return Lilact.importObjectPaths[path];
-  }
-
-  if (options.requirer?.path) {
-    path = joinPaths(options.requirer.path, path);
-  }
-
-  const loadAsync =
-    Boolean(Lilact[LAZY]) ||
-    Boolean(options.isLazy);
-
-  const module = getOrCreateModule(path, {});
-
-  if (module.loaded && !options.forceReload) {
-    return module.exports;
-  }
-
-  if (path.startsWith("#")) {
-    const element = document.getElementById(path.slice(1));
-
-    if (!element) {
-      throw report(
-        new Error(`Required element not found (${path})`),
-        path
-      );
-    }
-
-    return run(
-      element.textContent || "",
-      path,
-      {forceReload: options.forceReload}
-    );
-  }
-
-  if (loadAsync) {
-    Lilact[LAZY] = false;
-
-	if (module.request && !options.forceReload) {
-	  return module.request;
+	if (Lilact.importObjectPaths?.[path]) {
+		return Lilact.importObjectPaths[path];
 	}
 
-	return loadAsyncResource(path, module, options);
-  }
+	if (options.requirer?.path) {
+		path = joinPaths(options.requirer.path, path);
+	}
 
-  const resolved = Lilact.resolver?.(path);
+	const loadAsync =
+	Boolean(Lilact[LAZY]) ||
+	Boolean(options.isLazy);
 
-  if (resolved != null) {
-    if (path.endsWith(".css")) {
-      injectGlobal(String(resolved));
-      module.code = String(resolved);
-      module.loaded = true;
-      return undefined;
-    }
+	const module = getOrCreateModule(path, {});
 
-    return run(
-      String(resolved),
-      path,
-      {forceReload: options.forceReload}
-    );
-  }
+	if (module.loaded && !options.forceReload) {
+		return module.exports;
+	}
 
-  const request = new XMLHttpRequest();
+	if (path.startsWith("#")) {
+		const element = document.getElementById(path.slice(1));
 
-  try {
-    request.open("GET", path, false);
-    request.send(null);
-  } catch (value) {
-    throw report(value, path);
-  }
+		if (!element) {
+			throw report(
+				new Error(`Required element not found (${path})`),
+				path
+			);
+		}
 
-  if (request.status >= 200 && request.status < 300) {
-    if (path.endsWith(".css")) {
-      module.code = request.responseText;
-      injectGlobal(module.code);
-      module.loaded = true;
-      return undefined;
-    }
+		return run(
+			element.textContent || "",
+			path,
+			{forceReload: options.forceReload}
+		);
+	}
 
-    return run(
-      request.responseText,
-      path,
-      {forceReload: true}
-    );
-  }
+	if (loadAsync) {
+		Lilact[LAZY] = false;
 
-  throw report(
-    new Error(
-      `Unable to load ${path}: HTTP ${request.status || 0}`
-    ),
-    path
-  );
+		if (module.request && !options.forceReload) {
+			return module.request;
+		}
+
+		return loadAsyncResource(path, module, options);
+	}
+
+	const resolved = Lilact.resolver?.(path);
+
+	if (resolved != null) {
+		if (path.endsWith(".css")) {
+			injectGlobal(String(resolved));
+			module.code = String(resolved);
+			module.loaded = true;
+			return undefined;
+		}
+
+		return run(
+			String(resolved),
+			path,
+			{forceReload: options.forceReload}
+		);
+	}
+
+	const request = new XMLHttpRequest();
+
+	try {
+		request.open("GET", path, false);
+		request.send(null);
+	} catch (value) {
+		throw report(value, path);
+	}
+
+	if (request.status >= 200 && request.status < 300) {
+		if (path.endsWith(".css")) {
+			module.code = request.responseText;
+			injectGlobal(module.code);
+			module.loaded = true;
+			return undefined;
+		}
+
+		return run(
+			request.responseText,
+			path,
+			{forceReload: true}
+		);
+	}
+
+	throw report(
+		new Error(
+		`Unable to load ${path}: HTTP ${request.status || 0}`
+	),
+		path
+	);
 }
 
 export function require(path) 
 {
-  let options = {};
+	let options = {};
 
-  if (
-    arguments.length === 2 &&
-    arguments[1] &&
-    typeof arguments[1] === "object"
-  ) {
-    options = arguments[1];
-  }
+	if (
+		arguments.length === 2 &&
+		arguments[1] &&
+		typeof arguments[1] === "object"
+	) {
+		options = arguments[1];
+	}
 
-  return loadModule(path, options);
+	return loadModule(path, options);
 }
 
 
@@ -473,8 +473,8 @@ function loadAsyncResource(path, module, options = {})
 	return request;
 }
 
-
-export function lazy(factory) {
+export function lazy(factory) 
+{
 	let status = "pending";
 	let result;
 
@@ -485,6 +485,8 @@ export function lazy(factory) {
 	} catch (error) {
 		status = "error";
 		result = error;
+	} finally {
+		Lilact[LAZY] = false;
 	}
 
 	if (Lilact.isThenable(result)) {
@@ -503,22 +505,19 @@ export function lazy(factory) {
 	}
 
 	function LazyComponent(props) {
-		if (status === "pending") {
+		if (status === "pending" || status === "error") {
 			throw result;
 		}
 
-		if (status === "error") {
-			throw result;
-		}
-
-		const Component = result;
+		const Component = result?.default ?? result;
 		return <Component {...props} />;
 	}
 
 	return LazyComponent;
 }
 
-function scriptTags() {
+function scriptTags() 
+{
 	return Array.from(
 		document.querySelectorAll('script[type="text/jsx"]')
 	).map(element => ({
