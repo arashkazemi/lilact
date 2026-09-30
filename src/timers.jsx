@@ -47,16 +47,21 @@ import {
  * Managed timers can be paused, resumed, reset, or released. Promise-based
  * helpers are also provided through `timeoutPromise` and
  * `animationFramePromise`.
- *
- * The `Lilact._setTimeout`, `Lilact._setInterval`, `Lilact._clearTimeout`,
- * and `Lilact._clearInterval` properties must reference the original native
- * timer functions.
  */
 
 let timer_pause_time;
 let current_timer_idx = 0;
 let timer_list = [];
 let timer_timeout = 0;
+
+
+globalThis.NATIVE_TIMERS ??= {};
+
+NATIVE_TIMERS.setTimeout ??= globalThis.setTimeout.bind(globalThis);
+NATIVE_TIMERS.setInterval ??= globalThis.setInterval.bind(globalThis);
+NATIVE_TIMERS.clearTimeout ??= globalThis.clearTimeout.bind(globalThis);
+NATIVE_TIMERS.clearInterval ??= globalThis.clearInterval.bind(globalThis);
+
 let all_timers = new Map();
 
 /**
@@ -105,14 +110,14 @@ function schedule_next_timer() {
         return;
     }
 
-    Lilact._clearTimeout(timer_timeout);
+    NATIVE_TIMERS.clearTimeout(timer_timeout);
 
     const delay = Math.max(
         0,
         timer_list[0][DUE] - Date.now()
     );
 
-    timer_timeout = Lilact._setTimeout(run_timer, delay);
+    timer_timeout = NATIVE_TIMERS.setTimeout(run_timer, delay);
 }
 
 function add_timer(timer, is_repeat = false) {
@@ -229,7 +234,7 @@ function run_timer() {
      * completed.
      */
     if (first_error !== undefined) {
-        Lilact._setTimeout(() => {
+        NATIVE_TIMERS.setTimeout(() => {
             throw first_error;
         }, 0);
     }
@@ -245,7 +250,7 @@ function run_timer() {
  * @returns {void}
  */
 export function resetTimers() {
-    Lilact._clearTimeout(timer_timeout);
+    NATIVE_TIMERS.clearTimeout(timer_timeout);
 
     for (const timer of all_timers.values()) {
         timer[CLEARED] = true;
@@ -274,7 +279,7 @@ export function pauseTimers() {
         return;
     }
 
-    Lilact._clearTimeout(timer_timeout);
+    NATIVE_TIMERS.clearTimeout(timer_timeout);
     timer_timeout = -1;
     timer_pause_time = Date.now();
 }
@@ -367,7 +372,7 @@ export function clearTimeout(id) {
     if (timer !== undefined) {
         timer[CLEARED] = true;
     } else {
-        Lilact._clearTimeout(id);
+        NATIVE_TIMERS.clearTimeout(id);
     }
 }
 
@@ -381,13 +386,14 @@ export function clearTimeout(id) {
  * @param {number} id - Interval ID returned by `setInterval`.
  * @returns {void}
  */
-export function clearInterval(id) {
+export function clearInterval(id) 
+{
     const timer = all_timers.get(id);
 
     if (timer !== undefined) {
         timer[CLEARED] = true;
     } else {
-        Lilact._clearInterval(id);
+        NATIVE_TIMERS.clearInterval(id);
     }
 }
 
@@ -400,7 +406,8 @@ export function clearInterval(id) {
  *
  * @returns {void}
  */
-export function grabTimers() {
+export function grabTimers() 
+{
     globalThis.setTimeout = Lilact.setTimeout;
     globalThis.setInterval = Lilact.setInterval;
     globalThis.clearTimeout = Lilact.clearTimeout;
@@ -415,11 +422,12 @@ export function grabTimers() {
  *
  * @returns {void}
  */
-export function releaseTimers() {
-    globalThis.setTimeout = Lilact._setTimeout;
-    globalThis.setInterval = Lilact._setInterval;
-    globalThis.clearTimeout = Lilact._clearTimeout;
-    globalThis.clearInterval = Lilact._clearInterval;
+export function releaseTimers() 
+{
+    globalThis.setTimeout = NATIVE_TIMERS.setTimeout;
+    globalThis.setInterval = NATIVE_TIMERS.setInterval;
+    globalThis.clearTimeout = NATIVE_TIMERS.clearTimeout;
+    globalThis.clearInterval = NATIVE_TIMERS.clearInterval;
 }
 
 /**
@@ -434,7 +442,8 @@ export function releaseTimers() {
  * @param {Object} [timerSource=Lilact] - Object providing timer functions.
  * @returns {Promise} Promise that resolves after the timeout.
  */
-export function timeoutPromise(duration = 0, timerSource = Lilact) {
+export function timeoutPromise(duration = 0, timerSource = Lilact) 
+{
     let id;
     let resolve_promise;
     let reject_promise;
@@ -483,3 +492,4 @@ export function animationFramePromise() {
         });
     });
 }
+

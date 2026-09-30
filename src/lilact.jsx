@@ -125,12 +125,6 @@ export const Lilact =
 	PropTypes,
 	redux,
 	emotion,
-
-	_setTimeout: globalThis.setTimeout.bind(globalThis),
-	_setInterval: globalThis.setInterval.bind(globalThis),
-	_clearTimeout: globalThis.clearTimeout.bind(globalThis),
-	_clearInterval: globalThis.clearInterval.bind(globalThis),
-
 }
 
 Lilact.default = Lilact;

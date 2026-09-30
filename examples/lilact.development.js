@@ -3160,10 +3160,10 @@ var Component = class {
   * @returns {void}
   */
   forceUpdate(callback) {
-    lilact_default._clearTimeout(lilact_default.update_timeout);
+    NATIVE_TIMERS.clearTimeout(lilact_default.update_timeout);
     lilact_default.update_set.add(this[CORE].container || this[CORE]);
     if (callback) lilact_default.update_cbs.add(callback.bind(this));
-    lilact_default.update_timeout = lilact_default._setTimeout(doUpdates, lilact_default.update_interval_margin);
+    lilact_default.update_timeout = NATIVE_TIMERS.setTimeout(doUpdates, lilact_default.update_interval_margin);
   }
   /**
   * Update component state.
@@ -3617,8 +3617,8 @@ async function useLayoutEffect(effect, deps = void 0) {
   lilact_default.layout_effects.add(async () => {
     hk.cleanup = await effect();
   });
-  lilact_default._clearTimeout(lilact_default.effect_timeout);
-  lilact_default._setTimeout(lilact_default.processEffects, 0);
+  NATIVE_TIMERS.clearTimeout(lilact_default.effect_timeout);
+  lilact_default.effect_timeout = NATIVE_TIMERS.setTimeout(lilact_default.processEffects, 0);
 }
 async function useEffect(effect, deps = void 0) {
   if (deps !== void 0 && !Array.isArray(deps) && deps !== null && typeof deps !== "object") {
@@ -3636,8 +3636,8 @@ async function useEffect(effect, deps = void 0) {
   lilact_default.passive_effects.add(async () => {
     hk.cleanup = await effect();
   });
-  lilact_default._clearTimeout(lilact_default.effect_timeout);
-  lilact_default._setTimeout(lilact_default.processEffects, 0);
+  NATIVE_TIMERS.clearTimeout(lilact_default.effect_timeout);
+  lilact_default.effect_timeout = NATIVE_TIMERS.setTimeout(lilact_default.processEffects, 0);
 }
 async function useInsertionEffect(effect, deps = void 0) {
   if (deps !== void 0 && !Array.isArray(deps) && deps !== null && typeof deps !== "object") {
@@ -3655,8 +3655,8 @@ async function useInsertionEffect(effect, deps = void 0) {
   lilact_default.insertion_effects.add(async () => {
     hk.cleanup = await effect();
   });
-  lilact_default._clearTimeout(lilact_default.effect_timeout);
-  lilact_default._setTimeout(lilact_default.processEffects, 0);
+  NATIVE_TIMERS.clearTimeout(lilact_default.effect_timeout);
+  lilact_default.effect_timeout = NATIVE_TIMERS.setTimeout(lilact_default.processEffects, 0);
 }
 function useMemo(factory, deps = void 0) {
   if (deps !== void 0 && !Array.isArray(deps) && deps !== null && typeof deps !== "object") {
@@ -4641,6 +4641,11 @@ var timer_pause_time;
 var current_timer_idx = 0;
 var timer_list = [];
 var timer_timeout = 0;
+globalThis.NATIVE_TIMERS ?? (globalThis.NATIVE_TIMERS = {});
+NATIVE_TIMERS.setTimeout ?? (NATIVE_TIMERS.setTimeout = globalThis.setTimeout.bind(globalThis));
+NATIVE_TIMERS.setInterval ?? (NATIVE_TIMERS.setInterval = globalThis.setInterval.bind(globalThis));
+NATIVE_TIMERS.clearTimeout ?? (NATIVE_TIMERS.clearTimeout = globalThis.clearTimeout.bind(globalThis));
+NATIVE_TIMERS.clearInterval ?? (NATIVE_TIMERS.clearInterval = globalThis.clearInterval.bind(globalThis));
 var all_timers = /* @__PURE__ */ new Map();
 function get_bucket(target) {
   let left = 0;
@@ -4666,12 +4671,12 @@ function schedule_next_timer() {
   if (timer_pause_time !== void 0 || timer_list.length === 0) {
     return;
   }
-  Lilact._clearTimeout(timer_timeout);
+  NATIVE_TIMERS.clearTimeout(timer_timeout);
   const delay = Math.max(
     0,
     timer_list[0][DUE] - Date.now()
   );
-  timer_timeout = Lilact._setTimeout(run_timer, delay);
+  timer_timeout = NATIVE_TIMERS.setTimeout(run_timer, delay);
 }
 function add_timer(timer, is_repeat = false) {
   const [bucket_index, bucket] = get_bucket(timer[DUE]);
@@ -4726,13 +4731,13 @@ function run_timer() {
   }
   schedule_next_timer();
   if (first_error !== void 0) {
-    Lilact._setTimeout(() => {
+    NATIVE_TIMERS.setTimeout(() => {
       throw first_error;
     }, 0);
   }
 }
 function resetTimers() {
-  Lilact._clearTimeout(timer_timeout);
+  NATIVE_TIMERS.clearTimeout(timer_timeout);
   for (const timer of all_timers.values()) {
     timer[CLEARED] = true;
   }
@@ -4746,7 +4751,7 @@ function pauseTimers() {
   if (timer_pause_time !== void 0) {
     return;
   }
-  Lilact._clearTimeout(timer_timeout);
+  NATIVE_TIMERS.clearTimeout(timer_timeout);
   timer_timeout = -1;
   timer_pause_time = Date.now();
 }
@@ -4788,7 +4793,7 @@ function clearTimeout2(id) {
   if (timer !== void 0) {
     timer[CLEARED] = true;
   } else {
-    Lilact._clearTimeout(id);
+    NATIVE_TIMERS.clearTimeout(id);
   }
 }
 function clearInterval(id) {
@@ -4796,7 +4801,7 @@ function clearInterval(id) {
   if (timer !== void 0) {
     timer[CLEARED] = true;
   } else {
-    Lilact._clearInterval(id);
+    NATIVE_TIMERS.clearInterval(id);
   }
 }
 function grabTimers() {
@@ -4806,10 +4811,10 @@ function grabTimers() {
   globalThis.clearInterval = Lilact.clearInterval;
 }
 function releaseTimers() {
-  globalThis.setTimeout = Lilact._setTimeout;
-  globalThis.setInterval = Lilact._setInterval;
-  globalThis.clearTimeout = Lilact._clearTimeout;
-  globalThis.clearInterval = Lilact._clearInterval;
+  globalThis.setTimeout = NATIVE_TIMERS.setTimeout;
+  globalThis.setInterval = NATIVE_TIMERS.setInterval;
+  globalThis.clearTimeout = NATIVE_TIMERS.clearTimeout;
+  globalThis.clearInterval = NATIVE_TIMERS.clearInterval;
 }
 function timeoutPromise(duration = 0, timerSource = Lilact) {
   let id;
@@ -7147,11 +7152,7 @@ var Lilact2 = {
   // Dependencies
   PropTypes,
   redux: redux_exports,
-  emotion: emotion_css_esm_exports,
-  _setTimeout: globalThis.setTimeout.bind(globalThis),
-  _setInterval: globalThis.setInterval.bind(globalThis),
-  _clearTimeout: globalThis.clearTimeout.bind(globalThis),
-  _clearInterval: globalThis.clearInterval.bind(globalThis)
+  emotion: emotion_css_esm_exports
 };
 Lilact2.default = Lilact2;
 var lilact_default = Lilact2;

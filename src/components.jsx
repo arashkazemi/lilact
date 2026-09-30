@@ -1214,11 +1214,11 @@ export class Component
 	*/
 	forceUpdate(callback)
 	{
-		Lilact._clearTimeout(Lilact.update_timeout);
+		NATIVE_TIMERS.clearTimeout(Lilact.update_timeout);
 
 		Lilact.update_set.add(this[CORE].container || this[CORE]);
 		if(callback) Lilact.update_cbs.add(callback.bind(this));
-		Lilact.update_timeout = Lilact._setTimeout( doUpdates,  Lilact.update_interval_margin );
+		Lilact.update_timeout = NATIVE_TIMERS.setTimeout( doUpdates,  Lilact.update_interval_margin );
 	}
 
 	/**
