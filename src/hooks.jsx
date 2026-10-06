@@ -85,7 +85,7 @@ export function useState(initialValue)
  * @param {Array<any>} deps - Dependency list.
  * @returns {Function} Memoized callback.
  */
-export function useCallback(callback, deps=undefined)
+export function useCallback(callback, deps)
 {
 	if(
 			deps !== undefined && !Array.isArray(deps) &&
@@ -270,7 +270,7 @@ export function useRef(initialValue = null)
  * 						used to determine when to re-run the effect.
  * @returns {void}
  */
-export async function useLayoutEffect(effect, deps=undefined)
+export async function useLayoutEffect(effect, deps)
 {
 	if(
 			deps !== undefined && !Array.isArray(deps) &&
@@ -306,7 +306,7 @@ export async function useLayoutEffect(effect, deps=undefined)
  * 						used to determine when to re-run the effect.
  * @returns {void}
  */
-export async function useEffect(effect, deps=undefined)
+export async function useEffect(effect, deps)
 {
 	if(
 			deps !== undefined && !Array.isArray(deps) &&
@@ -343,7 +343,7 @@ export async function useEffect(effect, deps=undefined)
  * 						used to determine when to re-run the effect.
  * @returns void
  */
-export async function useInsertionEffect(effect, deps=undefined)
+export async function useInsertionEffect(effect, deps)
 {
 	if(
 			deps !== undefined && !Array.isArray(deps) &&
@@ -380,7 +380,7 @@ export async function useInsertionEffect(effect, deps=undefined)
  * 						used to determine when to recompute the value.
  * @returns {any} Memoized value.
  */
-export function useMemo(factory,deps=undefined)
+export function useMemo(factory,deps)
 {
 	if(
 			deps !== undefined && !Array.isArray(deps) &&
@@ -533,7 +533,7 @@ export function useDeferredValue(value, initialValue)
  *   Dependency list that controls when the exposed value is recalculated.
  * @returns {void}
  */
-export function useImperativeHandle(ref, factory, deps=undefined)
+export function useImperativeHandle(ref, factory, deps)
 {
 	if(deps!==undefined && ref?.deps!==undefined && shallowEqual(deps, ref.deps)) return;
 

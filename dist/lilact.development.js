@@ -2379,6 +2379,21 @@ function getComponentEntity(entity) {
   return entity?.[MEMOIZED] ? entity.component : entity;
 }
 var hotEntityAliases = /* @__PURE__ */ new Map();
+var hotEntityCacheTokens = /* @__PURE__ */ new WeakMap();
+function getHotEntityCacheToken(entity) {
+  entity = getComponentEntity(entity);
+  if (typeof entity !== "function") {
+    return entity;
+  }
+  let token2 = hotEntityCacheTokens.get(entity);
+  if (!token2) {
+    const resolved = resolveHotEntity(entity);
+    token2 = hotEntityCacheTokens.get(resolved) || {};
+    hotEntityCacheTokens.set(entity, token2);
+    hotEntityCacheTokens.set(resolved, token2);
+  }
+  return token2;
+}
 function resolveHotEntity(entity) {
   entity = getComponentEntity(entity);
   const visited = /* @__PURE__ */ new Set();
@@ -2434,6 +2449,9 @@ function replaceComponentEntity(componentCore, nextEntity) {
   }
   const oldEntity = getComponentEntity(componentCore.entity);
   const newEntity = resolveHotEntity(nextEntity);
+  const cacheToken = hotEntityCacheTokens.get(oldEntity) || hotEntityCacheTokens.get(newEntity) || {};
+  hotEntityCacheTokens.set(oldEntity, cacheToken);
+  hotEntityCacheTokens.set(newEntity, cacheToken);
   if (oldEntity === newEntity) {
     return true;
   }
@@ -2463,6 +2481,9 @@ function replaceAllComponentInstances(oldEntity, newEntity) {
   if (oldEntity === newEntity) {
     return 0;
   }
+  const cacheToken = hotEntityCacheTokens.get(oldEntity) || hotEntityCacheTokens.get(newEntity) || {};
+  hotEntityCacheTokens.set(oldEntity, cacheToken);
+  hotEntityCacheTokens.set(newEntity, cacheToken);
   hotEntityAliases.set(oldEntity, newEntity);
   const instances = componentInstances.get(oldEntity);
   if (!instances) {
@@ -2576,14 +2597,18 @@ var ComponentCore = class {
       if (do_rerender) {
         if (true) {
           if (this.entity?.propTypes) {
-            PropTypes.checkPropTypes(this.entity.propTypes, this.props, "prop", this.entity.name);
+            PropTypes.checkPropTypes(this.entity.propTypes, next_props, "prop", this.entity.name);
           } else if (this.component?.propTypes) {
-            PropTypes.checkPropTypes(this.component.propTypes, this.props, "prop", this.component.name);
+            PropTypes.checkPropTypes(this.component.propTypes, next_props, "prop", this.component.name);
           }
         }
         if (typeof next_state === "function") next_state = next_state(this.state);
-        if (this.component.constructor.defaultProps) {
-          next_props = { ...this.component.constructor.defaultProps, ...next_props };
+        const defaultProps = this.entity?.defaultProps || this.component?.constructor?.defaultProps;
+        if (defaultProps) {
+          next_props = {
+            ...defaultProps,
+            ...next_props || {}
+          };
         }
         if (this?.parent?.component?.context || this?.parent?.component?.getChildContext) {
           this.context = { ...this.parent.component.context, ...this.parent.component.getChildContext?.() };
@@ -2997,11 +3022,22 @@ function prepareCore(parent, core) {
   try {
     parent.cache ?? (parent.cache = new ComponentCache(parent));
     const isText = core[TEXT2] !== void 0;
-    const key = isText ? ":text:" : core.props?.key;
-    const entity = isText || core instanceof ComponentCore ? void 0 : core.entity;
+    const isExistingCore = core instanceof ComponentCore;
+    const entity = isText || isExistingCore ? void 0 : resolveHotEntity(core.entity);
+    const hasExplicitKey = !isText && core.props && core.props.key !== void 0 && core.props.key !== null;
+    let key;
+    if (isText) {
+      key = ":text:";
+    } else if (hasExplicitKey) {
+      key = core.props.key;
+    } else if (typeof entity === "function") {
+      key = getHotEntityCacheToken(entity);
+    } else {
+      key = entity;
+    }
     return parent.cache.pick(
       key,
-      () => isText || core instanceof ComponentCore ? core : constructFunc(core, parent)[CORE],
+      () => isText || isExistingCore ? core : constructFunc(core, parent)[CORE],
       entity
     );
   } catch (e) {
@@ -3509,7 +3545,7 @@ function useState(initialValue) {
   }
   return [hk.value, hk.set_func];
 }
-function useCallback(callback, deps = void 0) {
+function useCallback(callback, deps) {
   if (deps !== void 0 && !Array.isArray(deps) && deps !== null && typeof deps !== "object") {
     throw new Error("Callback dependencies must be an array, object  or omitted.");
   }
@@ -3601,7 +3637,7 @@ function useRef(initialValue = null) {
   }
   return hk;
 }
-async function useLayoutEffect(effect, deps = void 0) {
+async function useLayoutEffect(effect, deps) {
   if (deps !== void 0 && !Array.isArray(deps) && deps !== null && typeof deps !== "object") {
     throw new Error("Layout effect dependencies must be an array, object or omitted.");
   }
@@ -3620,7 +3656,7 @@ async function useLayoutEffect(effect, deps = void 0) {
   NATIVE_TIMERS.clearTimeout(lilact_default.effect_timeout);
   lilact_default.effect_timeout = NATIVE_TIMERS.setTimeout(lilact_default.processEffects, 0);
 }
-async function useEffect(effect, deps = void 0) {
+async function useEffect(effect, deps) {
   if (deps !== void 0 && !Array.isArray(deps) && deps !== null && typeof deps !== "object") {
     throw new Error("Effect dependencies must be an array, object or omitted.");
   }
@@ -3639,7 +3675,7 @@ async function useEffect(effect, deps = void 0) {
   NATIVE_TIMERS.clearTimeout(lilact_default.effect_timeout);
   lilact_default.effect_timeout = NATIVE_TIMERS.setTimeout(lilact_default.processEffects, 0);
 }
-async function useInsertionEffect(effect, deps = void 0) {
+async function useInsertionEffect(effect, deps) {
   if (deps !== void 0 && !Array.isArray(deps) && deps !== null && typeof deps !== "object") {
     throw new Error("Insertion effect dependencies must be an array, object, or omitted.");
   }
@@ -3658,7 +3694,7 @@ async function useInsertionEffect(effect, deps = void 0) {
   NATIVE_TIMERS.clearTimeout(lilact_default.effect_timeout);
   lilact_default.effect_timeout = NATIVE_TIMERS.setTimeout(lilact_default.processEffects, 0);
 }
-function useMemo(factory, deps = void 0) {
+function useMemo(factory, deps) {
   if (deps !== void 0 && !Array.isArray(deps) && deps !== null && typeof deps !== "object") {
     throw new Error("Memo dependencies must be an array or omitted.");
   }
@@ -3736,7 +3772,7 @@ function useDeferredValue(value, initialValue) {
   }, [value]);
   return deferred;
 }
-function useImperativeHandle(ref, factory, deps = void 0) {
+function useImperativeHandle(ref, factory, deps) {
   if (deps !== void 0 && ref?.deps !== void 0 && shallowEqual(deps, ref.deps)) return;
   ref.deps = deps;
   if (typeof ref?.current !== "object") {
@@ -3823,10 +3859,7 @@ function createModule(path2, {
     mappings: [],
     meta: {},
     exports: {},
-    // True only after the module has been successfully evaluated.
     loaded: false,
-    // The promise for the request currently loading this resource.
-    // This is deliberately stored on the module to deduplicate requests.
     request: void 0,
     error: void 0
   };

@@ -44,6 +44,26 @@ function getComponentEntity(entity) {
 }
 
 const hotEntityAliases = new Map();
+const hotEntityCacheTokens = new WeakMap();
+
+function getHotEntityCacheToken(entity) {
+	entity = getComponentEntity(entity);
+
+	if (typeof entity !== "function") {
+		return entity;
+	}
+
+	let token = hotEntityCacheTokens.get(entity);
+
+	if (!token) {
+		const resolved = resolveHotEntity(entity);
+		token = hotEntityCacheTokens.get(resolved) || {};
+		hotEntityCacheTokens.set(entity, token);
+		hotEntityCacheTokens.set(resolved, token);
+	}
+
+	return token;
+}
 
 function resolveHotEntity(entity) {
 	entity = getComponentEntity(entity);
@@ -127,6 +147,11 @@ export function replaceComponentEntity(componentCore, nextEntity) {
 	const oldEntity = getComponentEntity(componentCore.entity);
 	const newEntity = resolveHotEntity(nextEntity);
 
+	const cacheToken = hotEntityCacheTokens.get(oldEntity) || hotEntityCacheTokens.get(newEntity) || {};
+
+	hotEntityCacheTokens.set(oldEntity, cacheToken);
+	hotEntityCacheTokens.set(newEntity, cacheToken);
+
 	if (oldEntity === newEntity) {
 		return true;
 	}
@@ -157,7 +182,8 @@ export function replaceComponentEntity(componentCore, nextEntity) {
 	return true;
 }
 
-export function replaceAllComponentInstances(oldEntity, newEntity) {
+export function replaceAllComponentInstances(oldEntity, newEntity) 
+{
 	oldEntity = getComponentEntity(oldEntity);
 	newEntity = getComponentEntity(newEntity);
 
@@ -174,8 +200,11 @@ export function replaceAllComponentInstances(oldEntity, newEntity) {
 		return 0;
 	}
 
-  // Keep this alias even when there are currently no instances.
-  // A future instance may still be created with oldEntity.
+	const cacheToken = hotEntityCacheTokens.get(oldEntity) || hotEntityCacheTokens.get(newEntity) || {};
+
+	hotEntityCacheTokens.set(oldEntity, cacheToken);
+	hotEntityCacheTokens.set(newEntity, cacheToken);
+
 	hotEntityAliases.set(oldEntity, newEntity);
 
 	const instances = componentInstances.get(oldEntity);
@@ -197,6 +226,7 @@ export function replaceAllComponentInstances(oldEntity, newEntity) {
 
 	return count;
 }
+
 
 
 /* 
@@ -351,20 +381,24 @@ class ComponentCore
 
 			if(do_rerender) {
 
-	if(DEBUG) {
-
-				if(this.entity?.propTypes) {
-					PropTypes.checkPropTypes(this.entity.propTypes, this.props, 'prop', this.entity.name);
+				if(DEBUG) {
+					if(this.entity?.propTypes) {
+						PropTypes.checkPropTypes( this.entity.propTypes, next_props, 'prop', this.entity.name );
+					}
+					else if(this.component?.propTypes) {
+						PropTypes.checkPropTypes( this.component.propTypes, next_props, 'prop', this.component.name );
+					}
 				}
-				else if(this.component?.propTypes) {
-					PropTypes.checkPropTypes(this.component.propTypes, this.props, 'prop', this.component.name);
-				}
 
-	}	
 				if(typeof(next_state)==='function') next_state = next_state(this.state);
 
-				if(this.component.constructor.defaultProps) {
-					next_props = {...this.component.constructor.defaultProps, ...next_props};
+				const defaultProps = this.entity?.defaultProps || this.component?.constructor?.defaultProps;
+
+				if (defaultProps) {
+					next_props = {
+						...defaultProps,
+						...(next_props || {}),
+					};
 				}
 
 				if(this?.parent?.component?.context || this?.parent?.component?.getChildContext ) {
@@ -939,24 +973,43 @@ function constructFunc(core, parent) {
 }
 
 
-function prepareCore(parent, core) {
+function prepareCore(parent, core) 
+{
 	try {
 		parent.cache ??= new ComponentCache(parent);
 
 		const isText = core[TEXT] !== undefined;
+		const isExistingCore = core instanceof ComponentCore;
 
-		const key = isText
-						? ':text:'
-						: core.props?.key;
+		const entity = isText || isExistingCore
+		? undefined
+		: resolveHotEntity(core.entity);
 
-		const entity =	isText || core instanceof ComponentCore
-							? undefined
-							: core.entity;
+		const hasExplicitKey =
+		!isText &&
+		core.props &&
+		core.props.key !== undefined &&
+		core.props.key !== null;
+
+		let key;
+
+		if (isText) {
+			key = ':text:';
+		}
+		else if (hasExplicitKey) {
+			key = core.props.key;
+		}
+		else if (typeof entity === "function") {
+			key = getHotEntityCacheToken(entity);
+		}
+		else {
+			key = entity;
+		}
 
 		return parent.cache.pick(
 			key,
 			() => (
-				isText || core instanceof ComponentCore
+				isText || isExistingCore
 				? core
 				: constructFunc(core, parent)[CORE]
 			),
@@ -1352,7 +1405,6 @@ export class RootComponent extends HTMLComponent
 
 export function createComponent(entity, props={}, ...children)
 {
-
 	if (typeof(entity)!=='string' && typeof(entity)!=='function' )
 	{
 		if(typeof(entity)!=='object' || !entity[MEMOIZED]) {

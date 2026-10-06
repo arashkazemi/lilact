@@ -5,7 +5,7 @@ export default function() {
             Press to get Error! (With Curly Brackets)
           </button>
           <br/><br/>
-          <button onClick={()=>doUnknown()}>
+          <button onClick={  ()   =>     doUnknown    ()    }>
             Press to get Error! (Without Curly Brackets)
           </button>
 
@@ -16,14 +16,12 @@ export default function() {
             JS runtimes currently lack a consistent reporting mechanism for errors produced in eval,
             and as Lilact runs the transpiled JSX in eval, tracing errors has its own difficulties.
             <br/><br/>
-            At the moment things work pretty nice and errors are tracked to the JSX scripts in
-            {" "}<b>Firefox</b>{" "}and{" "}<b>Chrome</b>{" "}, but{" "}<b>Safari</b>{" "}
-            has problems sometimes, as it drops the eval frame data on async or deferred calls.
-            <br/><br/>
-            Lilact has a tracking mechanism to overcome this, but for the sake of efficiency, 
-            it is block-based and only locates the code that is in  {" {} "} blocks. As a result, the callbacks
-            should be wrapped in a {" {} "} to be tracable in Safari. If not, it works, 
-            but it is not possible to display the exact location of some errors in Safari.</p>
+            Lilact has a tracing mechanism to overcome this, but for the sake of efficiency, 
+            it is block-based and only locates the code that is in  {" {} "} blocks. As a result, the 
+            arrow callbacks should be wrapped in a {" {} "} (and return result if any) or be defined 
+            somewhere else in the code (like useCallback) and only referenced from XML to be traceable 
+            in all situations. If not, it works, but it is not possible to display the exact location 
+            of some errors.</p>
           </center>
 
 }

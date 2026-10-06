@@ -107,6 +107,7 @@ function report(value, path) {
 	return error;
 }
 
+/** @ignore */
 export const required_scripts = {};
 
 function createModule(path, {
@@ -118,14 +119,8 @@ function createModule(path, {
 		mappings: [],
 		meta: {},
 		exports: {},
-
-		// True only after the module has been successfully evaluated.
 		loaded: false,
-
-		// The promise for the request currently loading this resource.
-		// This is deliberately stored on the module to deduplicate requests.
 		request: undefined,
-
 		error: undefined,
 	};
 
@@ -228,6 +223,23 @@ function loadModule(path, options = {}) {
 	);
 }
 
+
+/**
+ * Loads a module using Lilact's module loader.
+ *
+ * This function provides the runtime `require()` implementation used by
+ * transpiled Lilact modules.
+ *
+ * @param {string} path - Module path or URL to load.
+ * @param {object} [options] - Module-loading options.
+ * @param {{path: string}} [options.requirer] - Module that requested this
+ * resource.
+ * @param {boolean} [options.isLazy=false] - Forces asynchronous loading.
+ * @param {boolean} [options.forceReload=false] - Reloads the module even if
+ * it has already been evaluated.
+ * @returns {*} The module exports, or a Promise for asynchronous modules.
+ * @throws {Error} If the module cannot be loaded or evaluated.
+ */
 export function require(path) 
 {
 	let options = {};
@@ -318,6 +330,24 @@ function replaceReloadedExports(previousExports, nextExports) {
 }
 
 
+/**
+ * Transpiles and evaluates JSX source code as a Lilact module.
+ *
+ * The source is registered under the supplied path, transpiled with source
+ * mappings and runtime tracing enabled, evaluated in the global Lilact
+ * runtime, and returned as module exports. Reloaded component exports are
+ * compared with their previous versions to support hot loading.
+ *
+ * @param {string} jsx - JSX or JavaScript source code to evaluate.
+ * @param {string} [path=`InlineJSX-${Lilact.eval_num + 1}`] - Module path
+ * used for caching, diagnostics, and source mapping.
+ * @param {object} [options] - Evaluation options.
+ * @param {boolean} [options.forceReload=false] - Forces dependent resources
+ * to reload when they are required.
+ * @returns {*} The evaluated module exports.
+ * @throws {Error} If transpilation or runtime evaluation fails.
+ */
+
 export function run(
 	jsx,
 	path = `InlineJSX-${++Lilact.eval_num}`,
@@ -371,6 +401,7 @@ export function run(
 		throw error;
 	}
 
+	// console.log(processed)
 	if (typeof Lilact.scanBlockLabels === "function") {
 		Lilact.scanBlockLabels(processed, path);
 	}
@@ -473,6 +504,19 @@ function loadAsyncResource(path, module, options = {})
 	return request;
 }
 
+/**
+ * Creates a lazily evaluated component from a module or promise factory.
+ *
+ * The factory is executed while lazy-loading mode is enabled. The returned
+ * component suspends by throwing the pending promise until the factory
+ * resolves, or throws the loading error if the factory fails.
+ *
+ * @param {Function} factory - Function that returns a component, module,
+ * promise, or thenable resolving to a component or module.
+ * @returns {Function} A component that renders the resolved component.
+ * @throws {*} The pending promise or loading error while the component is
+ * unresolved.
+ */
 export function lazy(factory) 
 {
 	let status = "pending";
@@ -525,6 +569,18 @@ function scriptTags()
 		content: element.textContent || "",
 	}));
 }
+
+/**
+ * Loads and evaluates every JSX script in the current document.
+ *
+ * External scripts are loaded through {@link require}. Inline scripts are
+ * evaluated directly through {@link run}. Scripts are processed in document
+ * order.
+ *
+ * @returns {Promise<void>} A promise that resolves after all scripts finish.
+ * @throws {Error} If an external or inline script cannot be loaded or
+ * evaluated.
+ */
 
 export async function runScripts() {
   for (const script of scriptTags()) {
