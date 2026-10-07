@@ -30,7 +30,7 @@
 
 import Lilact from './lilact.jsx';
 
-import { CORE, COMPONENT, TEXT, IS_ZOMBIE, IDX, CHILD_CLASS_ADDENDUM, MEMOIZED, LOCATION } from "./symbols.jsx"
+import { CORE, COMPONENT, TEXT, IS_ZOMBIE, IDX, CHILD_CLASS_ADDENDUM, MEMOIZED, LOCATION, CLONED_STYLE } from "./symbols.jsx"
 import { shallowEqual, toBool, isClass, isThenable } from "./misc.jsx";
 
 import { PropTypes } from './proptypes.jsx';
@@ -298,7 +298,7 @@ class ComponentCache
 					ex.cleanup();
 				}
 				else if(ex.element && !ex.portal) {
-					ex.element.parentElement.removeChild(ex.element);
+					ex.element.parentElement?.removeChild?.(ex.element);
 				}
 			});
 		});
@@ -399,6 +399,10 @@ class ComponentCore
 						...defaultProps,
 						...(next_props || {}),
 					};
+				}
+
+				if(next_props?.style && typeof next_props.style === 'object' && !next_props.style[CLONED_STYLE]) {
+					next_props.style = { ...next_props.style, [CLONED_STYLE]: true };
 				}
 
 				if(this?.parent?.component?.context || this?.parent?.component?.getChildContext ) {
@@ -553,7 +557,7 @@ class ComponentCore
 					this.props.ref(null);
 				}
 				else {
-					this.props.current = null;
+					this.props.ref.current = null;
 				}
 			}
 
@@ -679,7 +683,7 @@ class ComponentCore
 							}
 							else {
 								for(let p in this.props.style) {
-									if( !patch.style.hasOwnProperty(p) ) {
+									if( p!==CLONED_STYLE && !patch.style.hasOwnProperty(p) ) {
 										this.element.style[p] = "";
 									}
 								}
@@ -705,7 +709,7 @@ class ComponentCore
 				else if(a==='autoFocus') { // not lower cased(al), as it is set as a js property
 					this.element['autofocus'] = toBool(patch[a]);
 				}
-				else if(a==='htmlFor') { // not lower cased(al), as it is set as a js property
+				else if(a==='htmlFor' || a==='for') { // not lower cased(al), as it is set as a js property
 					this.element.setAttribute('for', patch[a]);
 				}
 				else if(al!=='value' || ['input', 'textarea', 'select'].indexOf(this.entity)===-1) {

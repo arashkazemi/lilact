@@ -427,8 +427,7 @@ export function useActionState(action, initialState)
 					async ()=> {
 						const form_data = new FormData(event.target, event.submitter);
 						hk.state = await action(hk.state, form_data);
-					},
-					[]
+					}
 				);
 
 			return false;

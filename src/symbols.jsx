@@ -40,6 +40,7 @@ export const [
 				CHILD_CLASS_ADDENDUM,
 				MEMOIZED,
 				LAZY,
+				CLONED_STYLE,
 
 				DUE,
 				REPEAT,
@@ -59,6 +60,7 @@ export const [
 				Symbol.for('LILACT:CHILD_CLASS_ADDENDUM'),
 				Symbol.for('LILACT:MEMOIZED'),
 				Symbol.for('LILACT:LAZY'),
+				Symbol.for('LILACT:CLONED_STYLE'),
 
 				Symbol.for('LILACT:TIMERS:DUE'),
 				Symbol.for('LILACT:TIMERS:REPEAT'),

@@ -1709,6 +1709,7 @@ __export(symbols_exports, {
   CALLBACK: () => CALLBACK,
   CHILD_CLASS_ADDENDUM: () => CHILD_CLASS_ADDENDUM,
   CLEARED: () => CLEARED,
+  CLONED_STYLE: () => CLONED_STYLE,
   COMPONENT: () => COMPONENT,
   CORE: () => CORE,
   DUE: () => DUE,
@@ -1731,6 +1732,7 @@ var [
   CHILD_CLASS_ADDENDUM,
   MEMOIZED,
   LAZY,
+  CLONED_STYLE,
   DUE,
   REPEAT,
   CLEARED,
@@ -1747,6 +1749,7 @@ var [
   /* @__PURE__ */ Symbol.for("LILACT:CHILD_CLASS_ADDENDUM"),
   /* @__PURE__ */ Symbol.for("LILACT:MEMOIZED"),
   /* @__PURE__ */ Symbol.for("LILACT:LAZY"),
+  /* @__PURE__ */ Symbol.for("LILACT:CLONED_STYLE"),
   /* @__PURE__ */ Symbol.for("LILACT:TIMERS:DUE"),
   /* @__PURE__ */ Symbol.for("LILACT:TIMERS:REPEAT"),
   /* @__PURE__ */ Symbol.for("LILACT:TIMERS:CLEARED"),
@@ -2543,7 +2546,7 @@ var ComponentCache = class {
         if (ex.cleanup) {
           ex.cleanup();
         } else if (ex.element && !ex.portal) {
-          ex.element.parentElement.removeChild(ex.element);
+          ex.element.parentElement?.removeChild?.(ex.element);
         }
       });
     });
@@ -2609,6 +2612,9 @@ var ComponentCore = class {
             ...defaultProps,
             ...next_props || {}
           };
+        }
+        if (next_props?.style && typeof next_props.style === "object" && !next_props.style[CLONED_STYLE]) {
+          next_props.style = { ...next_props.style, [CLONED_STYLE]: true };
         }
         if (this?.parent?.component?.context || this?.parent?.component?.getChildContext) {
           this.context = { ...this.parent.component.context, ...this.parent.component.getChildContext?.() };
@@ -2717,7 +2723,7 @@ var ComponentCore = class {
         if (typeof this.props.ref === "function") {
           this.props.ref(null);
         } else {
-          this.props.current = null;
+          this.props.ref.current = null;
         }
       }
       if (this.component.componentWillUnmount) {
@@ -2811,7 +2817,7 @@ var ComponentCore = class {
                 this.element.style = "";
               } else {
                 for (let p in this.props.style) {
-                  if (!patch.style.hasOwnProperty(p)) {
+                  if (p !== CLONED_STYLE && !patch.style.hasOwnProperty(p)) {
                     this.element.style[p] = "";
                   }
                 }
@@ -2833,7 +2839,7 @@ var ComponentCore = class {
           }
         } else if (a === "autoFocus") {
           this.element["autofocus"] = toBool(patch[a]);
-        } else if (a === "htmlFor") {
+        } else if (a === "htmlFor" || a === "for") {
           this.element.setAttribute("for", patch[a]);
         } else if (al !== "value" || ["input", "textarea", "select"].indexOf(this.entity) === -1) {
           this.element.setAttribute(al, patch[a]);
@@ -3719,8 +3725,7 @@ function useActionState(action, initialState) {
         async () => {
           const form_data = new FormData(event.target, event.submitter);
           hk.state = await action(hk.state, form_data);
-        },
-        []
+        }
       );
       return false;
     };
@@ -7221,6 +7226,7 @@ export {
   CALLBACK,
   CHILD_CLASS_ADDENDUM,
   CLEARED,
+  CLONED_STYLE,
   COMPONENT,
   CORE,
   CSSTransition,
