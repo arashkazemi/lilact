@@ -3182,10 +3182,10 @@ var Component = class {
   * It can also be set for function components.
   * @type {string}
   */
-  displayName() {
+  get displayName() {
     const entity = this[CORE].entity;
     if (entity?.displayName) {
-      return typeof entity.displayName === "function" ? entity.displayName() : entity.displayName;
+      return entity.displayName;
     }
     if (typeof entity === "string") {
       return entity;
