@@ -160,7 +160,7 @@ if(DEBUG) {
 }
 
 if(DEBUG) {
-	console.log(`Lilact (Version: ${Lilact.VERSION}) - Debug Mode`);
-	console.log(`Copyright(C) 2024-2026 Arash Kazemi <contact.arash.kazemi@gmail.com>`);
+	console.info(`Lilact (Version: ${Lilact.VERSION}) - Debug Mode`);
+	console.info(`Copyright(C) 2024-2026 Arash Kazemi <contact.arash.kazemi@gmail.com>`);
 }
 

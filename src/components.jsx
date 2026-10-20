@@ -683,7 +683,7 @@ class ComponentCore
 							}
 							else {
 								for(let p in this.props.style) {
-									if( p!==CLONED_STYLE && !patch.style.hasOwnProperty(p) ) {
+									if( p!==CLONED_STYLE && !patch?.style?.hasOwnProperty?.(p) ) {
 										this.element.style[p] = "";
 									}
 								}

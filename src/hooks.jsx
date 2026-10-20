@@ -288,8 +288,8 @@ export async function useLayoutEffect(effect, deps)
 
 	if(hk?.cleanup) {
 		await hk.cleanup();
-			hk.cleanup = undefined;
-		}
+		hk.cleanup = undefined;
+	}
 
 	hk.deps = deps;
 	Lilact.layout_effects.add( async ()=>{ hk.cleanup = await effect(); });
@@ -324,7 +324,7 @@ export async function useEffect(effect, deps)
 
 	if(hk?.cleanup) {
 		await hk.cleanup();
-			hk.cleanup = undefined;
+		hk.cleanup = undefined;
 	}
 
 	hk.deps = deps;
@@ -361,7 +361,7 @@ export async function useInsertionEffect(effect, deps)
 
 	if(hk?.cleanup) {
 		await hk.cleanup();
-			hk.cleanup = undefined;
+		hk.cleanup = undefined;
 	}
 
 	hk.deps = deps;
@@ -405,7 +405,7 @@ export function useMemo(factory,deps)
 }
 
 /**
- * React-compatible hook for managing an async/queued action and deriving state from it.
+ * Hook for managing an async/queued action and deriving state from it.
  *
  * @param {Function} action - The async/queued action function.
  * @param {any} initialState - Initial state for the hook.

@@ -322,7 +322,6 @@ export function getComponentUnderPointer()
   const overlay = document.createElement('div');
   overlay.style.cssText =
     'position:fixed;inset:0;z-index:2147483647;cursor:crosshair;background:transparent;';
-  document.body.appendChild(overlay);
 
   function click_handler(event) {
 
@@ -342,7 +341,10 @@ export function getComponentUnderPointer()
     return false;
   }
 
-  window.addEventListener('click', click_handler, true);
+  setTimeout( ()=>{
+    document.body.appendChild(overlay);
+    window.addEventListener('click', click_handler, true);
+  }, 50);
 
   return pr;
 }

@@ -1939,7 +1939,6 @@ function getComponentUnderPointer() {
   });
   const overlay = document.createElement("div");
   overlay.style.cssText = "position:fixed;inset:0;z-index:2147483647;cursor:crosshair;background:transparent;";
-  document.body.appendChild(overlay);
   function click_handler(event) {
     event.stopImmediatePropagation();
     window.removeEventListener("click", click_handler, true);
@@ -1952,7 +1951,10 @@ function getComponentUnderPointer() {
     resolve_func(t[COMPONENT]);
     return false;
   }
-  window.addEventListener("click", click_handler, true);
+  setTimeout(() => {
+    document.body.appendChild(overlay);
+    window.addEventListener("click", click_handler, true);
+  }, 50);
   return pr;
 }
 function isEmpty(value) {
@@ -2817,7 +2819,7 @@ var ComponentCore = class {
                 this.element.style = "";
               } else {
                 for (let p in this.props.style) {
-                  if (p !== CLONED_STYLE && !patch.style.hasOwnProperty(p)) {
+                  if (p !== CLONED_STYLE && !patch?.style?.hasOwnProperty?.(p)) {
                     this.element.style[p] = "";
                   }
                 }
@@ -7218,8 +7220,8 @@ if (true) {
   });
 }
 if (true) {
-  console.log(`Lilact (Version: ${Lilact2.VERSION}) - Debug Mode`);
-  console.log(`Copyright(C) 2024-2026 Arash Kazemi <contact.arash.kazemi@gmail.com>`);
+  console.info(`Lilact (Version: ${Lilact2.VERSION}) - Debug Mode`);
+  console.info(`Copyright(C) 2024-2026 Arash Kazemi <contact.arash.kazemi@gmail.com>`);
 }
 export {
   ARGS,
