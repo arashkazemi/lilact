@@ -34,6 +34,11 @@ function Demo()
   return (
     <div style={{overflow:"hidden", textAlign: "center"}}>
       <p> Notice that Lilact CSSTransition accepts multiple children too. </p>
+
+      <button ref={nodeRef} onClick={() => setInProp(!inProp)}>
+        Click to {inProp?" OUT":" IN"}
+      </button>
+      <br/><br/>
       <CSSTransition in={inProp} classNames='test'
       
       onEnter={function(){console.log('onEnter', arguments)}}
@@ -50,13 +55,6 @@ function Demo()
       >
         {chs}
       </CSSTransition>
-
-      <button ref={nodeRef} onClick={() => setInProp(!inProp)}>
-        Click to {inProp?" OUT":" IN"}
-      </button>
-
-     <br/>
-      <br/>
 
     </div>
   );

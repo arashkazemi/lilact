@@ -453,7 +453,7 @@ class ComponentCore
 
 				const prev_state = this.state, prev_props=this.props;
 
-				if(this.element) {
+				if( this.element && ! (this?.component instanceof RootComponent) ) {
 					this.updateElementProps(next_props);
 				}
 				this.props = next_props;
@@ -642,14 +642,16 @@ class ComponentCore
 		for(let a in this.props) {
 			const al = a.toLowerCase();
 
-			if( !patch.hasOwnProperty(a) ) {
-
+			if( !patch.hasOwnProperty(a) || (  !a.startsWith('data-') && !a.startsWith('aria-') && 
+						(patch[a]===undefined || patch[a]===null || patch[a]==='' || patch[a]===false )  ) ) 
+			{
 				if( events_set.has(al) ) {
 					this.event_detachers[al]();
 				}
 				else {
 					this.element.removeAttribute(a);
 				}
+
 			}
 		}
 
@@ -731,28 +733,26 @@ class ComponentCore
 
 	updateElementClass(patch=this.props) 
 	{
-		let cn = patch?.className;
-		cn ??= patch?.class ? patch.class : '';
+		let cn = patch?.className ?? patch?.class ?? '';
 
 		if(this?.parent?.[CHILD_CLASS_ADDENDUM]) {
-			cn += ' ' + this?.parent?.[CHILD_CLASS_ADDENDUM];
+			cn += ' ' + this.parent[CHILD_CLASS_ADDENDUM];
 		}
-		
+		cn = cn.trim();
+
+		for(const n of Array.from(this.element.classList)) {
+			if(cn.indexOf(n)===-1) {
+				this.element.classList.remove(n);
+			}
+		}
+
 		if(cn.length>0) {
 			cn = cn.split(/\s+/g);
-			for(const n of Array.from(this.element.classList)) {
-				if(cn.indexOf(n)===-1) {
-					this.element.classList.remove(n);
-				}
-			}
 			for(const n of cn) {
 				if(n.length>0) {
 					this.element.classList.add(n);
 				}
 			}
-		}
-		else {
-			delete this.element.className;
 		}
 	}
 
