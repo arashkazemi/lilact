@@ -4390,172 +4390,66 @@ __export(events_exports, {
   releaseSyntheticEvent: () => releaseSyntheticEvent,
   wrapListener: () => wrapListener
 });
-if (typeof Element !== "undefined" && !Element.prototype.matches) {
-  Element.prototype.matches = Element.prototype.msMatchesSelector || Element.prototype.webkitMatchesSelector || function(s) {
-    var matches = (this.document || this.ownerDocument).querySelectorAll(s);
-    var i2 = matches.length;
-    while (--i2 >= 0 && matches.item(i2) !== this) {
-    }
-    return i2 > -1;
-  };
-}
-if (typeof Event !== "undefined" && !Event.prototype.composedPath) {
-  Event.prototype.composedPath = function() {
-    var path2 = [];
-    var el = this.target;
-    while (el) {
-      path2.push(el);
-      el = el.parentElement;
-    }
-    path2.push(window);
-    return path2;
-  };
-}
-var _pool = [];
-var MAX_POOL_SIZE = 10;
-var POINTER_TYPES = ["mouse", "pen", "touch"];
 function createSyntheticEvent(nativeEvent, currentTarget) {
-  const e = _pool.length ? _pool.pop() : {};
-  e.nativeEvent = nativeEvent;
-  e.type = nativeEvent.type;
-  e.target = nativeEvent.target || nativeEvent.srcElement || null;
-  e.currentTarget = currentTarget || nativeEvent.currentTarget || null;
-  e.timeStamp = nativeEvent.timeStamp || Date.now();
-  e.defaultPrevented = !!nativeEvent.defaultPrevented;
-  e.isPropagationStopped = false;
-  e.isPersistent = false;
-  e.bubbles = !!nativeEvent.bubbles;
-  e.cancelable = !!nativeEvent.cancelable;
-  e.composed = !!nativeEvent.composed;
-  e.detail = nativeEvent.detail;
-  e.relatedTarget = nativeEvent.relatedTarget || (nativeEvent.fromElement ? nativeEvent.fromElement : null) || (nativeEvent.toElement ? nativeEvent.toElement : null) || null;
-  e.altKey = !!nativeEvent.altKey;
-  e.ctrlKey = !!nativeEvent.ctrlKey;
-  e.metaKey = !!nativeEvent.metaKey;
-  e.shiftKey = !!nativeEvent.shiftKey;
-  e.isDefaultPrevented = () => e.defaultPrevented;
-  e.preventDefault = () => {
-    if (nativeEvent.preventDefault) nativeEvent.preventDefault();
-    e.defaultPrevented = true;
+  let propagationStopped = false;
+  const event = {
+    nativeEvent,
+    type: nativeEvent.type,
+    target: nativeEvent.target || nativeEvent.srcElement || null,
+    currentTarget: currentTarget || nativeEvent.currentTarget || null,
+    timeStamp: nativeEvent.timeStamp ?? Date.now(),
+    defaultPrevented: !!nativeEvent.defaultPrevented,
+    isDefaultPrevented() {
+      return event.defaultPrevented;
+    },
+    isPropagationStopped() {
+      return propagationStopped;
+    },
+    preventDefault() {
+      nativeEvent.preventDefault?.();
+      event.defaultPrevented = true;
+    },
+    stopPropagation() {
+      nativeEvent.stopPropagation?.();
+      propagationStopped = true;
+    },
+    // Like React 17+ web SyntheticEvents: no pooling, persist is a no-op.
+    persist() {
+    },
+    isPersistent() {
+      return true;
+    }
   };
-  e.stopPropagation = () => {
-    if (nativeEvent.stopPropagation) nativeEvent.stopPropagation();
-    e.isPropagationStopped = true;
-  };
-  e.persist = () => {
-    e.isPersistent = true;
-  };
-  e.key = nativeEvent.key || null;
-  e.code = nativeEvent.code || null;
-  e.which = nativeEvent.which ?? nativeEvent.keyCode ?? null;
-  e.button = nativeEvent.button ?? null;
-  e.buttons = nativeEvent.buttons ?? null;
-  e.pointerId = nativeEvent.pointerId ?? null;
-  e.pointerType = nativeEvent.pointerType ?? null;
-  e.isPrimary = nativeEvent.isPrimary ?? null;
-  e.clientX = nativeEvent.clientX ?? 0;
-  e.clientY = nativeEvent.clientY ?? 0;
-  e.screenX = nativeEvent.screenX ?? 0;
-  e.screenY = nativeEvent.screenY ?? 0;
-  e.pageX = nativeEvent.pageX ?? null;
-  e.pageY = nativeEvent.pageY ?? null;
-  e.movementX = nativeEvent.movementX ?? 0;
-  e.movementY = nativeEvent.movementY ?? 0;
-  e.pressure = nativeEvent.pressure ?? null;
-  e.tiltX = nativeEvent.tiltX ?? null;
-  e.tiltY = nativeEvent.tiltY ?? null;
-  e.width = nativeEvent.width ?? null;
-  e.height = nativeEvent.height ?? null;
-  e.pointerEventsSupported = POINTER_TYPES.includes(e.pointerType);
-  try {
-    const tgt = e.target;
-    e.value = tgt && "value" in tgt ? tgt.value : void 0;
-    e.checked = tgt && "checked" in tgt ? tgt.checked : void 0;
-    e.selectionStart = tgt && "selectionStart" in tgt ? tgt.selectionStart : void 0;
-    e.selectionEnd = tgt && "selectionEnd" in tgt ? tgt.selectionEnd : void 0;
-  } catch (err) {
-    e.value = void 0;
-    e.checked = void 0;
-    e.selectionStart = void 0;
-    e.selectionEnd = void 0;
-  }
-  e.touches = nativeEvent.touches || null;
-  e.targetTouches = nativeEvent.targetTouches || null;
-  e.changedTouches = nativeEvent.changedTouches || null;
-  e.path = typeof nativeEvent.composedPath === "function" ? nativeEvent.composedPath() : [e.target];
-  e.repeat = nativeEvent.repeat ?? false;
-  e.location = nativeEvent.location ?? 0;
-  return e;
+  return new Proxy(event, {
+    get(target, property, receiver) {
+      if (Reflect.has(target, property)) {
+        return Reflect.get(target, property, receiver);
+      }
+      const value = Reflect.get(nativeEvent, property, nativeEvent);
+      return typeof value === "function" ? value.bind(nativeEvent) : value;
+    },
+    has(target, property) {
+      return Reflect.has(target, property) || property in nativeEvent;
+    }
+  });
 }
-function releaseSyntheticEvent(e) {
-  if (e && !e.isPersistent) {
-    e.nativeEvent = null;
-    e.type = null;
-    e.target = null;
-    e.currentTarget = null;
-    e.timeStamp = 0;
-    e.defaultPrevented = false;
-    e.isPropagationStopped = false;
-    e.isPersistent = false;
-    e.isDefaultPrevented = null;
-    e.preventDefault = null;
-    e.stopPropagation = null;
-    e.persist = null;
-    e.bubbles = false;
-    e.cancelable = false;
-    e.composed = false;
-    e.detail = void 0;
-    e.relatedTarget = null;
-    e.altKey = false;
-    e.ctrlKey = false;
-    e.metaKey = false;
-    e.shiftKey = false;
-    e.key = null;
-    e.code = null;
-    e.which = null;
-    e.button = null;
-    e.buttons = null;
-    e.pointerId = null;
-    e.pointerType = null;
-    e.isPrimary = null;
-    e.clientX = 0;
-    e.clientY = 0;
-    e.screenX = 0;
-    e.screenY = 0;
-    e.pageX = null;
-    e.pageY = null;
-    e.movementX = 0;
-    e.movementY = 0;
-    e.pressure = null;
-    e.tiltX = null;
-    e.tiltY = null;
-    e.width = null;
-    e.height = null;
-    e.value = void 0;
-    e.checked = void 0;
-    e.selectionStart = void 0;
-    e.selectionEnd = void 0;
-    e.touches = null;
-    e.targetTouches = null;
-    e.changedTouches = null;
-    e.path = null;
-    e.repeat = false;
-    e.location = 0;
-    if (_pool.length < MAX_POOL_SIZE) _pool.push(e);
-  }
+function releaseSyntheticEvent(event) {
+  if (event) event.currentTarget = null;
 }
 function wrapListener(fn, opts = {}) {
   const { stopPropagationOnTrueReturn = false } = opts;
   return function handler(nativeEvent) {
-    const currentTarget = this || nativeEvent.currentTarget || null;
-    const sEvent = createSyntheticEvent(nativeEvent, currentTarget);
+    const event = createSyntheticEvent(
+      nativeEvent,
+      this || nativeEvent.currentTarget || null
+    );
     try {
-      const result2 = fn(sEvent);
+      const result2 = fn(event);
       if (stopPropagationOnTrueReturn && result2 === true) {
-        sEvent.stopPropagation();
+        event.stopPropagation();
       }
     } finally {
-      releaseSyntheticEvent(sEvent);
+      releaseSyntheticEvent(event);
     }
   };
 }
