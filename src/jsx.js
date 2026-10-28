@@ -170,6 +170,8 @@ function parseComment(code, index, container)
 		index++;
 	}
 
+
+
 	raiseError(`Unterminated comment`, b.begin);
 }
 
@@ -996,6 +998,8 @@ export function transpileJSX( jsx, {
 {
 	transpilerConfig.preprocessorDelimiter ??= 'ʔ'; // alt+shift+. on apple abc extended layout  
 	transpilerConfig.injectTraceLabels ??= injectTraceLabels;
+
+	jsx+='\n';
 
 	const eols = scanEOLs(jsx);
 

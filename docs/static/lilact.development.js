@@ -4385,53 +4385,51 @@ function TransitionGroup({ children }) {
 // .tmp/src/events.jsx
 var events_exports = {};
 __export(events_exports, {
+  SyntheticEvent: () => SyntheticEvent,
   addWrappedEventListener: () => addWrappedEventListener,
   createSyntheticEvent: () => createSyntheticEvent,
   releaseSyntheticEvent: () => releaseSyntheticEvent,
   wrapListener: () => wrapListener
 });
-function createSyntheticEvent(nativeEvent, currentTarget) {
-  let propagationStopped = false;
-  const event = {
-    nativeEvent,
-    type: nativeEvent.type,
-    target: nativeEvent.target || nativeEvent.srcElement || null,
-    currentTarget: currentTarget || nativeEvent.currentTarget || null,
-    timeStamp: nativeEvent.timeStamp ?? Date.now(),
-    defaultPrevented: !!nativeEvent.defaultPrevented,
-    isDefaultPrevented() {
-      return event.defaultPrevented;
-    },
-    isPropagationStopped() {
-      return propagationStopped;
-    },
-    preventDefault() {
+var SyntheticEvent = class {
+  constructor(nativeEvent, currentTarget) {
+    this.nativeEvent = nativeEvent;
+    this.type = nativeEvent.type;
+    this.target = nativeEvent.target || nativeEvent.srcElement || null;
+    this.currentTarget = currentTarget || nativeEvent.currentTarget || null;
+    this.timeStamp = nativeEvent.timeStamp ?? Date.now();
+    this.defaultPrevented = !!nativeEvent.defaultPrevented;
+    let propagationStopped = false;
+    this.isDefaultPrevented = () => this.defaultPrevented;
+    this.isPropagationStopped = () => propagationStopped;
+    this.preventDefault = () => {
       nativeEvent.preventDefault?.();
-      event.defaultPrevented = true;
-    },
-    stopPropagation() {
+      this.defaultPrevented = true;
+    };
+    this.stopPropagation = () => {
       nativeEvent.stopPropagation?.();
       propagationStopped = true;
-    },
-    // Like React 17+ web SyntheticEvents: no pooling, persist is a no-op.
-    persist() {
-    },
-    isPersistent() {
-      return true;
-    }
-  };
-  return new Proxy(event, {
-    get(target, property, receiver) {
-      if (Reflect.has(target, property)) {
-        return Reflect.get(target, property, receiver);
+    };
+    this.persist = () => {
+    };
+    this.isPersistent = () => true;
+    for (let source = nativeEvent; source && source !== Object.prototype; source = Object.getPrototypeOf(source)) {
+      for (const key of Object.getOwnPropertyNames(source)) {
+        if (key === "constructor" || key in this) continue;
+        Object.defineProperty(this, key, {
+          configurable: true,
+          enumerable: true,
+          get() {
+            const value = nativeEvent[key];
+            return typeof value === "function" ? value.bind(nativeEvent) : value;
+          }
+        });
       }
-      const value = Reflect.get(nativeEvent, property, nativeEvent);
-      return typeof value === "function" ? value.bind(nativeEvent) : value;
-    },
-    has(target, property) {
-      return Reflect.has(target, property) || property in nativeEvent;
     }
-  });
+  }
+};
+function createSyntheticEvent(nativeEvent, currentTarget) {
+  return new SyntheticEvent(nativeEvent, currentTarget);
 }
 function releaseSyntheticEvent(event) {
   if (event) event.currentTarget = null;
@@ -6900,6 +6898,7 @@ function transpileJSX(jsx2, {
 } = {}) {
   transpilerConfig.preprocessorDelimiter ?? (transpilerConfig.preprocessorDelimiter = "\u0294");
   transpilerConfig.injectTraceLabels ?? (transpilerConfig.injectTraceLabels = injectTraceLabels);
+  jsx2 += "\n";
   const eols = scanEOLs(jsx2);
   raiseError = ((eols2, msg, index2) => {
     const rc = getRowCol(eols2, index2);
@@ -7152,6 +7151,7 @@ export {
   SplitPane,
   Suspense,
   SwitchTransition,
+  SyntheticEvent,
   TEXT2 as TEXT,
   Transition,
   TransitionGroup,

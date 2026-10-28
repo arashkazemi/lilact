@@ -29,91 +29,86 @@
 */
 
 
+export class SyntheticEvent {
+	constructor(nativeEvent, currentTarget) {
+		this.nativeEvent = nativeEvent;
+		this.type = nativeEvent.type;
+		this.target = nativeEvent.target || nativeEvent.srcElement || null;
+		this.currentTarget = currentTarget || nativeEvent.currentTarget || null;
+		this.timeStamp = nativeEvent.timeStamp ?? Date.now();
+		this.defaultPrevented = !!nativeEvent.defaultPrevented;
+
+		let propagationStopped = false;
+
+		this.isDefaultPrevented = () => this.defaultPrevented;
+		this.isPropagationStopped = () => propagationStopped;
+		this.preventDefault = () => {
+			nativeEvent.preventDefault?.();
+			this.defaultPrevented = true;
+		};
+		this.stopPropagation = () => {
+			nativeEvent.stopPropagation?.();
+			propagationStopped = true;
+		};
+
+		// Modern React doesn't pool events, so persist is a no-op.
+		this.persist = () => {};
+		this.isPersistent = () => true;
+
+		for (
+			let source = nativeEvent;
+			source && source !== Object.prototype;
+			source = Object.getPrototypeOf(source)
+		) {
+			for (const key of Object.getOwnPropertyNames(source)) {
+				if (key === "constructor" || key in this) continue;
+
+				Object.defineProperty(this, key, {
+					configurable: true,
+					enumerable: true,
+					get() {
+						const value = nativeEvent[key];
+						return typeof value === "function"
+							? value.bind(nativeEvent)
+							: value;
+					},
+				});
+			}
+		}
+	}
+}
+
 export function createSyntheticEvent(nativeEvent, currentTarget) {
-  let propagationStopped = false;
-
-  const event = {
-    nativeEvent,
-    type: nativeEvent.type,
-    target: nativeEvent.target || nativeEvent.srcElement || null,
-    currentTarget: currentTarget || nativeEvent.currentTarget || null,
-    timeStamp: nativeEvent.timeStamp ?? Date.now(),
-    defaultPrevented: !!nativeEvent.defaultPrevented,
-
-    isDefaultPrevented() {
-      return event.defaultPrevented;
-    },
-
-    isPropagationStopped() {
-      return propagationStopped;
-    },
-
-    preventDefault() {
-      nativeEvent.preventDefault?.();
-      event.defaultPrevented = true;
-    },
-
-    stopPropagation() {
-      nativeEvent.stopPropagation?.();
-      propagationStopped = true;
-    },
-
-    // Like React 17+ web SyntheticEvents: no pooling, persist is a no-op.
-    persist() {},
-
-    isPersistent() {
-      return true;
-    },
-  };
-
-  // Forward event-specific properties (such as WheelEvent.deltaX/deltaY)
-  // and native methods that are not explicitly defined above.
-  return new Proxy(event, {
-    get(target, property, receiver) {
-      if (Reflect.has(target, property)) {
-        return Reflect.get(target, property, receiver);
-      }
-
-      const value = Reflect.get(nativeEvent, property, nativeEvent);
-      return typeof value === "function" ? value.bind(nativeEvent) : value;
-    },
-
-    has(target, property) {
-      return Reflect.has(target, property) || property in nativeEvent;
-    },
-  });
+	return new SyntheticEvent(nativeEvent, currentTarget);
 }
 
 export function releaseSyntheticEvent(event) {
-  // Clear currentTarget after dispatch, but don't invalidate the event.
-  if (event) event.currentTarget = null;
+	if (event) event.currentTarget = null;
 }
 
 export function wrapListener(fn, opts = {}) {
-  const { stopPropagationOnTrueReturn = false } = opts;
+	const { stopPropagationOnTrueReturn = false } = opts;
 
-  return function handler(nativeEvent) {
-    const event = createSyntheticEvent(
-      nativeEvent,
-      this || nativeEvent.currentTarget || null
-    );
+	return function handler(nativeEvent) {
+		const event = createSyntheticEvent(
+			nativeEvent,
+			this || nativeEvent.currentTarget || null
+		);
 
-    try {
-      const result = fn(event);
-
-      if (stopPropagationOnTrueReturn && result === true) {
-        event.stopPropagation();
-      }
-    } finally {
-      releaseSyntheticEvent(event);
-    }
-  };
+		try {
+			const result = fn(event);
+			if (stopPropagationOnTrueReturn && result === true) {
+				event.stopPropagation();
+			}
+		} finally {
+			releaseSyntheticEvent(event);
+		}
+	};
 }
 
 export function addWrappedEventListener(target, type, fn, options = {}) {
-  const handler = wrapListener(fn, options);
+	const handler = wrapListener(fn, options);
+	target.addEventListener(type, handler, options);
 
-  target.addEventListener(type, handler, options);
-
-  return () => target.removeEventListener(type, handler, options);
+	return () => target.removeEventListener(type, handler, options);
 }

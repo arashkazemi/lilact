@@ -137,9 +137,8 @@ function loadModule(path, options = {}) {
 		path = joinPaths(options.requirer.path, path);
 	}
 
-	const loadAsync =
-	Boolean(Lilact[LAZY]) ||
-	Boolean(options.isLazy);
+	const loadAsync = Boolean(Lilact[LAZY]) ||
+										Boolean(options.isLazy);
 
 	const module = getOrCreateModule(path, {});
 
