@@ -1085,6 +1085,7 @@ export function transpileJSX( jsx, {
 	preprocessPragmas(json);
 
 	const flattened_nodes = [];
+	let appendix_js = '\n';
 
 	const codify = (outlen, node, is_attr=false, is_xml=false)=> {
 
@@ -1098,7 +1099,10 @@ export function transpileJSX( jsx, {
 
 		if(node.type==='string') return jsx.substring(node.begin, node.end);
 		if(node.type==='import') return node.cjs;
-		if(node.type==='export') return node.cjs;
+		if(node.type==='export') {
+			if(node.appendix_js) appendix_js+=node.appendix_js;
+			return node.cjs;
+		}
 		if(node.type==='regex') return jsx.substring(node.begin, node.end);
 		if(node.type==='comment') return (discardComments || is_attr)?'':jsx.substring(node.begin, node.end);
 		if(node.type==='directive') return node.value;
@@ -1194,6 +1198,8 @@ export function transpileJSX( jsx, {
 		out=`/*LILACTBLOCK${++blocksInfo.counter}:0,0:<EXEC>*/try{`
 	}
 	out+=codify(out.length, json);
+
+	out+=appendix_js.length>1?appendix_js:'';
 
 	if(injectTraceLabels) {
 		if(transpilerConfig.enableLabelStack) {

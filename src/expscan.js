@@ -337,17 +337,18 @@ export function processImportExports(node, jsx, meta)
 									continue;
 				}
 				case 'F':{
-									const tp = node.out[i];
-									node.out[i] = null;
+					
 									i++;
-									skip_spaces();
+
+									while(s[i]===' ' || s[i]==='\n' || s[i]==='C') {
+										i++;
+									}
+
 									const name = node.out[i];
-				
-									// node.out[i] = null;
-									// i++;
-									// skip_spaces();				
-				
-									node.out[m.index].cjs = `module.exports.${name} = ${tp} `;
+
+									node.out[m.index].cjs = '';
+									node.out[m.index].appendix_js = `module.exports.${name} = ${name};`;
+
 									continue;
 				}
 				case '*':

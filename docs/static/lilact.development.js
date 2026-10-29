@@ -6081,12 +6081,13 @@ function processImportExports(node3, jsx2, meta) {
           continue;
         }
         case "F": {
-          const tp = node3.out[i2];
-          node3.out[i2] = null;
           i2++;
-          skip_spaces();
+          while (s[i2] === " " || s[i2] === "\n" || s[i2] === "C") {
+            i2++;
+          }
           const name = node3.out[i2];
-          node3.out[m.index].cjs = `module.exports.${name} = ${tp} `;
+          node3.out[m.index].cjs = "";
+          node3.out[m.index].appendix_js = `module.exports.${name} = ${name};`;
           continue;
         }
         case "*":
@@ -6964,6 +6965,7 @@ function transpileJSX(jsx2, {
   prepare(json);
   preprocessPragmas(json);
   const flattened_nodes = [];
+  let appendix_js = "\n";
   const codify = (outlen, node3, is_attr = false, is_xml = false) => {
     flattened_nodes.push(node3);
     if (typeof node3 !== "object") return node3;
@@ -6971,7 +6973,10 @@ function transpileJSX(jsx2, {
     node3.out_index = outlen;
     if (node3.type === "string") return jsx2.substring(node3.begin, node3.end);
     if (node3.type === "import") return node3.cjs;
-    if (node3.type === "export") return node3.cjs;
+    if (node3.type === "export") {
+      if (node3.appendix_js) appendix_js += node3.appendix_js;
+      return node3.cjs;
+    }
     if (node3.type === "regex") return jsx2.substring(node3.begin, node3.end);
     if (node3.type === "comment") return discardComments || is_attr ? "" : jsx2.substring(node3.begin, node3.end);
     if (node3.type === "directive") return node3.value;
@@ -7044,6 +7049,7 @@ function transpileJSX(jsx2, {
     out = `/*LILACTBLOCK${++blocksInfo2.counter}:0,0:<EXEC>*/try{`;
   }
   out += codify(out.length, json);
+  out += appendix_js.length > 1 ? appendix_js : "";
   if (injectTraceLabels) {
     if (transpilerConfig.enableLabelStack) {
       out += `}catch(e){ if(typeof(e)!=='object') e=new Error(e);e.lilact_trace=[${blocksInfo2.counter},e.lilact_trace];throw e}`;
