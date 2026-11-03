@@ -2844,7 +2844,7 @@ var ComponentCore = class {
         } else if (a === "htmlFor" || a === "for") {
           this.element.setAttribute("for", patch[a]);
         } else if (al !== "value" || ["input", "textarea", "select"].indexOf(this.entity) === -1) {
-          this.element.setAttribute(al, patch[a]);
+          this.element.setAttribute(a, patch[a]);
         }
       }
     }
