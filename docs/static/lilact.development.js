@@ -1715,7 +1715,6 @@ __export(symbols_exports, {
   DUE: () => DUE,
   IDX: () => IDX,
   INTERVAL: () => INTERVAL,
-  IS_ZOMBIE: () => IS_ZOMBIE,
   LAZY: () => LAZY,
   LOCATION: () => LOCATION,
   MEMOIZED: () => MEMOIZED,
@@ -1727,7 +1726,6 @@ var [
   CORE,
   COMPONENT,
   TEXT2,
-  IS_ZOMBIE,
   IDX,
   CHILD_CLASS_ADDENDUM,
   MEMOIZED,
@@ -1744,7 +1742,6 @@ var [
   /* @__PURE__ */ Symbol.for("LILACT:CORE"),
   /* @__PURE__ */ Symbol.for("LILACT:COMPONENT"),
   /* @__PURE__ */ Symbol.for("LILACT:TEXT"),
-  /* @__PURE__ */ Symbol.for("LILACT:IS_ZOMBIE"),
   /* @__PURE__ */ Symbol.for("LILACT:IDX"),
   /* @__PURE__ */ Symbol.for("LILACT:CHILD_CLASS_ADDENDUM"),
   /* @__PURE__ */ Symbol.for("LILACT:MEMOIZED"),
@@ -2352,8 +2349,6 @@ __export(components_exports, {
   Component: () => Component,
   HTMLComponent: () => HTMLComponent,
   RootComponent: () => RootComponent,
-  boolean_html_attributes_set: () => boolean_html_attributes_set,
-  capture_events_set: () => capture_events_set,
   cloneComponent: () => cloneComponent,
   cloneElement: () => cloneElement,
   createComponent: () => createComponent2,
@@ -2362,43 +2357,25 @@ __export(components_exports, {
   createRoot: () => createRoot,
   current_component: () => current_component,
   effect_timeout: () => effect_timeout,
-  events_set: () => events_set,
   insertion_effects: () => insertion_effects,
   layout_effects: () => layout_effects,
-  length_css_attributes_set: () => length_css_attributes_set,
   memo: () => memo,
   passive_effects: () => passive_effects,
   processEffects: () => processEffects,
   render: () => render,
-  replaceAllComponentInstances: () => replaceAllComponentInstances,
-  replaceComponentEntity: () => replaceComponentEntity,
   roots: () => roots,
-  special_attributes: () => special_attributes,
   update_cbs: () => update_cbs,
   update_interval_margin: () => update_interval_margin,
   update_set: () => update_set,
   update_timeout: () => update_timeout
 });
-var SVG_NS = "http://www.w3.org/2000/svg";
+
+// .tmp/src/cache.jsx
 function getComponentEntity(entity) {
   return entity?.[MEMOIZED] ? entity.component : entity;
 }
 var hotEntityAliases = /* @__PURE__ */ new Map();
 var hotEntityCacheTokens = /* @__PURE__ */ new WeakMap();
-function getHotEntityCacheToken(entity) {
-  entity = getComponentEntity(entity);
-  if (typeof entity !== "function") {
-    return entity;
-  }
-  let token2 = hotEntityCacheTokens.get(entity);
-  if (!token2) {
-    const resolved = resolveHotEntity(entity);
-    token2 = hotEntityCacheTokens.get(resolved) || {};
-    hotEntityCacheTokens.set(entity, token2);
-    hotEntityCacheTokens.set(resolved, token2);
-  }
-  return token2;
-}
 function resolveHotEntity(entity) {
   entity = getComponentEntity(entity);
   const visited = /* @__PURE__ */ new Set();
@@ -2547,14 +2524,41 @@ var ComponentCache = class {
       arr.slice(arr[IDX]).forEach((ex) => {
         if (ex.cleanup) {
           ex.cleanup();
-        } else if (ex.element && !ex.portal) {
-          ex.element.parentElement?.removeChild?.(ex.element);
+        }
+        if (ex.element && !ex.portal) {
+          ex.element?.remove?.();
         }
       });
     });
     this.current_map = this.new_map;
     this.new_map = /* @__PURE__ */ new Map();
   }
+};
+
+// .tmp/src/core.jsx
+var SVG_NS = "http://www.w3.org/2000/svg";
+var renderErrorHandler = (c, e) => {
+  const value = e?.error instanceof Error ? e.error : e?.reason !== void 0 ? e.reason : e;
+  const error2 = lilact_default.isThenable(e) ? e : lilact_default.traceError(
+    value,
+    e?.fileName || null
+  );
+  const stack = [c];
+  while (c && !c.component?.componentDidCatch) {
+    c = c.parent;
+    if (c) stack.push(c);
+  }
+  if (c?.component?.componentDidCatch) {
+    if (c.entity?.getDerivedStateFromError) {
+      c.component.setState(c.entity.getDerivedStateFromError.call(c, error2));
+    }
+  }
+  let stack_log = Array.prototype.map.call(stack, (x) => `in  ${typeof x.component.displayName === "function" ? x.component.displayName() : x.component.displayName}`).join("\n");
+  error2.componentStack = stack;
+  error2.componentStackLog = stack_log;
+  if (c?.component?.componentDidCatch) {
+    c.component.componentDidCatch(error2, { componentStack: stack, componentStackLog: stack_log });
+  } else throw e;
 };
 var ComponentCore = class {
   constructor(comp, props) {
@@ -2652,7 +2656,7 @@ var ComponentCore = class {
           this.component.componentWillUpdate(next_props, next_state);
         }
         const prev_state = this.state, prev_props = this.props;
-        if (this.element && !(this?.component instanceof RootComponent)) {
+        if (this.element && !(this?.component instanceof lilact_default.RootComponent)) {
           this.updateElementProps(next_props);
         }
         this.props = next_props;
@@ -2698,11 +2702,10 @@ var ComponentCore = class {
             } else {
               if (!core.element) {
                 core.element = document.createTextNode(item[TEXT2]);
-                core[TEXT2] = item[TEXT2];
               } else if (core[TEXT2] !== item[TEXT2]) {
                 core.element.textContent = item[TEXT2];
-                core[TEXT2] = item[TEXT2];
               }
+              core[TEXT2] = item[TEXT2];
             }
           }
         }
@@ -2732,7 +2735,7 @@ var ComponentCore = class {
         this.component.componentWillUnmount();
       }
       if (this?.element?.parentElement && !this.portal) {
-        this.element.parentElement.removeChild(this.element);
+        this.element.remove();
       }
       if (this.outlet !== void 0) {
         for (let c of this.outlet) {
@@ -2875,15 +2878,8 @@ var ComponentCore = class {
       }
     }
   }
-  scanZombies(container2, next_element) {
-    const chs = container2.element.childNodes;
-    while (chs[container2.insert_index] && chs[container2.insert_index][IS_ZOMBIE] && chs[container2.insert_index] !== next_element) {
-      container2.insert_index++;
-    }
-  }
   appendElement(core) {
     if (core.portal) return;
-    this.scanZombies(core.container, core.element);
     if (core?.element.parentNode === null) {
       core.container.element.insertBefore(
         core.element,
@@ -2926,29 +2922,36 @@ var ComponentCore = class {
     return func(this.state);
   }
 };
-var renderErrorHandler = (c, e) => {
-  const value = e?.error instanceof Error ? e.error : e?.reason !== void 0 ? e.reason : e;
-  const error2 = lilact_default.isThenable(e) ? e : lilact_default.traceError(
-    value,
-    e?.fileName || null
-  );
-  const stack = [c];
-  while (c && !c.component?.componentDidCatch) {
-    c = c.parent;
-    if (c) stack.push(c);
-  }
-  if (c?.component?.componentDidCatch) {
-    if (c.entity?.getDerivedStateFromError) {
-      c.component.setState(c.entity.getDerivedStateFromError.call(c, error2));
+function prepareCore(parent, core) {
+  try {
+    parent.cache ?? (parent.cache = new ComponentCache(parent));
+    const isText = core[TEXT2] !== void 0;
+    const isExistingCore = core instanceof ComponentCore;
+    const entity = isText || isExistingCore ? void 0 : resolveHotEntity(core.entity);
+    const hasExplicitKey = !isText && core.props && core.props.key !== void 0 && core.props.key !== null;
+    let key;
+    if (isText) {
+      key = ":text:";
+    } else if (hasExplicitKey) {
+      key = core.props.key;
+    } else if (typeof entity === "function") {
+      key = getHotEntityCacheToken(entity);
+    } else {
+      key = entity;
+    }
+    return parent.cache.pick(
+      key,
+      () => isText || isExistingCore ? core : constructFunc(core, parent)[CORE],
+      entity
+    );
+  } catch (e) {
+    if (core?.component?.componentDidCatch) {
+      core.component.componentDidCatch(e);
+    } else {
+      throw e;
     }
   }
-  let stack_log = Array.prototype.map.call(stack, (x) => `in  ${typeof x.component.displayName === "function" ? x.component.displayName() : x.component.displayName}`).join("\n");
-  error2.componentStack = stack;
-  error2.componentStackLog = stack_log;
-  if (c?.component?.componentDidCatch) {
-    c.component.componentDidCatch(error2, { componentStack: stack, componentStackLog: stack_log });
-  } else throw e;
-};
+}
 function constructFunc(core, parent) {
   let comp = core;
   if (core[TEXT2] === void 0) {
@@ -3024,36 +3027,161 @@ function constructFunc(core, parent) {
   }
   return comp;
 }
-function prepareCore(parent, core) {
-  try {
-    parent.cache ?? (parent.cache = new ComponentCache(parent));
-    const isText = core[TEXT2] !== void 0;
-    const isExistingCore = core instanceof ComponentCore;
-    const entity = isText || isExistingCore ? void 0 : resolveHotEntity(core.entity);
-    const hasExplicitKey = !isText && core.props && core.props.key !== void 0 && core.props.key !== null;
-    let key;
-    if (isText) {
-      key = ":text:";
-    } else if (hasExplicitKey) {
-      key = core.props.key;
-    } else if (typeof entity === "function") {
-      key = getHotEntityCacheToken(entity);
-    } else {
-      key = entity;
-    }
-    return parent.cache.pick(
-      key,
-      () => isText || isExistingCore ? core : constructFunc(core, parent)[CORE],
-      entity
-    );
-  } catch (e) {
-    if (core?.component?.componentDidCatch) {
-      core.component.componentDidCatch(e);
-    } else {
-      throw e;
-    }
-  }
+var special_attributes = /* @__PURE__ */ new Set([
+  "classname",
+  "ref",
+  "action",
+  "lilact_jsx_loc",
+  "children",
+  "key",
+  "defaultvalue",
+  "defaultchecked"
+]);
+var events_set = /* @__PURE__ */ new Set([
+  "onafterprint",
+  "onbeforeprint",
+  "onbeforeunload",
+  "onerror",
+  "onhashchange",
+  "onload",
+  "onmessage",
+  "onoffline",
+  "ononline",
+  "onpagehide",
+  "onpageshow",
+  "onpopstate",
+  "onresize",
+  "onstorage",
+  "onunload",
+  "onblur",
+  "onchange",
+  "oncontextmenu",
+  "onfocus",
+  "oninput",
+  "oninvalid",
+  "onreset",
+  "onsearch",
+  "onselect",
+  "onsubmit",
+  "oncancel",
+  "onkeydown",
+  "onkeypress",
+  "onkeyup",
+  "onclick",
+  "ondblclick",
+  "onmousedown",
+  "onmousemove",
+  "onmouseout",
+  "onmouseover",
+  "onmouseup",
+  "onmousewheel",
+  "onwheel",
+  "ondrag",
+  "ondragend",
+  "ondragenter",
+  "ondragleave",
+  "ondragover",
+  "ondragstart",
+  "ondrop",
+  "onscroll",
+  "oncopy",
+  "oncut",
+  "onpaste",
+  "onabort",
+  "oncanplay",
+  "oncanplaythrough",
+  "oncuechange",
+  "ondurationchange",
+  "onemptied",
+  "onended",
+  "onerror",
+  "onloadeddata",
+  "onloadedmetadata",
+  "onloadstart",
+  "onpause",
+  "onplay",
+  "onplaying",
+  "onprogress",
+  "onratechange",
+  "onseeked",
+  "onseeking",
+  "onstalled",
+  "onsuspend",
+  "ontimeupdate",
+  "onvolumechange",
+  "onwaiting",
+  "ontoggle",
+  "onpointerdown",
+  "onpointerup",
+  "onpointermove",
+  "onpointercancel",
+  "onpointerover",
+  "onpointerout",
+  "onpointerenter",
+  "onpointerleave"
+]);
+var capture_events_set = {};
+for (const x of events_set) {
+  capture_events_set[x + "capture"] = x;
 }
+var length_css_attributes_set = /* @__PURE__ */ new Set([
+  "width",
+  "height",
+  "minWidth",
+  "minHeight",
+  "maxWidth",
+  "maxHeight",
+  "top",
+  "right",
+  "bottom",
+  "left",
+  "margin",
+  "marginTop",
+  "marginRight",
+  "marginBottom",
+  "marginLeft",
+  "padding",
+  "paddingTop",
+  "paddingRight",
+  "paddingBottom",
+  "paddingLeft",
+  "borderWidth",
+  "borderTopWidth",
+  "borderRightWidth",
+  "borderBottomWidth",
+  "borderLeftWidth",
+  "outlineWidth",
+  "fontSize",
+  "lineHeight",
+  "letterSpacing",
+  "wordSpacing",
+  "textIndent",
+  "borderRadius",
+  "borderTopLeftRadius",
+  "borderTopRightRadius",
+  "borderBottomLeftRadius",
+  "borderBottomRightRadius",
+  "columnGap",
+  "rowGap",
+  "gap"
+]);
+var boolean_html_attributes_set = /* @__PURE__ */ new Set([
+  "disabled",
+  "readOnly",
+  "required",
+  "checked",
+  "multiple",
+  "selected",
+  "hidden",
+  "open",
+  "loop",
+  "muted",
+  "controls",
+  "playsInline",
+  "allowFullScreen"
+]);
+
+// .tmp/src/components.jsx
 function doUpdates() {
   clearTimeout(lilact_default.effect_timeout);
   const _update_set = lilact_default.update_set;
@@ -3355,159 +3483,6 @@ var passive_effects = /* @__PURE__ */ new Set();
 var update_timeout = void 0;
 var effect_timeout = void 0;
 var update_interval_margin = 0;
-var special_attributes = /* @__PURE__ */ new Set([
-  "classname",
-  "ref",
-  "action",
-  "lilact_jsx_loc",
-  "children",
-  "key",
-  "defaultvalue",
-  "defaultchecked"
-]);
-var events_set = /* @__PURE__ */ new Set([
-  "onafterprint",
-  "onbeforeprint",
-  "onbeforeunload",
-  "onerror",
-  "onhashchange",
-  "onload",
-  "onmessage",
-  "onoffline",
-  "ononline",
-  "onpagehide",
-  "onpageshow",
-  "onpopstate",
-  "onresize",
-  "onstorage",
-  "onunload",
-  "onblur",
-  "onchange",
-  "oncontextmenu",
-  "onfocus",
-  "oninput",
-  "oninvalid",
-  "onreset",
-  "onsearch",
-  "onselect",
-  "onsubmit",
-  "oncancel",
-  "onkeydown",
-  "onkeypress",
-  "onkeyup",
-  "onclick",
-  "ondblclick",
-  "onmousedown",
-  "onmousemove",
-  "onmouseout",
-  "onmouseover",
-  "onmouseup",
-  "onmousewheel",
-  "onwheel",
-  "ondrag",
-  "ondragend",
-  "ondragenter",
-  "ondragleave",
-  "ondragover",
-  "ondragstart",
-  "ondrop",
-  "onscroll",
-  "oncopy",
-  "oncut",
-  "onpaste",
-  "onabort",
-  "oncanplay",
-  "oncanplaythrough",
-  "oncuechange",
-  "ondurationchange",
-  "onemptied",
-  "onended",
-  "onerror",
-  "onloadeddata",
-  "onloadedmetadata",
-  "onloadstart",
-  "onpause",
-  "onplay",
-  "onplaying",
-  "onprogress",
-  "onratechange",
-  "onseeked",
-  "onseeking",
-  "onstalled",
-  "onsuspend",
-  "ontimeupdate",
-  "onvolumechange",
-  "onwaiting",
-  "ontoggle",
-  "onpointerdown",
-  "onpointerup",
-  "onpointermove",
-  "onpointercancel",
-  "onpointerover",
-  "onpointerout",
-  "onpointerenter",
-  "onpointerleave"
-]);
-var capture_events_set = {};
-for (const x of events_set) {
-  capture_events_set[x + "capture"] = x;
-}
-var length_css_attributes_set = /* @__PURE__ */ new Set([
-  "width",
-  "height",
-  "minWidth",
-  "minHeight",
-  "maxWidth",
-  "maxHeight",
-  "top",
-  "right",
-  "bottom",
-  "left",
-  "margin",
-  "marginTop",
-  "marginRight",
-  "marginBottom",
-  "marginLeft",
-  "padding",
-  "paddingTop",
-  "paddingRight",
-  "paddingBottom",
-  "paddingLeft",
-  "borderWidth",
-  "borderTopWidth",
-  "borderRightWidth",
-  "borderBottomWidth",
-  "borderLeftWidth",
-  "outlineWidth",
-  "fontSize",
-  "lineHeight",
-  "letterSpacing",
-  "wordSpacing",
-  "textIndent",
-  "borderRadius",
-  "borderTopLeftRadius",
-  "borderTopRightRadius",
-  "borderBottomLeftRadius",
-  "borderBottomRightRadius",
-  "columnGap",
-  "rowGap",
-  "gap"
-]);
-var boolean_html_attributes_set = /* @__PURE__ */ new Set([
-  "disabled",
-  "readOnly",
-  "required",
-  "checked",
-  "multiple",
-  "selected",
-  "hidden",
-  "open",
-  "loop",
-  "muted",
-  "controls",
-  "playsInline",
-  "allowFullScreen"
-]);
 
 // .tmp/src/hooks.jsx
 var hooks_exports = {};
@@ -3999,7 +3974,7 @@ function replaceReloadedExports(previousExports2, nextExports2) {
     const oldExport = oldExports[name];
     const newExport = newExports[name];
     if (typeof oldExport === "function" && typeof newExport === "function") {
-      lilact_default.replaceAllComponentInstances(oldExport, newExport);
+      replaceAllComponentInstances(oldExport, newExport);
     }
   }
 }
@@ -7140,7 +7115,6 @@ export {
   HashRouter,
   IDX,
   INTERVAL,
-  IS_ZOMBIE,
   LAZY,
   LOCATION,
   Lilact2 as Lilact,
@@ -7166,8 +7140,6 @@ export {
   animationFramePromise,
   asError2 as asError,
   blocksInfo,
-  boolean_html_attributes_set,
-  capture_events_set,
   clearInterval,
   clearTimeout2 as clearTimeout,
   cloneComponent,
@@ -7187,7 +7159,6 @@ export {
   emotion_css_esm_exports as emotion,
   error,
   eval_num,
-  events_set,
   findDOMNode,
   forwardRef,
   getComponentUnderPointer,
@@ -7204,7 +7175,6 @@ export {
   isValidElement,
   layout_effects,
   lazy,
-  length_css_attributes_set,
   memo,
   passive_effects,
   pauseTimers,
@@ -7213,8 +7183,6 @@ export {
   releaseSyntheticEvent,
   releaseTimers,
   render,
-  replaceAllComponentInstances,
-  replaceComponentEntity,
   require2 as require,
   required_scripts,
   resetTimers,
@@ -7226,7 +7194,6 @@ export {
   setInterval,
   setTimeout2 as setTimeout,
   shallowEqual,
-  special_attributes,
   startTransition,
   timeoutPromise,
   toBool,

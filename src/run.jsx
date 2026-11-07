@@ -31,6 +31,7 @@
 import Lilact from "./lilact.jsx";
 import { isEmpty } from "./misc.jsx";
 import { LAZY } from "./symbols.jsx";
+import { replaceAllComponentInstances } from "./cache.jsx";
 import { injectGlobal } from "@emotion/css";
 
 function joinPaths(basePath, relativePath) {
@@ -323,7 +324,7 @@ function replaceReloadedExports(previousExports, nextExports) {
 			typeof oldExport === "function" &&
 			typeof newExport === "function"
 		) {
-			Lilact.replaceAllComponentInstances(oldExport, newExport);
+			replaceAllComponentInstances(oldExport, newExport);
 		}
 	}
 }
