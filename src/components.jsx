@@ -885,7 +885,7 @@ function constructFunc(core, parent) {
 		let entity = core.entity;
 		let memoized = false;
 
-		const loc = core.props[LOCATION];
+		const loc = core?.props?.[LOCATION];
 		if(loc) delete core.props[LOCATION];
 
 		if (typeof entity === "object") {
@@ -1382,6 +1382,8 @@ export class RootComponent extends HTMLComponent
 		if(typeof this.element==='string') {
 			element = document.querySelector(element);
 		}
+
+		element.innerHTML="";
 
 		this[CORE].element = element;
 

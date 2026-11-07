@@ -2954,7 +2954,7 @@ function constructFunc(core, parent) {
   if (core[TEXT2] === void 0) {
     let entity = core.entity;
     let memoized = false;
-    const loc = core.props[LOCATION];
+    const loc = core?.props?.[LOCATION];
     if (loc) delete core.props[LOCATION];
     if (typeof entity === "object") {
       if (entity[MEMOIZED]) {
@@ -3261,6 +3261,7 @@ var RootComponent = class extends HTMLComponent {
     if (typeof this.element === "string") {
       element = document.querySelector(element);
     }
+    element.innerHTML = "";
     this[CORE].element = element;
     for (const ch2 of props.children) {
       if (ch2[CORE]) ch2[CORE].container = this[CORE];
@@ -5669,7 +5670,7 @@ var SplitPane = forwardRef(function SplitPane2({
       });
     }
   }
-  return createComponent("div", { "ref": containerRef, "className": className, "style": {
+  return createComponent("div", { "ref": containerRef, "className": cx(className, dragging && "dragging"), "style": {
     position: "relative",
     width: "100%",
     height: "100%",

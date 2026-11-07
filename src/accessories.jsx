@@ -32,7 +32,9 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, useImperativeHandle, useCallback } from "./hooks.jsx";
 import { Children, forwardRef, isThenable } from "./misc.jsx";
 
-import {Component} from "./components.jsx"
+import {Component} from "./components.jsx";
+
+import {cx} from "@emotion/css";
 
 /**
  * A CSS-only loading spinner component.
@@ -787,7 +789,7 @@ export const SplitPane = forwardRef(function SplitPane(
   return (
     <div
       ref={containerRef}
-      className={className}
+      className={cx(className, dragging && 'dragging')}
       style={{
         position: "relative",
         width: "100%",
