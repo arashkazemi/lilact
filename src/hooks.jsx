@@ -203,13 +203,13 @@ export function useTransition()
 /**
  * Persists state in localStorage and keeps it in sync with the app.
  *
- * @param {string} key - localStorage key.
+ * @param {string|Array} key - localStorage key. If an array is provided, the array members are joined as key.
  * @param {any} initialValue - Initial value used if nothing exists in localStorage.
  * @returns {any} Stored state/result.
  */
 export function useLocalStorage(key, initialValue)
 {
-
+	if(Array.isArray(key)) key=key.join(":");
 	const hk = useHook();
 	let val;
 

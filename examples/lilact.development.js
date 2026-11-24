@@ -1769,7 +1769,8 @@ var isValidComponent = (value) => {
 };
 var isValidElement = isValidComponent;
 var findDOMNode = (component) => {
-  if (!component[CORE]?.element?.parentNode) throw new Error("findDOMNode only works on mounted components.");
+  var _a6, _b;
+  if (!((_b = (_a6 = component[CORE]) == null ? void 0 : _a6.element) == null ? void 0 : _b.parentNode)) throw new Error("findDOMNode only works on mounted components.");
   return component[CORE].element;
 };
 function Fragment2({ children }) {
@@ -2372,7 +2373,7 @@ __export(components_exports, {
 
 // .tmp/src/cache.jsx
 function getComponentEntity(entity) {
-  return entity?.[MEMOIZED] ? entity.component : entity;
+  return (entity == null ? void 0 : entity[MEMOIZED]) ? entity.component : entity;
 }
 var hotEntityAliases = /* @__PURE__ */ new Map();
 var hotEntityCacheTokens = /* @__PURE__ */ new WeakMap();
@@ -2490,6 +2491,7 @@ var ComponentCache = class {
     this.owner = owner;
   }
   pick(key, construct_func, nextEntity) {
+    var _a6;
     let componentCore;
     let bucket = this.current_map.get(key);
     if (bucket && bucket.length > bucket[IDX]) {
@@ -2515,18 +2517,19 @@ var ComponentCache = class {
       bucket[IDX] = 0;
     }
     if (componentCore) {
-      componentCore.parent ?? (componentCore.parent = this.owner);
+      (_a6 = componentCore.parent) != null ? _a6 : componentCore.parent = this.owner;
     }
     return componentCore;
   }
   commit() {
     this.current_map.forEach((arr) => {
       arr.slice(arr[IDX]).forEach((ex) => {
+        var _a6, _b;
         if (ex.cleanup) {
           ex.cleanup();
         }
         if (ex.element && !ex.portal) {
-          ex.element?.remove?.();
+          (_b = (_a6 = ex.element) == null ? void 0 : _a6.remove) == null ? void 0 : _b.call(_a6);
         }
       });
     });
@@ -2538,25 +2541,26 @@ var ComponentCache = class {
 // .tmp/src/core.jsx
 var SVG_NS = "http://www.w3.org/2000/svg";
 var renderErrorHandler = (c, e) => {
-  const value = e?.error instanceof Error ? e.error : e?.reason !== void 0 ? e.reason : e;
+  var _a6, _b, _c, _d;
+  const value = (e == null ? void 0 : e.error) instanceof Error ? e.error : (e == null ? void 0 : e.reason) !== void 0 ? e.reason : e;
   const error2 = lilact_default.isThenable(e) ? e : lilact_default.traceError(
     value,
-    e?.fileName || null
+    (e == null ? void 0 : e.fileName) || null
   );
   const stack = [c];
-  while (c && !c.component?.componentDidCatch) {
+  while (c && !((_a6 = c.component) == null ? void 0 : _a6.componentDidCatch)) {
     c = c.parent;
     if (c) stack.push(c);
   }
-  if (c?.component?.componentDidCatch) {
-    if (c.entity?.getDerivedStateFromError) {
+  if ((_b = c == null ? void 0 : c.component) == null ? void 0 : _b.componentDidCatch) {
+    if ((_c = c.entity) == null ? void 0 : _c.getDerivedStateFromError) {
       c.component.setState(c.entity.getDerivedStateFromError.call(c, error2));
     }
   }
   let stack_log = Array.prototype.map.call(stack, (x) => `in  ${typeof x.component.displayName === "function" ? x.component.displayName() : x.component.displayName}`).join("\n");
   error2.componentStack = stack;
   error2.componentStackLog = stack_log;
-  if (c?.component?.componentDidCatch) {
+  if ((_d = c == null ? void 0 : c.component) == null ? void 0 : _d.componentDidCatch) {
     c.component.componentDidCatch(error2, { componentStack: stack, componentStackLog: stack_log });
   } else throw e;
 };
@@ -2596,34 +2600,35 @@ var ComponentCore = class {
   */
   // TODO: should componentDidUpdate be called after arranging/appending the outlet or before?
   apply(next_props = this.props, next_state = this.next_state || this.state) {
+    var _a6, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n;
     try {
       let do_rerender = true;
-      if (this.outlet && this?.[MEMOIZED]) {
-        if (shallowEqual(this.props, next_props, "children") && shallowEqual(this.props?.children, next_props?.children)) {
+      if (this.outlet && (this == null ? void 0 : this[MEMOIZED])) {
+        if (shallowEqual(this.props, next_props, "children") && shallowEqual((_a6 = this.props) == null ? void 0 : _a6.children, next_props == null ? void 0 : next_props.children)) {
           do_rerender = false;
         }
       }
       if (do_rerender) {
         if (true) {
-          if (this.entity?.propTypes) {
+          if ((_b = this.entity) == null ? void 0 : _b.propTypes) {
             PropTypes.checkPropTypes(this.entity.propTypes, next_props, "prop", this.entity.name);
-          } else if (this.component?.propTypes) {
+          } else if ((_c = this.component) == null ? void 0 : _c.propTypes) {
             PropTypes.checkPropTypes(this.component.propTypes, next_props, "prop", this.component.name);
           }
         }
         if (typeof next_state === "function") next_state = next_state(this.state);
-        const defaultProps = this.entity?.defaultProps || this.component?.constructor?.defaultProps;
+        const defaultProps = ((_d = this.entity) == null ? void 0 : _d.defaultProps) || ((_f = (_e = this.component) == null ? void 0 : _e.constructor) == null ? void 0 : _f.defaultProps);
         if (defaultProps) {
           next_props = {
             ...defaultProps,
             ...next_props || {}
           };
         }
-        if (next_props?.style && typeof next_props.style === "object" && !next_props.style[CLONED_STYLE]) {
+        if ((next_props == null ? void 0 : next_props.style) && typeof next_props.style === "object" && !next_props.style[CLONED_STYLE]) {
           next_props.style = { ...next_props.style, [CLONED_STYLE]: true };
         }
-        if (this?.parent?.component?.context || this?.parent?.component?.getChildContext) {
-          this.context = { ...this.parent.component.context, ...this.parent.component.getChildContext?.() };
+        if (((_h = (_g = this == null ? void 0 : this.parent) == null ? void 0 : _g.component) == null ? void 0 : _h.context) || ((_j = (_i = this == null ? void 0 : this.parent) == null ? void 0 : _i.component) == null ? void 0 : _j.getChildContext)) {
+          this.context = { ...this.parent.component.context, ...(_l = (_k = this.parent.component).getChildContext) == null ? void 0 : _l.call(_k) };
           if (this.component.constructor.contextTypes) {
             PropTypes.checkPropTypes(this.component.constructor.contextTypes, this.context, "context", this.entity.name);
           }
@@ -2637,8 +2642,8 @@ var ComponentCore = class {
             } else {
               this.element = document.createElement(this.entity);
             }
-            if (next_props?.defaultValue) this.element.value = String(next_props.defaultValue).slice(0, next_props?.maxLength);
-            if (next_props?.defaultChecked) this.element.checked = next_props.defaultChecked;
+            if (next_props == null ? void 0 : next_props.defaultValue) this.element.value = String(next_props.defaultValue).slice(0, next_props == null ? void 0 : next_props.maxLength);
+            if (next_props == null ? void 0 : next_props.defaultChecked) this.element.checked = next_props.defaultChecked;
           }
           this.element[COMPONENT] = this.component;
         }
@@ -2656,7 +2661,7 @@ var ComponentCore = class {
           this.component.componentWillUpdate(next_props, next_state);
         }
         const prev_state = this.state, prev_props = this.props;
-        if (this.element && !(this?.component instanceof lilact_default.RootComponent)) {
+        if (this.element && !((this == null ? void 0 : this.component) instanceof lilact_default.RootComponent)) {
           this.updateElementProps(next_props);
         }
         this.props = next_props;
@@ -2673,10 +2678,10 @@ var ComponentCore = class {
         } else {
           this.outlet = this.component.render({ current: this.element || this.component });
         }
-        if (this?.portal) {
+        if (this == null ? void 0 : this.portal) {
           this.element = this.portal;
         }
-        if (this.outlet?.constructor?.name !== "Array") {
+        if (((_n = (_m = this.outlet) == null ? void 0 : _m.constructor) == null ? void 0 : _n.name) !== "Array") {
           this.outlet = [this.outlet];
         } else {
           this.outlet = [...this.outlet];
@@ -2721,10 +2726,11 @@ var ComponentCore = class {
     }
   }
   async cleanup() {
+    var _a6, _b, _c;
     unregisterComponentCore(this);
     try {
       const promises = [];
-      if (this.props?.ref) {
+      if ((_a6 = this.props) == null ? void 0 : _a6.ref) {
         if (typeof this.props.ref === "function") {
           this.props.ref(null);
         } else {
@@ -2734,7 +2740,7 @@ var ComponentCore = class {
       if (this.component.componentWillUnmount) {
         this.component.componentWillUnmount();
       }
-      if (this?.element?.parentElement && !this.portal) {
+      if (((_b = this == null ? void 0 : this.element) == null ? void 0 : _b.parentElement) && !this.portal) {
         this.element.remove();
       }
       if (this.outlet !== void 0) {
@@ -2744,7 +2750,7 @@ var ComponentCore = class {
           }
         }
       }
-      if (this.props?.children !== void 0) {
+      if (((_c = this.props) == null ? void 0 : _c.children) !== void 0) {
         for (let c of this.props.children) {
           if (c.cleanup) {
             promises.push(c.cleanup());
@@ -2764,18 +2770,19 @@ var ComponentCore = class {
     }
   }
   updateElementProps(patch, force = false) {
+    var _a6, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o;
     if (this.entity === "input") {
-      if (!patch?.type) patch.type = "text";
+      if (!(patch == null ? void 0 : patch.type)) patch.type = "text";
       if (patch.type !== this.element.type) {
         this.element.type = patch.type;
       }
-      if (patch?.value !== void 0 && patch?.value !== this.element.value) {
+      if ((patch == null ? void 0 : patch.value) !== void 0 && (patch == null ? void 0 : patch.value) !== this.element.value) {
         if (patch.value === void 0) patch.value = "";
-        this.element.value = String(patch.value).slice(0, patch?.maxLength);
+        this.element.value = String(patch.value).slice(0, patch == null ? void 0 : patch.maxLength);
       }
     } else if (this.entity === "textarea") {
-      if (patch?.value !== this.element.value) {
-        this.element.value = String(patch.value).slice(0, patch?.maxLength);
+      if ((patch == null ? void 0 : patch.value) !== this.element.value) {
+        this.element.value = String(patch.value).slice(0, patch == null ? void 0 : patch.maxLength);
       }
     } else if (this.entity === "select") {
       if (typeof patch.value === "string") {
@@ -2784,9 +2791,9 @@ var ComponentCore = class {
         }
       }
     } else if (this.entity === "option") {
-      if (this.container?.props?.value?.constructor?.name === "Array") {
+      if (((_d = (_c = (_b = (_a6 = this.container) == null ? void 0 : _a6.props) == null ? void 0 : _b.value) == null ? void 0 : _c.constructor) == null ? void 0 : _d.name) === "Array") {
         patch.selected = this.container.props.value.indexOf(patch.value) !== -1;
-      } else if (typeof this.container?.props?.value === "string") {
+      } else if (typeof ((_f = (_e = this.container) == null ? void 0 : _e.props) == null ? void 0 : _f.value) === "string") {
         patch.selected = this.container.props.value === patch.value;
       }
     }
@@ -2805,24 +2812,24 @@ var ComponentCore = class {
       if (special_attributes.has(al)) continue;
       if (patch === this.props || !lilact_default.defaultIsEqual(patch[a], this.props[a]) || force) {
         if (events_set.has(al)) {
-          this.event_detachers ?? (this.event_detachers = {});
-          this.event_detachers[al]?.();
+          (_g = this.event_detachers) != null ? _g : this.event_detachers = {};
+          (_i = (_h = this.event_detachers)[al]) == null ? void 0 : _i.call(_h);
           this.event_detachers[al] = lilact_default.addWrappedEventListener(this.element, al.substring(2), patch[a]);
         } else if (capture_events_set.hasOwnProperty(al)) {
           const alc = capture_events_set[al];
-          this.event_detachers ?? (this.event_detachers = {});
-          this.event_detachers[al]?.();
+          (_j = this.event_detachers) != null ? _j : this.event_detachers = {};
+          (_l = (_k = this.event_detachers)[al]) == null ? void 0 : _l.call(_k);
           this.event_detachers[al] = lilact_default.addWrappedEventListener(this.element, alc.substring(2), patch[a], { capture: true });
         } else if (a === "style") {
           if (typeof patch.style === "string") {
             this.element.style = patch.style;
           } else {
-            if (this.props?.style) {
+            if ((_m = this.props) == null ? void 0 : _m.style) {
               if (typeof this.props.style === "string") {
                 this.element.style = "";
               } else {
                 for (let p in this.props.style) {
-                  if (p !== CLONED_STYLE && !patch?.style?.hasOwnProperty?.(p)) {
+                  if (p !== CLONED_STYLE && !((_o = (_n = patch == null ? void 0 : patch.style) == null ? void 0 : _n.hasOwnProperty) == null ? void 0 : _o.call(_n, p))) {
                     this.element.style[p] = "";
                   }
                 }
@@ -2851,7 +2858,7 @@ var ComponentCore = class {
         }
       }
     }
-    if (patch?.action) {
+    if (patch == null ? void 0 : patch.action) {
       this.element.onsubmit = patch.action;
     } else {
       this.element.onsubmit = void 0;
@@ -2859,8 +2866,9 @@ var ComponentCore = class {
     this.updateElementClass(patch);
   }
   updateElementClass(patch = this.props) {
-    let cn = patch?.className ?? patch?.class ?? "";
-    if (this?.parent?.[CHILD_CLASS_ADDENDUM]) {
+    var _a6, _b, _c;
+    let cn = (_b = (_a6 = patch == null ? void 0 : patch.className) != null ? _a6 : patch == null ? void 0 : patch.class) != null ? _b : "";
+    if ((_c = this == null ? void 0 : this.parent) == null ? void 0 : _c[CHILD_CLASS_ADDENDUM]) {
       cn += " " + this.parent[CHILD_CLASS_ADDENDUM];
     }
     cn = cn.trim();
@@ -2879,13 +2887,14 @@ var ComponentCore = class {
     }
   }
   appendElement(core) {
+    var _a6;
     if (core.portal) return;
-    if (core?.element.parentNode === null) {
+    if ((core == null ? void 0 : core.element.parentNode) === null) {
       core.container.element.insertBefore(
         core.element,
         core.container.element.childNodes[core.container.insert_index] || null
       );
-      if (core?.component?.componentDidMount) {
+      if ((_a6 = core == null ? void 0 : core.component) == null ? void 0 : _a6.componentDidMount) {
         core.component.componentDidMount();
       }
     } else {
@@ -2899,6 +2908,7 @@ var ComponentCore = class {
     core.container.insert_index++;
   }
   arrangeOutlet() {
+    var _a6;
     this.insert_index = 0;
     for (const core of this.outlet) {
       if (core) {
@@ -2907,9 +2917,9 @@ var ComponentCore = class {
           core.container.appendElement(core);
         } else {
           if (core.arrangeOutlet && core.outlet) core.arrangeOutlet();
-          if (!core?.mounted) {
+          if (!(core == null ? void 0 : core.mounted)) {
             core.mounted = true;
-            if (core?.component?.componentDidMount) {
+            if ((_a6 = core == null ? void 0 : core.component) == null ? void 0 : _a6.componentDidMount) {
               core.component.componentDidMount();
             }
           }
@@ -2923,8 +2933,9 @@ var ComponentCore = class {
   }
 };
 function prepareCore(parent, core) {
+  var _a6, _b;
   try {
-    parent.cache ?? (parent.cache = new ComponentCache(parent));
+    (_a6 = parent.cache) != null ? _a6 : parent.cache = new ComponentCache(parent);
     const isText = core[TEXT2] !== void 0;
     const isExistingCore = core instanceof ComponentCore;
     const entity = isText || isExistingCore ? void 0 : resolveHotEntity(core.entity);
@@ -2945,7 +2956,7 @@ function prepareCore(parent, core) {
       entity
     );
   } catch (e) {
-    if (core?.component?.componentDidCatch) {
+    if ((_b = core == null ? void 0 : core.component) == null ? void 0 : _b.componentDidCatch) {
       core.component.componentDidCatch(e);
     } else {
       throw e;
@@ -2953,11 +2964,12 @@ function prepareCore(parent, core) {
   }
 }
 function constructFunc(core, parent) {
+  var _a6;
   let comp = core;
   if (core[TEXT2] === void 0) {
     let entity = core.entity;
     let memoized = false;
-    const loc = core?.props?.[LOCATION];
+    const loc = (_a6 = core == null ? void 0 : core.props) == null ? void 0 : _a6[LOCATION];
     if (loc) delete core.props[LOCATION];
     if (typeof entity === "object") {
       if (entity[MEMOIZED]) {
@@ -2971,7 +2983,7 @@ function constructFunc(core, parent) {
     if (typeof entity === "string") {
       comp = new HTMLComponent(entity, core.props);
     } else if (isClass(entity)) {
-      if (entity?.defaultProps) {
+      if (entity == null ? void 0 : entity.defaultProps) {
         core.props = {
           ...entity.defaultProps,
           ...core.props
@@ -2999,7 +3011,7 @@ function constructFunc(core, parent) {
         }
       }
     } else if (typeof entity === "function") {
-      if (entity?.defaultProps) {
+      if (entity == null ? void 0 : entity.defaultProps) {
         core.props = {
           ...entity.defaultProps,
           ...core.props
@@ -3010,7 +3022,7 @@ function constructFunc(core, parent) {
       comp[CORE].hooks = [];
       comp[CORE].hook_index = 0;
     } else {
-      throw new Error("Error in constructing component.");
+      throw new Error(`Error in constructing component (${String(core.entity)}).`);
     }
     if (loc) comp[CORE].location = loc;
     comp[CORE].entity = entity;
@@ -3219,7 +3231,7 @@ var generateComponentKey = (entity, props) => {
   } else {
     if (typeof entity === "string") {
       key = ":t:" + entity;
-    } else if (entity?.name) {
+    } else if (entity == null ? void 0 : entity.name) {
       key = entity.name;
     } else {
       key = "::";
@@ -3310,7 +3322,7 @@ var Component = class {
   */
   get displayName() {
     const entity = this[CORE].entity;
-    if (entity?.displayName) {
+    if (entity == null ? void 0 : entity.displayName) {
       return entity.displayName;
     }
     if (typeof entity === "string") {
@@ -3438,7 +3450,7 @@ function createRoot(element) {
     },
     unmount() {
       if (root) {
-        root.cleanup();
+        root[CORE].cleanup();
         element.innerHTML = "";
       }
     },
@@ -3452,7 +3464,7 @@ function createPortal(children, element) {
 }
 function cloneComponent(component, propsPatch, ...children) {
   const cc = { entity: component.entity, props: { ...component.props, ...propsPatch }, [CORE]: null };
-  if (children?.length) {
+  if (children == null ? void 0 : children.length) {
     cc.props.children = children;
   }
   return cc;
@@ -3533,11 +3545,11 @@ function useCallback(callback, deps) {
   }
   const hk = useHook();
   if (!isEmpty(hk)) {
-    if (deps !== void 0 && hk?.deps !== void 0 && shallowEqual(deps, hk.deps)) {
+    if (deps !== void 0 && (hk == null ? void 0 : hk.deps) !== void 0 && shallowEqual(deps, hk.deps)) {
       return hk.callback;
     }
   }
-  if (hk?.cleanup) {
+  if (hk == null ? void 0 : hk.cleanup) {
     hk.cleanup();
   }
   hk.deps = deps;
@@ -3554,11 +3566,12 @@ function createContext(defaultValue) {
   };
 }
 function useContext(context2) {
-  let core = lilact_default.current_component[0]?.parent;
+  var _a6, _b, _c;
+  let core = (_a6 = lilact_default.current_component[0]) == null ? void 0 : _a6.parent;
   while (core && core.entity !== context2.Provider) {
     core = core.parent;
   }
-  return core ? core.props?.value ?? context2.default : context2.default;
+  return core ? (_c = (_b = core.props) == null ? void 0 : _b.value) != null ? _c : context2.default : context2.default;
 }
 function useId(prefix2 = "N") {
   const hk = useHook();
@@ -3589,6 +3602,7 @@ function useTransition() {
   return [hk.count != 0, hk.func];
 }
 function useLocalStorage(key, initialValue) {
+  if (Array.isArray(key)) key = key.join(":");
   const hk = useHook();
   let val;
   try {
@@ -3625,9 +3639,9 @@ async function useLayoutEffect(effect, deps) {
   }
   const hk = useHook();
   if (!isEmpty(hk)) {
-    if (deps !== void 0 && hk?.deps !== void 0 && shallowEqual(deps, hk.deps)) return;
+    if (deps !== void 0 && (hk == null ? void 0 : hk.deps) !== void 0 && shallowEqual(deps, hk.deps)) return;
   }
-  if (hk?.cleanup) {
+  if (hk == null ? void 0 : hk.cleanup) {
     await hk.cleanup();
     hk.cleanup = void 0;
   }
@@ -3644,9 +3658,9 @@ async function useEffect(effect, deps) {
   }
   const hk = useHook();
   if (!isEmpty(hk)) {
-    if (deps !== void 0 && hk?.deps !== void 0 && shallowEqual(deps, hk.deps)) return;
+    if (deps !== void 0 && (hk == null ? void 0 : hk.deps) !== void 0 && shallowEqual(deps, hk.deps)) return;
   }
-  if (hk?.cleanup) {
+  if (hk == null ? void 0 : hk.cleanup) {
     await hk.cleanup();
     hk.cleanup = void 0;
   }
@@ -3663,9 +3677,9 @@ async function useInsertionEffect(effect, deps) {
   }
   const hk = useHook();
   if (!isEmpty(hk)) {
-    if (deps !== void 0 && hk?.deps !== void 0 && shallowEqual(deps, hk.deps)) return;
+    if (deps !== void 0 && (hk == null ? void 0 : hk.deps) !== void 0 && shallowEqual(deps, hk.deps)) return;
   }
-  if (hk?.cleanup) {
+  if (hk == null ? void 0 : hk.cleanup) {
     await hk.cleanup();
     hk.cleanup = void 0;
   }
@@ -3682,7 +3696,7 @@ function useMemo(factory, deps) {
   }
   const hk = useHook();
   if (!isEmpty(hk)) {
-    if (deps !== void 0 && hk?.deps !== void 0 && shallowEqual(deps, hk.deps)) {
+    if (deps !== void 0 && (hk == null ? void 0 : hk.deps) !== void 0 && shallowEqual(deps, hk.deps)) {
       return hk.value;
     }
   }
@@ -3754,9 +3768,9 @@ function useDeferredValue(value, initialValue) {
   return deferred;
 }
 function useImperativeHandle(ref, factory, deps) {
-  if (deps !== void 0 && ref?.deps !== void 0 && shallowEqual(deps, ref.deps)) return;
+  if (deps !== void 0 && (ref == null ? void 0 : ref.deps) !== void 0 && shallowEqual(deps, ref.deps)) return;
   ref.deps = deps;
-  if (typeof ref?.current !== "object") {
+  if (typeof (ref == null ? void 0 : ref.current) !== "object") {
     ref.current = {};
   }
   Object.assign(ref.current, factory());
@@ -3797,9 +3811,9 @@ function joinPaths(basePath, relativePath) {
 }
 function asError(value, fallback = "Unknown error") {
   if (value instanceof Error) return value;
-  if (value?.error instanceof Error) return value.error;
+  if ((value == null ? void 0 : value.error) instanceof Error) return value.error;
   const error2 = new Error(
-    value?.message == null ? fallback : String(value.message)
+    (value == null ? void 0 : value.message) == null ? fallback : String(value.message)
   );
   if (value && typeof value === "object") {
     if (value.name) error2.name = value.name;
@@ -3848,10 +3862,11 @@ function createModule(path2, {
   return module2;
 }
 function loadModule(path2, options2 = {}) {
-  if (lilact_default.importObjectPaths?.[path2]) {
+  var _a6, _b, _c, _d;
+  if ((_a6 = lilact_default.importObjectPaths) == null ? void 0 : _a6[path2]) {
     return lilact_default.importObjectPaths[path2];
   }
-  if (options2.requirer?.path) {
+  if ((_b = options2.requirer) == null ? void 0 : _b.path) {
     path2 = joinPaths(options2.requirer.path, path2);
   }
   const loadAsync = Boolean(lilact_default[LAZY]) || Boolean(options2.isLazy);
@@ -3880,7 +3895,7 @@ function loadModule(path2, options2 = {}) {
     }
     return loadAsyncResource(path2, module2, options2);
   }
-  const resolved = lilact_default.resolver?.(path2);
+  const resolved = (_d = (_c = lilact_default).resolver) == null ? void 0 : _d.call(_c, path2);
   if (resolved != null) {
     if (path2.endsWith(".css")) {
       injectGlobal(String(resolved));
@@ -3929,7 +3944,8 @@ function require2(path2) {
   return loadModule(path2, options2);
 }
 function makeImportsObject(mod, options2 = {}) {
-  mod.importsObject ?? (mod.importsObject = {});
+  var _a6;
+  (_a6 = mod.importsObject) != null ? _a6 : mod.importsObject = {};
   for (const key of Object.keys(mod.importsObject)) {
     delete mod.importsObject[key];
   }
@@ -3979,8 +3995,9 @@ function replaceReloadedExports(previousExports2, nextExports2) {
   }
 }
 function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, options = {}) {
+  var _a6, _b, _c;
   let module = required_scripts[path];
-  const previousExports = module?.loaded ? module.exports : void 0;
+  const previousExports = (module == null ? void 0 : module.loaded) ? module.exports : void 0;
   if (!module) {
     module = createModule(path, {
       code: jsx
@@ -4009,8 +4026,8 @@ function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, options = {})
     });
   } catch (value) {
     const error2 = asError(value);
-    error2.fileName ?? (error2.fileName = path);
-    error2.lilact_source ?? (error2.lilact_source = { path });
+    (_a6 = error2.fileName) != null ? _a6 : error2.fileName = path;
+    (_b = error2.lilact_source) != null ? _b : error2.lilact_source = { path };
     error2.sourcePhase = "transpile";
     module.error = error2;
     lilact_default.error = error2;
@@ -4030,7 +4047,7 @@ function run(jsx, path = `InlineJSX-${++lilact_default.eval_num}`, options = {})
     return nextExports;
   } catch (value) {
     const error2 = report(value, path);
-    error2.sourcePhase ?? (error2.sourcePhase = "runtime");
+    (_c = error2.sourcePhase) != null ? _c : error2.sourcePhase = "runtime";
     module.error = error2;
     throw error2;
   }
@@ -4039,9 +4056,10 @@ function getOrCreateModule(path2, options2 = {}) {
   return required_scripts[path2] || createModule(path2, options2);
 }
 function loadAsyncResource(path2, module2, options2 = {}) {
+  var _a6, _b;
   let source;
   try {
-    const resolved = lilact_default.resolver?.(path2);
+    const resolved = (_b = (_a6 = lilact_default).resolver) == null ? void 0 : _b.call(_a6, path2);
     if (resolved == null) {
       if (module2.code && !module2.loaded) {
         source = Promise.resolve(module2.code);
@@ -4073,7 +4091,10 @@ function loadAsyncResource(path2, module2, options2 = {}) {
       return void 0;
     }
     return run(module2.code, path2, options2);
-  }).then((result2) => result2?.default ?? result2).catch((error2) => {
+  }).then((result2) => {
+    var _a7;
+    return (_a7 = result2 == null ? void 0 : result2.default) != null ? _a7 : result2;
+  }).catch((error2) => {
     module2.error = report(error2, path2);
     throw module2.error;
   }).finally(() => {
@@ -4111,10 +4132,11 @@ function lazy(factory) {
     status = "success";
   }
   function LazyComponent(props) {
+    var _a6;
     if (status === "pending" || status === "error") {
       throw result2;
     }
-    const Component2 = result2?.default ?? result2;
+    const Component2 = (_a6 = result2 == null ? void 0 : result2.default) != null ? _a6 : result2;
     return createComponent(Component2, { ...props });
   }
   return LazyComponent;
@@ -4168,10 +4190,10 @@ function Transition({
   // but the user should use CSSTransition itself.
   _classNames: classNames
 }) {
-  var _a, _b, _c;
-  (_a = this[CORE]).is_mounted ?? (_a.is_mounted = !mountOnEnter || inProp || appear);
-  (_b = this[CORE]).is_appeared ?? (_b.is_appeared = inProp);
-  (_c = this[CORE]).timer ?? (_c.timer = null);
+  var _a6, _b, _c, _d, _e, _f;
+  (_b = (_a6 = this[CORE]).is_mounted) != null ? _b : _a6.is_mounted = !mountOnEnter || inProp || appear;
+  (_d = (_c = this[CORE]).is_appeared) != null ? _d : _c.is_appeared = inProp;
+  (_f = (_e = this[CORE]).timer) != null ? _f : _e.timer = null;
   this[CORE].childFunctionHandler = (func) => {
     return func(this[CORE].mount_state);
   };
@@ -4186,15 +4208,15 @@ function Transition({
   }, []);
   useEffect(() => {
     if (!this[CORE].is_appeared && appear && this[CORE].mount_state === ENTERING && inProp) {
-      onEnter?.();
+      onEnter == null ? void 0 : onEnter();
       requestAnimationFrame(() => {
-        onEntering?.(!this[CORE].is_appeared);
+        onEntering == null ? void 0 : onEntering(!this[CORE].is_appeared);
         clearTimeout(this[CORE].timer);
         this[CORE].timer = setTimeout(() => {
           this[CORE].mount_state = ENTERED;
           this.forceUpdate();
           this[CORE].is_appeared = true;
-          onEntered?.(!this[CORE].is_appeared);
+          onEntered == null ? void 0 : onEntered(!this[CORE].is_appeared);
         }, timeout);
       });
     }
@@ -4203,29 +4225,29 @@ function Transition({
     if (inProp) {
       this[CORE].is_mounted = true;
       if (this[CORE].mount_state === ENTERING || this[CORE].mount_state === ENTERED) return;
-      onEnter?.(!this[CORE].is_appeared);
+      onEnter == null ? void 0 : onEnter(!this[CORE].is_appeared);
       this[CORE].mount_state = ENTERING;
       this.forceUpdate(() => {
-        onEntering?.(!this[CORE].is_appeared);
+        onEntering == null ? void 0 : onEntering(!this[CORE].is_appeared);
         clearTimeout(this[CORE].timer);
         this[CORE].timer = setTimeout(() => {
           this[CORE].mount_state = ENTERED;
           this.forceUpdate();
           this[CORE].is_appeared = true;
-          onEntered?.();
+          onEntered == null ? void 0 : onEntered();
         }, timeout);
       });
     } else {
       if (this[CORE].mount_state === UNMOUNTED || this[CORE].mount_state === EXITING || this[CORE].mount_state === EXITED) return;
-      onExit?.();
+      onExit == null ? void 0 : onExit();
       this[CORE].mount_state = EXITING;
       this.forceUpdate(() => {
-        onExiting?.();
+        onExiting == null ? void 0 : onExiting();
         clearTimeout(this[CORE].timer);
         this[CORE].timer = setTimeout(() => {
           this[CORE].mount_state = EXITED;
           this.forceUpdate();
-          onExited?.();
+          onExited == null ? void 0 : onExited();
           if (unmountOnExit) {
             this[CORE].is_mounted = false;
             this[CORE].mount_state = UNMOUNTED;
@@ -4347,7 +4369,8 @@ function SwitchTransition({
     }
   };
   return createComponent("div", { "style": { position: "relative" } }, childArray.map((child, index2) => {
-    const key = child?.props?.key || index2;
+    var _a6;
+    const key = ((_a6 = child == null ? void 0 : child.props) == null ? void 0 : _a6.key) || index2;
     const isIncoming = key === activeKey;
     const isOutgoing = key === exitingKey;
     const inProp = isIncoming ? enterAllowed : isOutgoing ? !exitStarted : false;
@@ -4369,21 +4392,24 @@ __export(events_exports, {
 });
 var SyntheticEvent = class {
   constructor(nativeEvent, currentTarget) {
+    var _a6;
     this.nativeEvent = nativeEvent;
     this.type = nativeEvent.type;
     this.target = nativeEvent.target || nativeEvent.srcElement || null;
     this.currentTarget = currentTarget || nativeEvent.currentTarget || null;
-    this.timeStamp = nativeEvent.timeStamp ?? Date.now();
+    this.timeStamp = (_a6 = nativeEvent.timeStamp) != null ? _a6 : Date.now();
     this.defaultPrevented = !!nativeEvent.defaultPrevented;
     let propagationStopped = false;
     this.isDefaultPrevented = () => this.defaultPrevented;
     this.isPropagationStopped = () => propagationStopped;
     this.preventDefault = () => {
-      nativeEvent.preventDefault?.();
+      var _a7;
+      (_a7 = nativeEvent.preventDefault) == null ? void 0 : _a7.call(nativeEvent);
       this.defaultPrevented = true;
     };
     this.stopPropagation = () => {
-      nativeEvent.stopPropagation?.();
+      var _a7;
+      (_a7 = nativeEvent.stopPropagation) == null ? void 0 : _a7.call(nativeEvent);
       propagationStopped = true;
     };
     this.persist = () => {
@@ -4445,7 +4471,7 @@ __export(redux_exports2, {
 });
 var ReduxContext;
 function Provider({ store, children }) {
-  ReduxContext ?? (ReduxContext = createContext(null));
+  ReduxContext != null ? ReduxContext : ReduxContext = createContext(null);
   return createComponent(ReduxContext.Provider, { "value": store }, children);
 }
 function useStore() {
@@ -4547,11 +4573,16 @@ var timer_pause_time;
 var current_timer_idx = 0;
 var timer_list = [];
 var timer_timeout = 0;
-globalThis.NATIVE_TIMERS ?? (globalThis.NATIVE_TIMERS = {});
-NATIVE_TIMERS.setTimeout ?? (NATIVE_TIMERS.setTimeout = globalThis.setTimeout.bind(globalThis));
-NATIVE_TIMERS.setInterval ?? (NATIVE_TIMERS.setInterval = globalThis.setInterval.bind(globalThis));
-NATIVE_TIMERS.clearTimeout ?? (NATIVE_TIMERS.clearTimeout = globalThis.clearTimeout.bind(globalThis));
-NATIVE_TIMERS.clearInterval ?? (NATIVE_TIMERS.clearInterval = globalThis.clearInterval.bind(globalThis));
+var _a;
+(_a = globalThis.NATIVE_TIMERS) != null ? _a : globalThis.NATIVE_TIMERS = {};
+var _a2;
+(_a2 = NATIVE_TIMERS.setTimeout) != null ? _a2 : NATIVE_TIMERS.setTimeout = globalThis.setTimeout.bind(globalThis);
+var _a3;
+(_a3 = NATIVE_TIMERS.setInterval) != null ? _a3 : NATIVE_TIMERS.setInterval = globalThis.setInterval.bind(globalThis);
+var _a4;
+(_a4 = NATIVE_TIMERS.clearTimeout) != null ? _a4 : NATIVE_TIMERS.clearTimeout = globalThis.clearTimeout.bind(globalThis);
+var _a5;
+(_a5 = NATIVE_TIMERS.clearInterval) != null ? _a5 : NATIVE_TIMERS.clearInterval = globalThis.clearInterval.bind(globalThis);
 var all_timers = /* @__PURE__ */ new Map();
 function get_bucket(target) {
   let left = 0;
@@ -4619,7 +4650,7 @@ function run_timer() {
     try {
       timer[CALLBACK](...timer[ARGS]);
     } catch (error2) {
-      first_error ?? (first_error = error2);
+      first_error != null ? first_error : first_error = error2;
     }
     if (timer[CLEARED]) {
       all_timers.delete(timer[IDX]);
@@ -4771,9 +4802,9 @@ function number(value) {
 }
 function asError2(value) {
   if (value instanceof Error) return value;
-  if (value?.error instanceof Error) return value.error;
+  if ((value == null ? void 0 : value.error) instanceof Error) return value.error;
   const error2 = new Error(
-    value?.message == null ? String(value) : String(value.message)
+    (value == null ? void 0 : value.message) == null ? String(value) : String(value.message)
   );
   if (value && typeof value === "object") {
     if (value.name) error2.name = value.name;
@@ -4785,7 +4816,7 @@ function asError2(value) {
   return error2;
 }
 function isParserError(error2) {
-  return error2?.name === "JSXParserError";
+  return (error2 == null ? void 0 : error2.name) === "JSXParserError";
 }
 function stackLocation(stack) {
   if (typeof stack !== "string") return null;
@@ -4801,11 +4832,12 @@ function stackLocation(stack) {
   return null;
 }
 function browserLocation(error2) {
+  var _a6, _b, _c, _d;
   const line2 = number(
-    error2?.lineNumber ?? error2?.lineno ?? error2?.line
+    (_b = (_a6 = error2 == null ? void 0 : error2.lineNumber) != null ? _a6 : error2 == null ? void 0 : error2.lineno) != null ? _b : error2 == null ? void 0 : error2.line
   );
   const column2 = number(
-    error2?.columnNumber ?? error2?.colno ?? error2?.column
+    (_d = (_c = error2 == null ? void 0 : error2.columnNumber) != null ? _c : error2 == null ? void 0 : error2.colno) != null ? _d : error2 == null ? void 0 : error2.column
   );
   const lineOffset = isSafari() ? 0 : 1;
   return {
@@ -4814,12 +4846,13 @@ function browserLocation(error2) {
   };
 }
 function traceBlock(error2) {
-  const trace = error2?.lilact_trace;
+  const trace = error2 == null ? void 0 : error2.lilact_trace;
   return Array.isArray(trace) ? trace[0] : trace;
 }
 function blockInfo(error2) {
+  var _a6, _b;
   const trace = traceBlock(error2);
-  return trace == null ? null : lilact_default.blocksInfo?.labels?.[trace];
+  return trace == null ? null : (_b = (_a6 = lilact_default.blocksInfo) == null ? void 0 : _a6.labels) == null ? void 0 : _b[trace];
 }
 function mapLocation(mappings, line2, column2) {
   if (!Array.isArray(mappings) || !mappings.length || !Number.isFinite(line2) || !Number.isFinite(column2)) {
@@ -4851,7 +4884,8 @@ function mapLocation(mappings, line2, column2) {
   };
 }
 function traceError(value, runPath) {
-  if (value?.isTraced) return value;
+  var _a6, _b, _c, _d, _e, _f, _g, _h;
+  if (value == null ? void 0 : value.isTraced) return value;
   const error2 = asError2(value);
   const source = error2.lilact_source;
   const stack = isParserError(error2) ? null : stackLocation(error2.stack);
@@ -4859,10 +4893,10 @@ function traceError(value, runPath) {
     line: number(error2.lineNumber),
     column: number(error2.columnNumber)
   } : browserLocation(error2);
-  const fileName = source?.path || stack?.path || error2.fileName || runPath || null;
-  const sameSource = !source?.path || !stack?.path || source.path === stack.path;
-  let line2 = sameSource ? stack?.line ?? browser.line ?? null : browser.line ?? null;
-  let column2 = sameSource ? stack?.column ?? browser.column ?? null : browser.column ?? null;
+  const fileName = (source == null ? void 0 : source.path) || (stack == null ? void 0 : stack.path) || error2.fileName || runPath || null;
+  const sameSource = !(source == null ? void 0 : source.path) || !(stack == null ? void 0 : stack.path) || source.path === stack.path;
+  let line2 = sameSource ? (_b = (_a6 = stack == null ? void 0 : stack.line) != null ? _a6 : browser.line) != null ? _b : null : (_c = browser.line) != null ? _c : null;
+  let column2 = sameSource ? (_e = (_d = stack == null ? void 0 : stack.column) != null ? _d : browser.column) != null ? _e : null : (_f = browser.column) != null ? _f : null;
   const result2 = {
     fileName,
     lineNumber: line2,
@@ -4887,30 +4921,32 @@ function traceError(value, runPath) {
   const block = blockInfo(error2);
   if (block && (result2.lineNumber == null || result2.columnNumber == null || !result2.fileName)) {
     result2.fileName || (result2.fileName = block.path || runPath || null);
-    result2.lineNumber ?? (result2.lineNumber = block.line);
-    result2.columnNumber ?? (result2.columnNumber = block.column);
+    (_g = result2.lineNumber) != null ? _g : result2.lineNumber = block.line;
+    (_h = result2.columnNumber) != null ? _h : result2.columnNumber = block.column;
     result2.label = block.desc;
   }
   lilact_default.error = result2;
   return result2;
 }
 function escapeHtml(value) {
-  return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
+  return String(value != null ? value : "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
 }
 function sourceExcerpt(module2, line2) {
+  var _a6, _b, _c, _d;
   if (!module2 || !Number.isFinite(line2)) return null;
-  const lines = String(module2.code ?? "").split(/\r?\n/);
+  const lines = String((_a6 = module2.code) != null ? _a6 : "").split(/\r?\n/);
   return {
-    before: lines[line2 - 1] ?? "",
-    current: lines[line2] ?? "",
-    after: lines[line2 + 1] ?? ""
+    before: (_b = lines[line2 - 1]) != null ? _b : "",
+    current: (_c = lines[line2]) != null ? _c : "",
+    after: (_d = lines[line2 + 1]) != null ? _d : ""
   };
 }
 function globalErrorHandler(eventOrError) {
-  const value = eventOrError?.error instanceof Error ? eventOrError.error : eventOrError?.reason !== void 0 ? eventOrError.reason : eventOrError;
+  var _a6, _b;
+  const value = (eventOrError == null ? void 0 : eventOrError.error) instanceof Error ? eventOrError.error : (eventOrError == null ? void 0 : eventOrError.reason) !== void 0 ? eventOrError.reason : eventOrError;
   const error2 = traceError(
     value,
-    eventOrError?.fileName || null
+    (eventOrError == null ? void 0 : eventOrError.fileName) || null
   );
   const excerpt = sourceExcerpt(
     required_scripts[error2.fileName],
@@ -4943,7 +4979,7 @@ function globalErrorHandler(eventOrError) {
   dialog.className = className;
   const location = error2.fileName ? `At ${escapeHtml(error2.fileName)}` : "";
   const line2 = Number.isFinite(error2.lineNumber) ? `: Line ${error2.lineNumber + 1}` : "";
-  const componentStack = error2._error?.componentStackLog || error2._error?.componentStack || "";
+  const componentStack = ((_a6 = error2._error) == null ? void 0 : _a6.componentStackLog) || ((_b = error2._error) == null ? void 0 : _b.componentStack) || "";
   dialog.innerHTML = `
 		<h3><red>Error!</red></h3>
 		<b>${location}${line2}</b><br><br>
@@ -5009,6 +5045,7 @@ var createURL = (to) => typeof to === "string" ? to : (to.pathname || "") + (to.
 var escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 function HashRouter({ children, basename = "" }) {
   const readLocation = () => {
+    var _a6;
     const raw = window.location.hash || "#/";
     const full = raw.slice(1);
     const baseRe = new RegExp("^" + escapeRegExp(basename));
@@ -5019,7 +5056,7 @@ function HashRouter({ children, basename = "" }) {
       pathname: path2 || "/",
       search: search ? "?" + search : "",
       hash: hashPart ? "#" + hashPart : "",
-      state: history.state?.__state
+      state: (_a6 = history.state) == null ? void 0 : _a6.__state
     };
   };
   const [location, setLocation] = useState(readLocation);
@@ -5042,7 +5079,7 @@ function HashRouter({ children, basename = "" }) {
           done = true;
           window.removeEventListener("popstate", onPop);
           window.removeEventListener("hashchange", onHash);
-          fn?.();
+          fn == null ? void 0 : fn();
           resolve();
         };
         const onPop = () => cleanup(() => setLocation(readLocation()));
@@ -5148,13 +5185,14 @@ function Route({ path: path2, element = null, children }) {
   return null;
 }
 function Routes({ children }) {
+  var _a6;
   const location = useLocation();
   const pathname = location.pathname || "/";
   const routes = Children.toArray(children);
   for (let i2 = 0; i2 < routes.length; i2++) {
     const route = routes[i2];
     const path2 = route.props.path === void 0 ? null : route.props.path;
-    const element = route.props.element ?? null;
+    const element = (_a6 = route.props.element) != null ? _a6 : null;
     const childRoutes = route.props.children;
     const { matched, params } = matchPath(path2, pathname);
     if (matched) {
@@ -5354,7 +5392,7 @@ function DragHandle({
   }, []);
   const endDrag = useCallback((reason = "up") => {
     if (!draggingRef.current) return;
-    onEnd?.(reason);
+    onEnd == null ? void 0 : onEnd(reason);
     resetDrag();
   }, [onEnd, resetDrag]);
   const onPointerDown = useCallback((e) => {
@@ -5366,17 +5404,17 @@ function DragHandle({
     lastClientXRef.current = e.clientX;
     lastClientYRef.current = e.clientY;
     setIsDragging(true);
-    onStart?.(data);
+    onStart == null ? void 0 : onStart(data);
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
-    } catch {
+    } catch (e2) {
     }
   }, [onStart]);
   const onPointerMove = useCallback((e) => {
     if (!draggingRef.current) return;
     if (activePointerIdRef.current !== e.pointerId) return;
     const { dx, dy } = computeDeltaFromStart(e.clientX, e.clientY);
-    onDelta?.(dx, dy, data);
+    onDelta == null ? void 0 : onDelta(dx, dy, data);
     lastClientXRef.current = e.clientX;
     lastClientYRef.current = e.clientY;
   }, [computeDeltaFromStart, onDelta]);
@@ -5444,18 +5482,21 @@ var SplitPane = forwardRef(function SplitPane2({
     const { w: w2, h: h2 } = sizeRef.current;
     if (modeNow === "vertical" ? h2 <= 0 : w2 <= 0) {
       if (position2 == null) setInternalPos(next2);
-      onSizeChange?.(next2);
+      onSizeChange == null ? void 0 : onSizeChange(next2);
       return;
     }
     const clamped = clampWithSize(next2, modeNow, w2, h2);
     if (position2 == null) setInternalPos(clamped);
     effectivePosRef.current = clamped;
-    onSizeChange?.(clamped);
+    onSizeChange == null ? void 0 : onSizeChange(clamped);
   };
   useImperativeHandle(ref, () => ({
     setPosition,
     setMode: (nextMode) => setInternalMode(nextMode === "vertical" ? "vertical" : "horizontal"),
-    getPosition: () => effectivePosRef.current ?? posResolved,
+    getPosition: () => {
+      var _a6;
+      return (_a6 = effectivePosRef.current) != null ? _a6 : posResolved;
+    },
     getMode: () => internalModeRef.current
   }));
   const didInitRef = useRef(false);
@@ -5463,6 +5504,7 @@ var SplitPane = forwardRef(function SplitPane2({
     const el = containerRef.current;
     if (!el) return;
     const ro = new ResizeObserver((entries) => {
+      var _a6;
       const rect = el.getBoundingClientRect();
       const prev2 = sizeRef.current;
       const nextSize = { w: rect.width, h: rect.height };
@@ -5476,11 +5518,11 @@ var SplitPane = forwardRef(function SplitPane2({
         const clamped = clampWithSize(raw, modeNow, nextSize.w, nextSize.h);
         if (position2 == null) setInternalPos(clamped);
         effectivePosRef.current = clamped;
-        onSizeChange?.(clamped);
+        onSizeChange == null ? void 0 : onSizeChange(clamped);
         return;
       }
       if (!hadSize || !hasSizeNow) return;
-      const p2 = effectivePosRef.current ?? posResolved;
+      const p2 = (_a6 = effectivePosRef.current) != null ? _a6 : posResolved;
       const rp = resizePolicyRef.current;
       const s = splitterSize;
       if (rp === "fixFirst") {
@@ -5530,8 +5572,9 @@ var SplitPane = forwardRef(function SplitPane2({
     if (!dragging) startPosRef.current = posResolved;
   }, [posResolved, dragging]);
   const handleStart = () => {
+    var _a6;
     setDragging(true);
-    startPosRef.current = effectivePosRef.current ?? posResolved;
+    startPosRef.current = (_a6 = effectivePosRef.current) != null ? _a6 : posResolved;
   };
   const handleDelta = (x, y) => {
     const modeNow = internalModeRef.current;
@@ -5864,6 +5907,7 @@ function generateSequence(arr, labeler2 = labeler2.bind(null, null)) {
 var import_export_regexp = /(?:i[C \n]*(?:(?:I|J|(?:\*[C \n]*a[C \n]*I))[C \n]*,[C \n]*)*(?:(?:(?:I(?:[C \n]*a[C \n]*I)?)|J|(?:\*[C \n]*a[C \n]*I))[C \n]*f[C \n]*)?S)|(?:e[C \n]*(?:(?:[*J][C \n]*f[C \n]*S)|(?:d[C \n]*[IFJ])|J|(?:[VF][c \n]*I)|I))|(?:r[c \n]*P)/mg;
 var props_regexp = /O[C \n]*(?:[Id](?:[C \n]*a[C \n]*I)?[C \n]*,[C \n]*)*(?:I(?:[C \n]*a[C \n]*I)?)[C \n]*O/mg;
 function processImportExports(node3, jsx2, meta) {
+  var _a6;
   const s = generateSequence(
     node3.out,
     labeler.bind(
@@ -5908,7 +5952,7 @@ function processImportExports(node3, jsx2, meta) {
     }
   }
   begins.push(node3.end);
-  meta.imports ?? (meta.imports = {});
+  (_a6 = meta.imports) != null ? _a6 : meta.imports = {};
   const imported_names = /* @__PURE__ */ new Set();
   for (const m of s.matchAll(import_export_regexp)) {
     if (m[0].startsWith("r")) {
@@ -6276,14 +6320,14 @@ function preprocessPragmas(node, context) {
   var scope_stack = [];
   var last_block = null;
   const clone_block = (i2, val) => {
-    var _a;
+    var _a6, _b;
     last_block = typeof all_nodes[i2] === "object" ? structuredClone(
       { ...all_nodes[i2], children: void 0, attributes: {} }
     ) : all_nodes[i2];
     if (last_block.type === "directive") {
       last_block.value = val;
     }
-    (_a = scope_stack[0]).out ?? (_a.out = []);
+    (_b = (_a6 = scope_stack[0]).out) != null ? _b : _a6.out = [];
     scope_stack[0].out.push(last_block);
     return last_block;
   };
@@ -6814,12 +6858,13 @@ function generateSourceMap(json, path2, jsx_eols, out_eols, mappings = []) {
     "mappings": ""
   };
   const scan_leaves = (node3) => {
-    if (node3?.out?.length > 0) {
+    var _a6;
+    if (((_a6 = node3 == null ? void 0 : node3.out) == null ? void 0 : _a6.length) > 0) {
       for (const ch2 of node3.out) {
         scan_leaves(ch2);
       }
     }
-    if (node3?.begin !== void 0 && node3?.out_index !== void 0) {
+    if ((node3 == null ? void 0 : node3.begin) !== void 0 && (node3 == null ? void 0 : node3.out_index) !== void 0) {
       mpps.push([...getRowCol(out_eols, node3.out_index), ...getRowCol(jsx_eols, node3.begin), node3]);
     }
   };
@@ -6873,8 +6918,9 @@ function transpileJSX(jsx2, {
     counter: 0
   }
 } = {}) {
-  transpilerConfig.preprocessorDelimiter ?? (transpilerConfig.preprocessorDelimiter = "\u0294");
-  transpilerConfig.injectTraceLabels ?? (transpilerConfig.injectTraceLabels = injectTraceLabels);
+  var _a6, _b;
+  (_a6 = transpilerConfig.preprocessorDelimiter) != null ? _a6 : transpilerConfig.preprocessorDelimiter = "\u0294";
+  (_b = transpilerConfig.injectTraceLabels) != null ? _b : transpilerConfig.injectTraceLabels = injectTraceLabels;
   jsx2 += "\n";
   const eols = scanEOLs(jsx2);
   raiseError = ((eols2, msg, index2) => {
@@ -6978,7 +7024,7 @@ function transpileJSX(jsx2, {
       if (is_attr) {
         return out2.substring(1, out2.length - 1);
       }
-      if (node3?.is_xml_js) {
+      if (node3 == null ? void 0 : node3.is_xml_js) {
         return jsx2.substring(node3.begin + 1, node3.end - 1);
       }
       return out2;
@@ -7081,7 +7127,8 @@ globalThis.require = Lilact2.require;
 document.addEventListener("DOMContentLoaded", () => {
   Lilact2.grabTimers();
   Lilact2.runScripts().catch((error2) => {
-    Lilact2.globalErrorHandler?.(error2);
+    var _a6;
+    (_a6 = Lilact2.globalErrorHandler) == null ? void 0 : _a6.call(Lilact2, error2);
   });
 });
 if (true) {

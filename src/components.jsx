@@ -487,7 +487,7 @@ export function createRoot(element)
 
 		unmount() {
 			if(root) {
-				root.cleanup();
+				root[CORE].cleanup();
 				element.innerHTML="";
 			}
 		},

@@ -158,7 +158,7 @@ async function run() {
   		splitting: split,
 
   		sourcemap: true,
-		target: ["es2020"],
+		target: ["es2018"],
 
 		minify,
 		define,

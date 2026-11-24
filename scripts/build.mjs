@@ -104,7 +104,7 @@ await esbuild.build({
   platform: "browser",
 
   outfile: `dist/${outFile}`,
-  target: "es2020",
+  target: "es2018",
   sourcemap: mode === "development",
 
   minify,

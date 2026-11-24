@@ -725,7 +725,7 @@ function constructFunc(core, parent) {
 			comp[CORE].hook_index = 0;
 		}
 		else {
-			throw new Error("Error in constructing component.");
+			throw new Error(`Error in constructing component (${String(core.entity)}).`);
 		}
 
 		if(loc) comp[CORE].location = loc;
